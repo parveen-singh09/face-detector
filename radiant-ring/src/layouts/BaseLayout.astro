@@ -35,6 +35,22 @@ const ogImage = new URL("/og.png", SITE).href;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Resolve the theme BEFORE first paint to avoid a flash of the wrong
+         polarity. Honours a saved choice, else the OS preference. Inlined and
+         blocking on purpose — it must run before the body renders. -->
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem("theme");
+          const dark =
+            saved === "dark" ||
+            (!saved && matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.dataset.theme = "dark";
+        } catch (_) {}
+      })();
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
     <meta name="generator" content={Astro.generator} />

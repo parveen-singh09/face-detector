@@ -75,6 +75,61 @@
   --breakpoint-wide: 1400px;
 }
 
+/* ────────────────────────────────────────────────────────────────────────
+   Theme polarity — light defaults + a dark override toggled via
+   html[data-theme="dark"] (set before paint by the inline script in
+   BaseLayout, flipped at runtime by the Nav toggle).
+
+   These rules are intentionally UNLAYERED: Tailwind's @theme emits the light
+   tokens to :root unlayered, so the dark overrides must also be unlayered (and
+   carry higher specificity than :root) to win the cascade. They redefine the
+   same --color-* custom properties, so every component that reads them adapts
+   with no per-component changes.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+  /* Dedicated "dark band" tokens (the privacy polarity-flip section). Kept
+     separate from --color-primary so CTA buttons and the band can diverge in
+     dark mode — buttons go white, the band stays a deliberate dark surface. */
+  --color-band: #171717;
+  --color-on-band: #ffffff;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-primary: #ffffff;
+  --color-on-primary: #0a0a0a;
+  --color-ink: #ededed;
+  --color-body: #a1a1a1;
+  --color-mute: #6e6e6e;
+  --color-hairline: #2a2a2a;
+  --color-hairline-strong: #4d4d4d;
+  --color-canvas: #141414;
+  --color-canvas-soft: #000000;
+  --color-canvas-soft-2: #0a0a0a;
+
+  --color-link: #3b9eff;
+  --color-link-deep: #66b2ff;
+  --color-link-bg-soft: #11233f;
+  --color-error-soft: #3a1416;
+  --color-error-deep: #ff6166;
+  --color-warning-soft: #2e2310;
+  --color-warning-deep: #f5c451;
+
+  --color-band: #141414;
+  --color-on-band: #ededed;
+
+  /* On dark surfaces a black drop-shadow is invisible — lean on a brighter
+     inset ring + a deeper ambient drop so cards still read as elevated. */
+  --shadow-ring: #ffffff1f;
+  --shadow-soft: #00000040;
+
+  /* Mesh gradient sits on a dark base in dark mode so the brand colours read as
+     a soft glow instead of washing out against white. */
+  --mesh-base: #000000;
+}
+
 /* ── Base / Preflight overrides ── */
 @layer base {
   html {
@@ -102,11 +157,12 @@
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   ::selection {
     background-color: var(--color-primary);
-    color: #f2f2f2;
+    color: var(--color-canvas);
   }
 
   /* Balance multi-line headings (Web Interface Guidelines: typography). */
@@ -215,9 +271,9 @@
   background-color: var(--color-canvas);
   border-radius: var(--radius-md);
   box-shadow:
-    0 0 0 1px #00000014 inset,
-    0 2px 2px #0000000a,
-    0 8px 8px -8px #0000000a;
+    0 0 0 1px var(--shadow-ring, #00000014) inset,
+    0 2px 2px var(--shadow-soft, #0000000a),
+    0 8px 8px -8px var(--shadow-soft, #0000000a);
 }
 
 /* Larger float-stack card (Level 4) */
@@ -225,9 +281,9 @@
   background-color: var(--color-canvas);
   border-radius: var(--radius-lg);
   box-shadow:
-    0 0 0 1px #00000014 inset,
-    0 2px 2px #0000000a,
-    0 8px 16px -4px #0000000a;
+    0 0 0 1px var(--shadow-ring, #00000014) inset,
+    0 2px 2px var(--shadow-soft, #0000000a),
+    0 8px 16px -4px var(--shadow-soft, #0000000a);
 }
 
 /* Announcement / status pill (banner-marketing) */

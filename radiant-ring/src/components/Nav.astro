@@ -19,9 +19,48 @@
       <a href="#privacy">Privacy</a>
     </nav>
 
-    <a href="#analyzer" class="nav-cta">Analyze my face</a>
+    <div class="nav-actions">
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        type="button"
+        aria-label="Toggle dark mode"
+        title="Toggle theme"
+      >
+        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2"></circle>
+          <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"></path>
+        </svg>
+        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"></path>
+        </svg>
+      </button>
+      <a href="#analyzer" class="nav-cta">Analyze my face</a>
+    </div>
   </div>
 </header>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    const root = document.documentElement;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const apply = (dark) => {
+      root.dataset.theme = dark ? "dark" : "light";
+      btn.setAttribute("aria-pressed", String(dark));
+      if (meta) meta.setAttribute("content", dark ? "#000000" : "#ffffff");
+    };
+    apply(root.dataset.theme === "dark");
+    btn.addEventListener("click", () => {
+      const dark = root.dataset.theme !== "dark";
+      apply(dark);
+      try {
+        localStorage.setItem("theme", dark ? "dark" : "light");
+      } catch (_) {}
+    });
+  })();
+</script>
 
 <style>
   .nav {
@@ -95,6 +134,55 @@
   }
   .nav-cta:hover {
     opacity: 0.88;
+  }
+
+  .nav-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  /* Theme toggle — circular icon button (DESIGN.md icon-button-circular). */
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--color-body);
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: color 0.15s ease, background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .theme-toggle:hover {
+    color: var(--color-ink);
+    background-color: var(--color-canvas-soft-2);
+  }
+  .theme-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* Show the icon for the theme you'd switch TO: moon in light, sun in dark. */
+  .theme-icon-sun {
+    display: none;
+  }
+  .theme-icon-moon {
+    display: block;
+  }
+  :global(html[data-theme="dark"]) .theme-icon-sun {
+    display: block;
+  }
+  :global(html[data-theme="dark"]) .theme-icon-moon {
+    display: none;
   }
 
   @media (max-width: 760px) {

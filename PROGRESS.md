@@ -265,3 +265,80 @@ real faces.
 - Verified `npm run build` passes.
 
 
+## 2026-06-18 — Normalized the new heart shape card image
+
+- The user replaced `public/shapes/heart.jpg` with a full-size portrait
+  (1600×1943, 256KB) — far heavier than the other five cards (~480×600, 30–44KB).
+  The heart card was already rendering it; the only issue was the weight/size
+  mismatch. Re-encoded it in place with the same `sharp` recipe used for the other
+  user-provided shapes (480×600, `cover` from top, mozjpeg q82) → now 33KB. All six
+  cards are now consistent.
+- Verified `npm run build` passes.
+
+
+## 2026-06-18 — Simplified the shape card frames
+
+- The `.shape-glyph` images were each clipped into a distinct silhouette via
+  per-shape `border-radius` (oval ellipse, round circle, heart/diamond curved
+  bottoms, etc.), which looked busy and irregular across the grid. Replaced all of
+  it with one uniform frame: 80×80, `object-fit: cover`, `--radius-md` rounded
+  corners — same for all six cards. Removed the six `.shape-glyph[data-shape="…"]`
+  rules and updated the `<img>` intrinsic size to 80×80.
+- Verified `npm run build` passes.
+
+
+## 2026-06-18 — Dark mode + UI polish
+
+- **Dark mode** added as a full theme polarity, driven entirely by the existing
+  CSS custom properties so no per-component rewrite was needed:
+  - `src/styles/global.css`: light tokens stay on `:root`; a `html[data-theme="dark"]`
+    block redefines every `--color-*` token (inverted ink/canvas ladder, dimmer
+    body/mute, dark hairlines, brightened link/error/warning + `color-scheme`).
+    Kept **unlayered** on purpose — Tailwind's `@theme` emits light tokens to
+    `:root` unlayered, so the dark overrides must also be unlayered (and outrank
+    `:root`) to win the cascade.
+  - New semantic tokens so light-mode hardcodes survive the flip: `--color-band` /
+    `--color-on-band` (the privacy polarity-flip band stays a deliberate dark
+    surface in both themes instead of inverting with `--color-primary`, which now
+    goes white for CTAs); `--shadow-ring` / `--shadow-soft` (card elevation —
+    black drop-shadows are invisible on dark, so dark mode uses a brighter inset
+    ring + deeper ambient drop); `--mesh-base` (mesh gradient sits on black in
+    dark so brand colours glow instead of washing out).
+  - `card`/`card-lg` shadows now read those shadow tokens; `::selection` and the
+    privacy band/`h2` switched off hardcoded hex onto tokens.
+- **No-FOUC theme resolution** (`src/layouts/BaseLayout.astro`): an `is:inline`
+  blocking script in `<head>` sets `data-theme` before first paint from saved
+  choice → else OS `prefers-color-scheme`.
+- **Theme toggle** (`src/components/Nav.astro`): circular icon button (sun/moon,
+  DESIGN.md `icon-button-circular`) next to the CTA inside a new `.nav-actions`
+  wrapper. Persists choice to `localStorage`, updates `aria-pressed` + the
+  `theme-color` meta. Icon shows the theme you'd switch *to*.
+- **Polish**: smooth `background-color`/`color` transition on `body`; mesh
+  gradient eased (lower opacity/saturation) in dark mode.
+- Verified `npm run build` passes. NOT yet checked in a browser — the live
+  light/dark toggle, no-flash on reload, and camera/upload chrome under dark
+  mode want a manual visual pass.
+
+
+## 2026-06-18 — Responsive pass (fluid type + spacing + mobile touch targets)
+
+- The grids already collapsed (steps/shapes 3→2→1, analyzer & privacy-band 2→1,
+  footer 3→2→1, nav links hide). The gaps were **fixed vertical rhythm, fixed
+  heading sizes, and heavy card padding** that didn't scale down on phones.
+  Fixed with `clamp()` rather than more breakpoints:
+  - **Fluid headings**: all section/analyzer/result/privacy `h2`/`h3` heros
+    moved from a hardcoded `32px` + `-1.28px` tracking to
+    `clamp(26px, 5vw, 32px)` with relative `line-height: 1.2` and `-0.03em`
+    tracking, so they shrink cleanly on small screens.
+  - **Fluid section rhythm**: `.section` padding `clamp(4xl, 10vw, 5xl)`;
+    `.analyzer-card` padding `clamp(md, 4vw, xl)` (was a fixed 32px, cramped on
+    phones).
+  - **Mobile spacing tightening** (`index.astro` ≤560px): single-column grids
+    get `md` gaps, step/shape cards drop to `lg` padding, FAQ items to
+    `sm md`, hero-trust wraps tighter.
+  - **Mobile touch targets** (`Analyzer.astro` ≤560px): mode tabs stretch
+    full-width (each tab `flex: 1`), and the action buttons stack full-width so
+    they're easy to tap.
+- Verified `npm run build` passes. Still wants a real-device/devtools visual pass.
+
+
