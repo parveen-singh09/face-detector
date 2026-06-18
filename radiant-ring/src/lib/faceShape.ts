@@ -52,6 +52,14 @@ export interface Features {
   jawToCheek: number;
   /** Chin angle in degrees (low = pointed, high = wide/square). */
   chinAngle: number;
+  /**
+   * Jaw angularity 0..1 — how sharp vs. curved the jawline is, measured from the
+   * deviation of the mid-jaw point off the straight cheek→chin line. ~0 = the jaw
+   * follows a smooth round arc; ~1 = a hard angular (square) corner. This is the
+   * signal that actually separates round (soft) from square (sharp), since both
+   * share length≈width. Mirrors Omnicalculator's "sharpness" input.
+   */
+  jawAngularity: number;
 }
 
 export const SHAPE_LABELS: Record<ShapeId, string> = {
@@ -91,6 +99,9 @@ const IDX = {
   jawLeft: 397, // jaw angle (gonial), left
 } as const;
 
+/** Exposed so the overlay can draw exactly the points the classifier measures. */
+export const MEASURE_IDX = IDX;
+
 /**
  * Target ratio profiles per shape. mu = ideal value, sigma = tolerance.
  * Derived from classic anthropometric face-shape definitions; tune these to
@@ -101,50 +112,57 @@ interface Profile {
   foreheadToCheek: [mu: number, sigma: number];
   jawToCheek: [mu: number, sigma: number];
   chinAngle: [mu: number, sigma: number];
+  jawAngularity: [mu: number, sigma: number];
 }
 
 const SHAPE_PROFILES: Record<ShapeId, Profile> = {
-  // length>width, cheek widest, jaw a touch narrower, soft chin
+  // length>width, cheek widest, jaw a touch narrower, soft chin, soft jaw
   oval: {
     lengthToWidth: [1.5, 0.18],
     foreheadToCheek: [0.92, 0.13],
     jawToCheek: [0.8, 0.13],
     chinAngle: [140, 26],
+    jawAngularity: [0.35, 0.2],
   },
-  // length≈width, soft wide jaw, rounded chin
+  // length≈width, soft wide jaw, rounded chin, smooth (low-angularity) jawline
   round: {
     lengthToWidth: [1.05, 0.13],
     foreheadToCheek: [0.9, 0.14],
     jawToCheek: [0.84, 0.14],
     chinAngle: [152, 24],
+    jawAngularity: [0.25, 0.18],
   },
-  // length≈width, parallel sides, wide angular chin
+  // length≈width, parallel sides, wide angular chin, SHARP jaw corner
   square: {
     lengthToWidth: [1.05, 0.13],
     foreheadToCheek: [0.97, 0.1],
     jawToCheek: [0.97, 0.1],
     chinAngle: [166, 20],
+    jawAngularity: [0.7, 0.18],
   },
-  // long face, parallel sides
+  // long face, parallel sides, fairly angular jaw
   rectangle: {
     lengthToWidth: [1.68, 0.2],
     foreheadToCheek: [0.95, 0.12],
     jawToCheek: [0.92, 0.12],
     chinAngle: [160, 24],
+    jawAngularity: [0.55, 0.2],
   },
-  // wide forehead, narrow pointed chin
+  // wide forehead, narrow pointed chin, moderately defined jaw
   heart: {
     lengthToWidth: [1.4, 0.22],
     foreheadToCheek: [1.05, 0.12],
     jawToCheek: [0.72, 0.14],
     chinAngle: [116, 26],
+    jawAngularity: [0.4, 0.22],
   },
-  // cheek widest, narrow forehead AND jaw, pointed chin
+  // cheek widest, narrow forehead AND jaw, pointed chin, defined jaw
   diamond: {
     lengthToWidth: [1.5, 0.22],
     foreheadToCheek: [0.8, 0.12],
     jawToCheek: [0.75, 0.14],
     chinAngle: [116, 26],
+    jawAngularity: [0.45, 0.22],
   },
 };
 
@@ -154,6 +172,7 @@ const FEATURE_WEIGHTS = {
   foreheadToCheek: 1.0,
   jawToCheek: 1.0,
   chinAngle: 0.8,
+  jawAngularity: 0.9,
 } as const;
 
 /** Gaussian membership: 1 when x == mu, decaying with distance. */
@@ -211,12 +230,23 @@ export function computeFeatures(
   const jawWidth = dist(p(IDX.jawRight), p(IDX.jawLeft));
   const chinAngle = angleAt(p(IDX.chin), p(IDX.jawRight), p(IDX.jawLeft));
 
+  // Jaw angularity: the interior angle at each jaw corner (gonion) between the
+  // cheek above it and the chin below. A smooth ROUND jaw bends gently → wide
+  // angle; a SQUARE jaw turns hard → narrow angle. Average both sides, then map
+  // the angle [~160°→soft .. ~100°→sharp] onto 0..1. This is the signal that
+  // separates round from square, which otherwise share length≈width.
+  const gonionRight = angleAt(p(IDX.jawRight), p(IDX.cheekRight), p(IDX.chin));
+  const gonionLeft = angleAt(p(IDX.jawLeft), p(IDX.cheekLeft), p(IDX.chin));
+  const gonionAvg = (gonionRight + gonionLeft) / 2;
+  const jawAngularity = Math.min(1, Math.max(0, (160 - gonionAvg) / 60));
+
   const safe = cheekWidth || 1;
   return {
     lengthToWidth: faceLength / safe,
     foreheadToCheek: foreheadWidth / safe,
     jawToCheek: jawWidth / safe,
     chinAngle,
+    jawAngularity,
   };
 }
 
@@ -257,6 +287,7 @@ export function classifyFaceMulti(
     foreheadToCheek: median((f) => f.foreheadToCheek),
     jawToCheek: median((f) => f.jawToCheek),
     chinAngle: median((f) => f.chinAngle),
+    jawAngularity: median((f) => f.jawAngularity),
   };
   return classifyFromFeatures(features);
 }
@@ -267,7 +298,8 @@ export function classifyFromFeatures(features: Features): ShapeResult {
     FEATURE_WEIGHTS.lengthToWidth +
     FEATURE_WEIGHTS.foreheadToCheek +
     FEATURE_WEIGHTS.jawToCheek +
-    FEATURE_WEIGHTS.chinAngle;
+    FEATURE_WEIGHTS.chinAngle +
+    FEATURE_WEIGHTS.jawAngularity;
 
   // Weighted-geometric-mean of per-feature memberships → one score per shape.
   const rawScores = (Object.keys(SHAPE_PROFILES) as ShapeId[]).map((id) => {
@@ -280,7 +312,9 @@ export function classifyFromFeatures(features: Features): ShapeResult {
         FEATURE_WEIGHTS.jawToCheek *
           Math.log(membership(features.jawToCheek, prof.jawToCheek) + 1e-9) +
         FEATURE_WEIGHTS.chinAngle *
-          Math.log(membership(features.chinAngle, prof.chinAngle) + 1e-9)) /
+          Math.log(membership(features.chinAngle, prof.chinAngle) + 1e-9) +
+        FEATURE_WEIGHTS.jawAngularity *
+          Math.log(membership(features.jawAngularity, prof.jawAngularity) + 1e-9)) /
       totalWeight;
     return { id, score: Math.exp(logScore) };
   });

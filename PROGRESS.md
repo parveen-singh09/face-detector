@@ -208,3 +208,46 @@ real faces.
   in a browser; profile sigmas may want further calibration.
 
 
+## 2026-06-18 — Whole-photo display, re-upload fix, 10MB limit, jaw-angularity feature
+
+- **Uploaded photo now shown whole** (`src/components/Analyzer.astro`): `.media`
+  and `.overlay` switched from `object-fit: cover` to `contain`, so a photo is
+  letterboxed at its natural proportions instead of being zoomed/cropped. The
+  overlay canvas uses the same fit so the mesh stays aligned (its buffer is already
+  sized to the media's natural dimensions via `syncCanvasSize`).
+- **Re-uploading the same file now works**: `resetStage()` was clearing everything
+  except `fileInput.value`, so re-selecting the *same* photo fired no `change`
+  event (browser sees no change). Added `fileInput.value = ""` to the reset.
+- **Upload limit raised 5MB → 10MB**: `MAX_BYTES`, the over-limit message, the
+  dropzone hint, and the how-it-works copy in `src/pages/index.astro`.
+- **New `jawAngularity` feature** (`src/lib/faceShape.ts`) — researched against
+  omnicalculator.com/health/face-shape, whose key discriminator is a "sharpness"
+  input. We had no real sharpness signal: round vs. square shared length≈width and
+  were split almost entirely by the chin-*tip* angle, which is fragile. The new
+  feature measures the interior angle at each jaw corner (gonion) between cheek and
+  chin, averages both sides, and maps ~160°→0 (soft/round) .. ~100°→1 (sharp/square)
+  onto 0..1. Added to `Features`, all six `SHAPE_PROFILES`, `FEATURE_WEIGHTS` (0.9),
+  the scoring sum, the multi-frame median, and the on-screen + console calibration
+  readout. Reuses existing landmarks (no new measure points).
+- **Note on "100% accuracy"**: not attainable — face shape is a subjective label
+  (Omnicalculator says so itself) and borderline faces are genuinely ambiguous.
+  These changes improve the round/square/diamond separation, the weakest split.
+- **Deferred**: a 7th *Triangle/Pear* shape (jaw wider than cheeks) — would need a
+  7th card image via the Pexels fetch script (needs `PEXELS_API_KEY`), so skipped
+  for now. Profile sigmas for `jawAngularity` are first-pass and want calibration
+  against real faces.
+- Verified `npm run build` passes.
+
+
+## 2026-06-18 — Upload tips for best results
+
+- **Upload-mode guidance** (`src/components/Analyzer.astro`): added a `#upload-tips`
+  list (mirrors the camera `#cam-tips`, reuses the `.cam-tips` styling) shown only in
+  upload mode. Three tips: use a clear/sharp/well-lit front-facing photo, keep the
+  background plain and uncluttered, and groom up (hair off the face, glasses off,
+  neutral expression). Wired `uploadTips.hidden = mode !== "upload"` into `resetStage`
+  next to the existing `camTips` toggle, so the two tip lists swap cleanly with the
+  mode tabs.
+- Verified `npm run build` passes.
+
+

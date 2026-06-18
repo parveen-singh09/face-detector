@@ -68,7 +68,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
           <label for="file-input" class="dropzone-label">
             <span class="dropzone-icon" aria-hidden="true">⊕</span>
             <span class="dropzone-title">Drop a photo or click to browse</span>
-            <span class="dropzone-hint">JPG, PNG or WebP · up to 5MB</span>
+            <span class="dropzone-hint">JPG, PNG or WebP · up to 10MB</span>
           </label>
         </div>
 
@@ -128,6 +128,13 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
         <!-- Inline messages (errors / rate limit) -->
         <p id="message" class="message" role="alert" hidden></p>
 
+        <!-- Upload tips (shown only in upload mode) -->
+        <ul id="upload-tips" class="cam-tips" aria-label="Tips for an accurate read">
+          <li><span aria-hidden="true">📸</span> Use a clear, sharp photo — well-lit, in focus, and facing the camera straight on.</li>
+          <li><span aria-hidden="true">🖼️</span> Keep the background plain and uncluttered so only your face stands out.</li>
+          <li><span aria-hidden="true">💇</span> Groom up — hair off your face, glasses off, and a neutral expression.</li>
+        </ul>
+
         <!-- Camera capture tips (shown only in camera mode) -->
         <ul id="cam-tips" class="cam-tips" hidden aria-label="Tips for an accurate read">
           <li><span aria-hidden="true">👓</span> Take your glasses off — frames hide the cheek and brow edges.</li>
@@ -178,6 +185,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     classifyFace,
     classifyFaceMulti,
     SHAPE_DESCRIPTIONS,
+    MEASURE_IDX,
     type ShapeResult,
   } from "../lib/faceShape";
   import {
@@ -186,7 +194,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     formatRetryAfter,
   } from "../lib/rateLimit";
 
-  const MAX_BYTES = 5 * 1024 * 1024;
+  const MAX_BYTES = 10 * 1024 * 1024;
   // How many camera readings the user clicks to capture, then we average them
   // for a more stable, accurate result.
   const CAPTURE_FRAMES = 5;
@@ -209,6 +217,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   const capProgressDots = $("cap-progress-dots");
   const capProgressText = $("cap-progress-text");
   const camTips = $("cam-tips");
+  const uploadTips = $("upload-tips");
   const stageLoading = $("stage-loading");
   const loadingText = $("loading-text");
   const btnAnalyze = $("btn-analyze") as HTMLButtonElement;
@@ -325,11 +334,14 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     btnCapture.hidden = true;
     btnReset.hidden = true;
     camTips.hidden = mode !== "camera";
+    uploadTips.hidden = mode !== "upload";
     dropzone.hidden = mode !== "upload";
     if (previewImg.src) {
       URL.revokeObjectURL(previewImg.src);
       previewImg.removeAttribute("src");
     }
+    // Clear the input value so re-selecting the SAME file still fires `change`.
+    fileInput.value = "";
   }
 
   function hideResults() {
@@ -363,7 +375,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       return;
     }
     if (file.size > MAX_BYTES) {
-      showMessage("That image is over 5MB. Please choose a smaller file.");
+      showMessage("That image is over 10MB. Please choose a smaller file.");
       return;
     }
     const url = URL.createObjectURL(file);
@@ -402,6 +414,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       const h = previewImg.naturalHeight;
       overlayMod.syncCanvasSize(overlay, previewImg);
       overlayMod.drawMesh(overlay, faces[0], {});
+      overlayMod.drawMeasurePoints(overlay, faces[0], MEASURE_IDX);
       recordAnalysis();
       renderResult(classifyFace(faces[0], w, h));
     } catch (err) {
@@ -560,6 +573,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       foreheadToCheek: +f.foreheadToCheek.toFixed(3),
       jawToCheek: +f.jawToCheek.toFixed(3),
       chinAngle: +f.chinAngle.toFixed(1),
+      jawAngularity: +f.jawAngularity.toFixed(3),
     });
     console.table(
       result.ranked.map((s) => ({ shape: s.id, probability: s.probability })),
@@ -571,7 +585,8 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       `L/W ${f.lengthToWidth.toFixed(2)} · ` +
       `fore/cheek ${f.foreheadToCheek.toFixed(2)} · ` +
       `jaw/cheek ${f.jawToCheek.toFixed(2)} · ` +
-      `chin ${f.chinAngle.toFixed(0)}°`;
+      `chin ${f.chinAngle.toFixed(0)}° · ` +
+      `jaw-angle ${f.jawAngularity.toFixed(2)}`;
 
     resultShape.textContent = result.top.label;
     resultConfidence.textContent = `${result.confidence}% confidence`;
@@ -770,7 +785,9 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   .media {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* Show the whole photo as-is (no crop/zoom). The overlay canvas matches
+       this fit so the mesh stays aligned within the letterboxed area. */
+    object-fit: contain;
     display: block;
   }
   #preview-video {
@@ -781,6 +798,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     inset: 0;
     width: 100%;
     height: 100%;
+    object-fit: contain;
     pointer-events: none;
   }
 
