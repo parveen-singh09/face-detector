@@ -1,0 +1,32 @@
+{
+  "oval": {
+    "photographer": "Zeynep YILMAZ",
+    "photographer_url": "https://www.pexels.com/@zeynep-yilmaz-327514331",
+    "pexels_url": "https://www.pexels.com/photo/face-closeup-of-woman-with-hand-on-a-cheek-18688854/"
+  },
+  "round": {
+    "photographer": "Спиридон Варфаламеев",
+    "photographer_url": "https://www.pexels.com/@239811708",
+    "pexels_url": "https://www.pexels.com/photo/portrait-of-elegant-man-21369375/"
+  },
+  "square": {
+    "photographer": "Neil Yonamine",
+    "photographer_url": "https://www.pexels.com/@neilyonamine",
+    "pexels_url": "https://www.pexels.com/photo/close-up-portrait-of-a-thoughtful-man-36563150/"
+  },
+  "rectangle": {
+    "photographer": "Pavel Danilyuk",
+    "photographer_url": "https://www.pexels.com/@pavel-danilyuk",
+    "pexels_url": "https://www.pexels.com/photo/woman-in-red-turtleneck-sweater-8424938/"
+  },
+  "heart": {
+    "photographer": "Rahib Hamidov",
+    "photographer_url": "https://www.pexels.com/@hamidoffstudio",
+    "pexels_url": "https://www.pexels.com/photo/portrait-of-woman-wearing-a-hat-in-shadow-19901795/"
+  },
+  "diamond": {
+    "photographer": "Dima Valkov",
+    "photographer_url": "https://www.pexels.com/@dima-valkov-1186343",
+    "pexels_url": "https://www.pexels.com/photo/man-in-black-crew-neck-shirt-3827677/"
+  }
+}

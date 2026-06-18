@@ -113,7 +113,16 @@ const faqs = [
         {
           shapes.map((id) => (
             <article class="card shape-card">
-              <span class="shape-glyph" data-shape={id} aria-hidden="true" />
+              <img
+                class="shape-glyph"
+                data-shape={id}
+                src={`/shapes/${id}.jpg`}
+                alt={`Example of a ${SHAPE_LABELS[id]} face shape`}
+                width="72"
+                height="92"
+                loading="lazy"
+                decoding="async"
+              />
               <h3>{SHAPE_LABELS[id]}</h3>
               <p>{SHAPE_DESCRIPTIONS[id]}</p>
             </article>
@@ -308,36 +317,38 @@ const faqs = [
   }
   .shape-glyph {
     display: block;
-    width: 44px;
-    height: 56px;
-    background-color: var(--color-ink);
+    width: 72px;
+    height: 92px;
+    object-fit: cover;
+    object-position: center 35%;
+    background-color: var(--color-canvas-soft);
     margin-bottom: var(--spacing-md);
   }
-  /* Distinct silhouette per shape via border-radius. */
+  /* Distinct silhouette per shape via border-radius — now clips the photo. */
   .shape-glyph[data-shape="oval"] {
     border-radius: 50% / 60%;
   }
   .shape-glyph[data-shape="round"] {
-    width: 52px;
-    height: 52px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
   }
   .shape-glyph[data-shape="square"] {
-    width: 52px;
-    height: 52px;
+    width: 80px;
+    height: 80px;
     border-radius: var(--radius-md);
   }
   .shape-glyph[data-shape="rectangle"] {
-    width: 42px;
-    height: 60px;
+    width: 66px;
+    height: 96px;
     border-radius: var(--radius-md);
   }
   .shape-glyph[data-shape="heart"] {
     border-radius: 46% 46% 50% 50% / 30% 30% 80% 80%;
   }
   .shape-glyph[data-shape="diamond"] {
-    width: 48px;
-    height: 56px;
+    width: 76px;
+    height: 92px;
     border-radius: 50% 50% 50% 50% / 16% 16% 84% 84%;
   }
   .shape-card h3 {

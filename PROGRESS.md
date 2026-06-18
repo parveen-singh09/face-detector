@@ -117,3 +117,94 @@ real faces.
 - Server-side (Vercel Edge) rate limiting if abuse becomes an issue.
 - Generate a real `/og.png` social image (referenced in `<head>` but not yet created).
 
+## 2026-06-18 — Mesh overlay detail + multi-frame camera capture
+
+- **Denser mesh overlay** (`src/lib/meshOverlay.ts`): added eye, eyebrow, and lip
+  contours (brand cyan) plus iris rings (highlight-pink) on top of the tessellation
+  and face oval. Clarified that MediaPipe's coverage is anatomically bounded
+  (forehead-to-chin only — no hair/ears/neck); the extra contours make the overlay
+  read as more "wired up" within that region without faking coverage.
+- **5-round camera capture** (`src/components/Analyzer.astro` + `faceShape.ts`):
+  `captureAndAnalyze` now pauses the live loop and samples `CAPTURE_FRAMES` (5) good
+  readings spaced `CAPTURE_GAP_MS` (120ms) apart, then averages them. New
+  `classifyFaceMulti()` takes the **median** of each anthropometric feature across
+  frames (robust to a single bad frame from a blink/tilt) and scores once via the
+  extracted `classifyFromFeatures()`. Falls back gracefully if the face is lost
+  mid-capture (resumes the live loop). Status pill shows "Reading N of 5…".
+- **Capture tips UI**: added a `#cam-tips` list shown only in camera mode — remove
+  glasses, face straight on with hair off the face, hold still (we average 5 reads).
+- Verified `npm run build` passes.
+
+## 2026-06-18 — Visible capture progress dots
+
+- **Capture progress indicator** (`src/components/Analyzer.astro`): added a
+  `#cap-progress` element — a row of `CAPTURE_FRAMES` dots plus an "N of 5 readings"
+  label — so the user can see how many readings remain during a camera capture.
+  Dots fill (brand cyan, slight scale-up) as each good reading lands via
+  `updateCaptureProgress()`. During capture the live `#cam-status` pill is hidden and
+  the progress strip takes its place (same bottom-left position/styling); on
+  success/failure the pill returns. Helpers: `showCaptureProgress`,
+  `updateCaptureProgress`, `hideCaptureProgress`; also hidden in `resetStage`.
+  Respects `prefers-reduced-motion`.
+- **Slower capture pacing**: `CAPTURE_GAP_MS` raised 120ms → 700ms so each reading
+  (and its progress dot) lands with a visible, deliberate beat and the user has time
+  to hold still. The loop now skips the trailing wait after the final reading so
+  results still appear promptly. Total paced capture ≈ 2.8s.
+- **Rate limit raised**: `MAX_PER_WINDOW` 20 → 100 analyses per rolling hour
+  (`src/lib/rateLimit.ts`). Still a soft client-side deterrent; all derived UI
+  (remaining count, limit message, retry-after) follows from the constant.
+- Verified `npm run build` passes.
+
+## 2026-06-18 — Click-driven camera capture (one click per reading)
+
+- **Capture model changed** (`src/components/Analyzer.astro`): instead of one click
+  kicking off an automatic timed 5-frame loop, the live preview now runs throughout
+  and **each click snapshots one reading** from the currently-tracked landmarks.
+  After the `CAPTURE_FRAMES`-th (5th) click we stop the loop, average via
+  `classifyFaceMulti`, and show the result. The user paces themselves.
+- `captureAndAnalyze` is now synchronous: guards on a detected face, pushes
+  `lastLandmarks`, fills the next progress dot, and updates the capture button label
+  (`Capture reading (N of 5)`) + status text. `recordAnalysis()` fires once, on the
+  final click (5 clicks = 1 counted analysis). New module accumulator `captureFrames`
+  (cleared in `resetStage` and on `startCamera`).
+- The live `runVideoLoop` status text is now capture-aware ("click for the next
+  reading", showing N of 5). Empty progress dots show from camera start.
+- Moved the `.cap-progress` strip to **top-left** so it no longer collides with the
+  live status pill (bottom-left), since both are now visible at once.
+- Removed the now-unused `CAPTURE_GAP_MS` pacing constant; updated the camera tip
+  copy to "Click to capture 5 readings".
+- Verified `npm run build` passes.
+
+## 2026-06-18 — Real face photos on the shape cards
+
+- **Shape cards now show face photos** instead of black CSS glyphs
+  (`src/pages/index.astro`): the `.shape-glyph` is now an `<img>` at
+  `/shapes/{id}.jpg`, still clipped to each shape's `border-radius` silhouette
+  (`object-fit: cover`), sized up to ~72–96px. Mixed set — women on
+  oval/rectangle/heart, men on round/square/diamond.
+- **Build-time fetch** (`scripts/fetch-shape-faces.mjs`): pulls one portrait per
+  shape from the **Pexels API** into `public/shapes/` plus a `credits.json`
+  (photographer attribution — Pexels ToS). Images are served LOCALLY so there's no
+  third-party request on page load and the API key never reaches the browser. Re-run
+  with `PEXELS_API_KEY=xxxx node scripts/fetch-shape-faces.mjs`. Key is read from env
+  only, never written to disk or committed. NOTE: Pexels search returns
+  representative portraits, not geometrically shape-matched faces.
+- Verified `npm run build` passes.
+
+## 2026-06-18 — Fix "everything reads round" length miscalculation
+
+- **Root cause** (`src/lib/faceShape.ts`): `lengthToWidth` was computed from
+  landmark 10 (forehead-top) → 152 (chin). Landmark 10 sits *below* the hairline,
+  so face length was systematically under-reported. The `SHAPE_PROFILES` were
+  built from textbook *hairline-to-chin* ratios (oval 1.5, rectangle 1.68), so the
+  too-short length dragged nearly every face's ratio down toward `round`'s profile
+  (length≈width, mu 1.05) — making round win regardless of actual shape.
+- **Fix**: derive face length via the facial-thirds rule. Glabella (landmark 9,
+  between the brows) → chin is the lower two-thirds of the face, so full length ≈
+  that distance × 1.5 — a calibration-independent estimate that matches the
+  profiles. We take `max(glabella→chin × 1.5, forehead-top→chin)` so a genuinely
+  tall forehead isn't clipped.
+- Verified `npm run build` passes. Still needs validation against real face photos
+  in a browser; profile sigmas may want further calibration.
+
+

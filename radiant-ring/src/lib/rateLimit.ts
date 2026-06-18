@@ -13,7 +13,7 @@
 
 const STORAGE_KEY = "afsa:analyses";
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
-export const MAX_PER_WINDOW = 20;
+export const MAX_PER_WINDOW = 100;
 
 interface State {
   /** Epoch-ms timestamps of analyses within the rolling window. */

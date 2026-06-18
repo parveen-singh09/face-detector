@@ -80,7 +80,8 @@ export const SHAPE_DESCRIPTIONS: Record<ShapeId, string> = {
  * Kept here so they're tunable / auditable in one place.
  */
 const IDX = {
-  foreheadTop: 10, // top of forehead (hairline proxy)
+  foreheadTop: 10, // top of forehead (NOT the hairline — sits below it)
+  glabella: 9, // midline point between the eyebrows (lower bound of upper third)
   chin: 152, // bottom of chin
   cheekRight: 234, // widest face contour, right (subject's right)
   cheekLeft: 454, // widest face contour, left
@@ -193,7 +194,18 @@ export function computeFeatures(
 ): Features {
   const p = (i: number) => px(landmarks[i], width, height);
 
-  const faceLength = dist(p(IDX.foreheadTop), p(IDX.chin));
+  // Face length: the forehead-top landmark (10) sits BELOW the hairline, so
+  // measuring 10→chin under-reports length and pushes every face toward "round"
+  // (length≈width). Instead use the facial-thirds rule: glabella (between the
+  // brows) to chin is the lower two-thirds of the face, so the full hairline-to-
+  // chin length ≈ that distance × 1.5. This matches the textbook ratios the
+  // SHAPE_PROFILES were built from. We take the max of the two estimates so a
+  // genuinely tall forehead isn't clipped.
+  const lowerTwoThirds = dist(p(IDX.glabella), p(IDX.chin));
+  const faceLength = Math.max(
+    lowerTwoThirds * 1.5,
+    dist(p(IDX.foreheadTop), p(IDX.chin)),
+  );
   const cheekWidth = dist(p(IDX.cheekRight), p(IDX.cheekLeft));
   const foreheadWidth = dist(p(IDX.foreheadRight), p(IDX.foreheadLeft));
   const jawWidth = dist(p(IDX.jawRight), p(IDX.jawLeft));
@@ -217,8 +229,40 @@ export function classifyFace(
   width: number,
   height: number,
 ): ShapeResult {
-  const features = computeFeatures(landmarks, width, height);
+  return classifyFromFeatures(computeFeatures(landmarks, width, height));
+}
 
+/**
+ * Classify across several frames of the SAME face and average for stability.
+ * We take the median of each feature (robust to the odd bad frame from a blink,
+ * tilt, or motion blur), then score once. This is what the camera capture uses:
+ * 5 readings beat a single snapshot.
+ */
+export function classifyFaceMulti(
+  landmarkSets: Landmark[][],
+  width: number,
+  height: number,
+): ShapeResult {
+  if (landmarkSets.length === 0) {
+    throw new Error("classifyFaceMulti: no frames supplied");
+  }
+  const perFrame = landmarkSets.map((lm) => computeFeatures(lm, width, height));
+  const median = (pick: (f: Features) => number): number => {
+    const vals = perFrame.map(pick).sort((a, b) => a - b);
+    const mid = Math.floor(vals.length / 2);
+    return vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+  };
+  const features: Features = {
+    lengthToWidth: median((f) => f.lengthToWidth),
+    foreheadToCheek: median((f) => f.foreheadToCheek),
+    jawToCheek: median((f) => f.jawToCheek),
+    chinAngle: median((f) => f.chinAngle),
+  };
+  return classifyFromFeatures(features);
+}
+
+/** Score a set of (possibly averaged) features into the full shape distribution. */
+export function classifyFromFeatures(features: Features): ShapeResult {
   const totalWeight =
     FEATURE_WEIGHTS.lengthToWidth +
     FEATURE_WEIGHTS.foreheadToCheek +
