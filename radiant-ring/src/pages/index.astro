@@ -1,11 +1,473 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import MeshGradient from "../components/MeshGradient.astro";
+import Analyzer from "../components/Analyzer.astro";
+import { SHAPE_LABELS, SHAPE_DESCRIPTIONS } from "../lib/faceShape";
+import type { ShapeId } from "../lib/faceShape";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const shapes = Object.keys(SHAPE_LABELS) as ShapeId[];
+
+const steps = [
+  {
+    n: "01",
+    title: "Upload or open your camera",
+    body: "Pick a clear, front-facing photo (up to 5MB) or use your camera for a live read. Nothing is uploaded.",
+  },
+  {
+    n: "02",
+    title: "We map 478 facial points",
+    body: "An on-device model traces your face mesh and measures jaw, cheekbone, forehead, and length ratios.",
+  },
+  {
+    n: "03",
+    title: "Get a full breakdown",
+    body: "See your best-match shape, a confidence score, and a ranked percentage across all six shapes.",
+  },
+];
+
+const faqs = [
+  {
+    q: "Is my photo uploaded anywhere?",
+    a: "No. The entire analysis runs inside your browser using an on-device model. Your photo and camera feed never leave your device and are never stored.",
+  },
+  {
+    q: "How accurate is it?",
+    a: "We measure real facial geometry from 478 landmarks rather than guessing. Accuracy depends on a clear, front-facing image with hair off the face and even lighting. Many faces are a natural blend of two shapes, so we show the full distribution instead of forcing one answer.",
+  },
+  {
+    q: "Which face shapes can it detect?",
+    a: "All six common shapes: oval, round, square, rectangle, heart, and diamond.",
+  },
+  {
+    q: "Do I need to sign up?",
+    a: "No account, no sign-up, no download. It’s free and works right in your browser.",
+  },
+];
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout>
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <MeshGradient class="hero-mesh" />
+    <div class="container-page hero-inner">
+      <p class="pill-banner hero-badge">
+        <span class="hero-badge-dot" aria-hidden="true"></span>
+        100% private · runs in your browser
+      </p>
+      <h1>
+        Find your face shape<br />in seconds.
+      </h1>
+      <p class="hero-sub">
+        Upload a photo or use your camera for an accurate, private face shape
+        analysis — with a full breakdown across all six shapes. No upload, no
+        sign-up, no data leaves your device.
+      </p>
+      <div class="hero-cta">
+        <a href="#analyzer" class="btn-primary">Analyze my face</a>
+        <a href="#how-it-works" class="btn-secondary">How it works</a>
+      </div>
+      <ul class="hero-trust">
+        <li><span aria-hidden="true">✓</span> Free forever</li>
+        <li><span aria-hidden="true">✓</span> Live face mesh</li>
+        <li><span aria-hidden="true">✓</span> Six shapes ranked</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── Analyzer ── -->
+  <Analyzer />
+
+  <!-- ── How it works ── -->
+  <section id="how-it-works" class="section">
+    <div class="container-page">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps to your face shape.</h2>
+      </div>
+      <div class="steps">
+        {
+          steps.map((s) => (
+            <article class="card step">
+              <span class="step-n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Face shapes ── -->
+  <section id="shapes" class="section section-soft">
+    <div class="container-page">
+      <div class="section-head">
+        <p class="eyebrow">Reference</p>
+        <h2>The six face shapes.</h2>
+        <p class="section-sub">
+          Every result is scored against these six profiles. Most people lean
+          toward one with traits of another — that’s why we show the full mix.
+        </p>
+      </div>
+      <div class="shape-grid">
+        {
+          shapes.map((id) => (
+            <article class="card shape-card">
+              <span class="shape-glyph" data-shape={id} aria-hidden="true" />
+              <h3>{SHAPE_LABELS[id]}</h3>
+              <p>{SHAPE_DESCRIPTIONS[id]}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Privacy (polarity-flipped dark band) ── -->
+  <section id="privacy" class="section section-dark">
+    <div class="container-page privacy-band">
+      <div>
+        <p class="eyebrow eyebrow-on-dark">Privacy</p>
+        <h2>Your face never leaves your device.</h2>
+        <p class="privacy-band-sub">
+          Competitors ask you to trust a server. We don’t need one. The model
+          runs locally in your browser, so your photo and camera feed are never
+          uploaded, stored, or shared. Close the tab and nothing remains.
+        </p>
+      </div>
+      <ul class="privacy-points">
+        <li>
+          <span class="privacy-point-k">No upload</span>
+          <span class="privacy-point-v">Images are processed in-browser only.</span>
+        </li>
+        <li>
+          <span class="privacy-point-k">No storage</span>
+          <span class="privacy-point-v">Nothing is saved or sent anywhere.</span>
+        </li>
+        <li>
+          <span class="privacy-point-k">No account</span>
+          <span class="privacy-point-v">No sign-up, no tracking of your face.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq" class="section">
+    <div class="container-page faq-wrap">
+      <div class="section-head">
+        <p class="eyebrow">FAQ</p>
+        <h2>Common questions.</h2>
+      </div>
+      <div class="faq-list">
+        {
+          faqs.map((f) => (
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero-mesh {
+    z-index: -1;
+    opacity: 0.55;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  }
+  .hero-inner {
+    position: relative;
+    text-align: center;
+    padding-block: var(--spacing-5xl) var(--spacing-4xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-badge {
+    margin-bottom: var(--spacing-lg);
+  }
+  .hero-badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-cyan);
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(40px, 7vw, 72px);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--color-ink);
+  }
+  .hero-sub {
+    margin: var(--spacing-lg) auto 0;
+    max-width: 60ch;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--color-body);
+  }
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+  }
+  .hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+    padding: 0;
+    list-style: none;
+    color: var(--color-body);
+    font-size: 14px;
+  }
+  .hero-trust li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+  .hero-trust span {
+    color: #29bc9b;
+    font-weight: 600;
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding-block: var(--spacing-5xl);
+  }
+  .section-soft {
+    background-color: var(--color-canvas-soft-2);
+  }
+  .section-head {
+    max-width: 640px;
+    margin-bottom: var(--spacing-2xl);
+  }
+  .section-head h2 {
+    margin: var(--spacing-xs) 0 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    letter-spacing: -1.28px;
+  }
+  .section-sub {
+    margin-top: var(--spacing-sm);
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  /* Steps */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+  }
+  .step {
+    padding: var(--spacing-xl);
+  }
+  .step-n {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-mute);
+  }
+  .step h3 {
+    margin: var(--spacing-sm) 0 var(--spacing-xs);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .step p {
+    margin: 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Shapes grid */
+  .shape-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+  }
+  .shape-card {
+    padding: var(--spacing-xl);
+  }
+  .shape-glyph {
+    display: block;
+    width: 44px;
+    height: 56px;
+    background-color: var(--color-ink);
+    margin-bottom: var(--spacing-md);
+  }
+  /* Distinct silhouette per shape via border-radius. */
+  .shape-glyph[data-shape="oval"] {
+    border-radius: 50% / 60%;
+  }
+  .shape-glyph[data-shape="round"] {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+  }
+  .shape-glyph[data-shape="square"] {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+  }
+  .shape-glyph[data-shape="rectangle"] {
+    width: 42px;
+    height: 60px;
+    border-radius: var(--radius-md);
+  }
+  .shape-glyph[data-shape="heart"] {
+    border-radius: 46% 46% 50% 50% / 30% 30% 80% 80%;
+  }
+  .shape-glyph[data-shape="diamond"] {
+    width: 48px;
+    height: 56px;
+    border-radius: 50% 50% 50% 50% / 16% 16% 84% 84%;
+  }
+  .shape-card h3 {
+    margin: 0 0 var(--spacing-xs);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .shape-card p {
+    margin: 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Privacy dark band */
+  .section-dark {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .eyebrow-on-dark {
+    color: #a1a1a1;
+  }
+  .privacy-band {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--spacing-3xl);
+    align-items: center;
+  }
+  .privacy-band h2 {
+    margin: var(--spacing-xs) 0 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    letter-spacing: -1.28px;
+    color: var(--color-on-primary);
+  }
+  .privacy-band-sub {
+    margin-top: var(--spacing-md);
+    color: #ebebeb;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .privacy-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .privacy-points li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--spacing-md);
+    background-color: #ffffff0d;
+    border: 1px solid #ffffff1a;
+    border-radius: var(--radius-md);
+  }
+  .privacy-point-k {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-cyan);
+  }
+  .privacy-point-v {
+    font-size: 14px;
+    color: #ebebeb;
+  }
+
+  /* FAQ */
+  .faq-wrap {
+    max-width: 760px;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  .faq-item {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    background-color: var(--color-canvas);
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  .faq-item summary {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-ink);
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item summary::after {
+    content: "+";
+    font-family: var(--font-mono);
+    color: var(--color-mute);
+    font-size: 18px;
+  }
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+  .faq-item p {
+    margin: var(--spacing-sm) 0 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    .steps,
+    .shape-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .privacy-band {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-xl);
+    }
+  }
+  @media (max-width: 560px) {
+    .steps,
+    .shape-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

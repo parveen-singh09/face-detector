@@ -1,0 +1,110 @@
+---
+/**
+ * Nav — sticky top nav bar (DESIGN.md nav-bar: 64px, logo left, links, CTA right).
+ * Marketing nav: logo + section anchors + a single ink pill CTA that jumps to
+ * the analyzer. Collapses to logo + CTA on mobile (links hidden under 600px).
+ */
+---
+
+<header class="nav">
+  <div class="container-page nav-inner">
+    <a href="/" class="nav-logo" aria-label="AI Face Shape Analyzer — home">
+      <span class="nav-logo-mark" aria-hidden="true"></span>
+      <span class="nav-logo-text">Face&nbsp;Shape&nbsp;Analyzer</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#shapes">Face shapes</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+
+    <a href="#analyzer" class="nav-cta">Analyze my face</a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: color-mix(in srgb, var(--color-canvas) 80%, transparent);
+    backdrop-filter: saturate(1.2) blur(8px);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .nav-inner {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+  }
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--color-ink);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+  .nav-logo-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    background-image: linear-gradient(
+      135deg,
+      var(--color-grad-develop-start),
+      var(--color-grad-preview-end) 55%,
+      var(--color-grad-ship-end)
+    );
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+  .nav-links a {
+    color: var(--color-body);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: -0.01em;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .nav-links a:hover {
+    color: var(--color-ink);
+    background-color: var(--color-canvas-soft-2);
+  }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding-inline: var(--spacing-md);
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+  .nav-cta:hover {
+    opacity: 0.88;
+  }
+
+  @media (max-width: 760px) {
+    .nav-links {
+      display: none;
+    }
+  }
+  @media (max-width: 380px) {
+    .nav-logo-text {
+      display: none;
+    }
+  }
+</style>

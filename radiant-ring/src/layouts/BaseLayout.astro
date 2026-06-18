@@ -1,0 +1,105 @@
+---
+/**
+ * BaseLayout — the page shell: SEO <head>, self-hosted fonts, global styles,
+ * skip link, sticky Nav, main slot, Footer. Used by every page.
+ */
+import "../styles/global.css";
+// Self-hosted variable fonts (DESIGN.md substitutes: Inter for the geometric
+// sans, JetBrains Mono for the technical/mono voice). No external CDN.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path for canonical/OG URL, e.g. "/" */
+  path?: string;
+}
+
+const SITE = "https://aifaceshapeanalyzer.com";
+const {
+  title = "AI Face Shape Analyzer — Find Your Face Shape Free & Private",
+  description = "Find your face shape in seconds. Upload a photo or use your camera for an accurate, private analysis with a full breakdown across all 6 face shapes. 100% in your browser — your photo never leaves your device.",
+  path = "/",
+} = Astro.props;
+
+const canonical = new URL(path, SITE).href;
+const ogImage = new URL("/og.png", SITE).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="AI Face Shape Analyzer" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- The face-landmarker model is large; warm the connection early. -->
+    <link rel="preconnect" href={SITE} />
+
+    <!-- Structured data: WebApplication -->
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "AI Face Shape Analyzer",
+        url: SITE,
+        applicationCategory: "LifestyleApplication",
+        operatingSystem: "Any (web browser)",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        description,
+      })}
+    />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Nav />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: var(--spacing-md);
+        top: -48px;
+        z-index: 100;
+        padding: var(--spacing-xs) var(--spacing-md);
+        background-color: var(--color-primary);
+        color: var(--color-on-primary);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        text-decoration: none;
+        transition: top 0.15s ease;
+      }
+      .skip-link:focus {
+        top: var(--spacing-md);
+      }
+    </style>
+  </body>
+</html>

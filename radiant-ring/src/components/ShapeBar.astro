@@ -1,0 +1,74 @@
+---
+/**
+ * ShapeBar — one row in the probability breakdown: shape label, a horizontal
+ * fill bar, and the percentage. Pre-rendered server-side for all six shapes;
+ * the Analyzer's client script reorders rows and sets --pct + the percent text
+ * once a result is computed.
+ */
+import type { ShapeId } from "../lib/faceShape";
+
+interface Props {
+  id: ShapeId;
+  label: string;
+}
+const { id, label } = Astro.props;
+---
+
+<div class="shape-bar" data-shape={id} role="listitem">
+  <span class="shape-bar-label">{label}</span>
+  <span class="shape-bar-track" aria-hidden="true">
+    <span class="shape-bar-fill" data-fill></span>
+  </span>
+  <span class="shape-bar-pct" data-pct>0%</span>
+</div>
+
+<style>
+  .shape-bar {
+    display: grid;
+    grid-template-columns: 84px 1fr 44px;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding-block: var(--spacing-xs);
+  }
+  .shape-bar.is-top .shape-bar-label {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .shape-bar-label {
+    font-size: 14px;
+    color: var(--color-body);
+  }
+  .shape-bar-track {
+    position: relative;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-canvas-soft-2);
+    overflow: hidden;
+  }
+  .shape-bar-fill {
+    position: absolute;
+    inset: 0;
+    transform-origin: left center;
+    transform: scaleX(var(--pct, 0));
+    border-radius: var(--radius-full);
+    background-color: var(--color-hairline-strong);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .shape-bar.is-top .shape-bar-fill {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-grad-develop-start),
+      var(--color-grad-preview-end)
+    );
+  }
+  .shape-bar-pct {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-align: right;
+    color: var(--color-body);
+    font-variant-numeric: tabular-nums;
+  }
+  .shape-bar.is-top .shape-bar-pct {
+    color: var(--color-ink);
+  }
+</style>

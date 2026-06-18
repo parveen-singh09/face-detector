@@ -1,0 +1,821 @@
+---
+/**
+ * Analyzer — the interactive core: upload OR camera, a live face-mesh overlay,
+ * and a full probability breakdown across all six shapes.
+ *
+ * Rendering strategy: all static chrome is server-rendered (zero JS until the
+ * user interacts). The client script statically imports only the tiny pure
+ * modules (faceShape, rateLimit) and DYNAMICALLY imports the heavy MediaPipe
+ * wrappers (faceLandmarker, meshOverlay) the first time a mode is activated, so
+ * the ~15MB WASM+model never touches the homepage's critical path.
+ */
+import ShapeBar from "./ShapeBar.astro";
+import { SHAPE_LABELS } from "../lib/faceShape";
+import type { ShapeId } from "../lib/faceShape";
+
+const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
+---
+
+<section id="analyzer" class="analyzer container-page" aria-labelledby="analyzer-heading">
+  <div class="analyzer-head">
+    <p class="eyebrow">Analyzer</p>
+    <h2 id="analyzer-heading">Detect your face shape</h2>
+    <p class="analyzer-sub">
+      Upload a clear, front-facing photo or use your camera. Everything runs in
+      your browser — your image is never uploaded or stored.
+    </p>
+  </div>
+
+  <div class="card-lg analyzer-card">
+    <!-- Mode tabs -->
+    <div class="mode-tabs" role="tablist" aria-label="Input method">
+      <button
+        id="tab-upload"
+        class="mode-tab is-active"
+        role="tab"
+        aria-selected="true"
+        aria-controls="panel-stage"
+        data-mode="upload"
+        type="button"
+      >
+        Upload photo
+      </button>
+      <button
+        id="tab-camera"
+        class="mode-tab"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-stage"
+        data-mode="camera"
+        type="button"
+      >
+        Use camera
+      </button>
+    </div>
+
+    <div class="analyzer-grid">
+      <!-- Stage: dropzone / image / video + overlay -->
+      <div id="panel-stage" class="stage" role="tabpanel" aria-labelledby="tab-upload">
+        <!-- Upload dropzone -->
+        <div id="dropzone" class="dropzone" data-view="upload">
+          <input
+            id="file-input"
+            class="visually-hidden"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            aria-label="Choose a photo to analyze"
+          />
+          <label for="file-input" class="dropzone-label">
+            <span class="dropzone-icon" aria-hidden="true">⊕</span>
+            <span class="dropzone-title">Drop a photo or click to browse</span>
+            <span class="dropzone-hint">JPG, PNG or WebP · up to 5MB</span>
+          </label>
+        </div>
+
+        <!-- Media preview (image or video) with the mesh overlay canvas -->
+        <div id="media-wrap" class="media-wrap" hidden>
+          <img id="preview-img" class="media" alt="Your uploaded photo" hidden />
+          <video
+            id="preview-video"
+            class="media"
+            playsinline
+            muted
+            hidden
+            aria-label="Camera preview"></video>
+          <canvas id="overlay" class="overlay" aria-hidden="true"></canvas>
+
+          <!-- Camera live status pill -->
+          <div id="cam-status" class="cam-status" hidden>
+            <span class="cam-dot" aria-hidden="true"></span>
+            <span id="cam-status-text">Looking for your face…</span>
+          </div>
+        </div>
+
+        <!-- Loading / model-init state -->
+        <div id="stage-loading" class="stage-loading" hidden role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="loading-text">Loading the on-device model…</span>
+        </div>
+      </div>
+
+      <!-- Controls + results -->
+      <div class="panel-side">
+        <!-- Action row -->
+        <div class="actions">
+          <button id="btn-analyze" class="btn-primary" type="button" hidden>
+            Analyze my face
+          </button>
+          <button id="btn-capture" class="btn-primary" type="button" hidden>
+            Capture &amp; analyze
+          </button>
+          <button id="btn-reset" class="btn-secondary" type="button" hidden>
+            Analyze another
+          </button>
+        </div>
+
+        <!-- Inline messages (errors / rate limit) -->
+        <p id="message" class="message" role="alert" hidden></p>
+
+        <!-- Results -->
+        <div id="results" class="results" hidden aria-live="polite">
+          <div class="result-headline">
+            <span class="eyebrow">Your face shape</span>
+            <div class="result-top-row">
+              <h3 id="result-shape">—</h3>
+              <span id="result-confidence" class="result-confidence">—</span>
+            </div>
+            <p id="result-desc" class="result-desc"></p>
+          </div>
+
+          <div class="breakdown">
+            <p class="breakdown-title">Full breakdown</p>
+            <div class="breakdown-list" role="list">
+              {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
+            </div>
+          </div>
+        </div>
+
+        <!-- Idle helper copy (before first result) -->
+        <div id="idle-help" class="idle-help">
+          <p class="idle-help-title">What you’ll get</p>
+          <ul>
+            <li>Your best-match shape with a confidence score</li>
+            <li>A ranked percentage across all six face shapes</li>
+            <li>A note when your face is a blend of two shapes</li>
+          </ul>
+          <p class="privacy-note">
+            <span aria-hidden="true">🔒</span>
+            100% private — processed on your device, never uploaded.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {
+    classifyFace,
+    SHAPE_DESCRIPTIONS,
+    type ShapeResult,
+  } from "../lib/faceShape";
+  import {
+    checkRateLimit,
+    recordAnalysis,
+    formatRetryAfter,
+  } from "../lib/rateLimit";
+
+  const MAX_BYTES = 5 * 1024 * 1024;
+
+  // ── Element refs ──────────────────────────────────────────────────────────
+  const $ = <T extends HTMLElement>(id: string) =>
+    document.getElementById(id) as T;
+
+  const tabUpload = $("tab-upload") as HTMLButtonElement;
+  const tabCamera = $("tab-camera") as HTMLButtonElement;
+  const dropzone = $("dropzone");
+  const fileInput = $("file-input") as HTMLInputElement;
+  const mediaWrap = $("media-wrap");
+  const previewImg = $("preview-img") as HTMLImageElement;
+  const previewVideo = $("preview-video") as HTMLVideoElement;
+  const overlay = $("overlay") as HTMLCanvasElement;
+  const camStatus = $("cam-status");
+  const camStatusText = $("cam-status-text");
+  const stageLoading = $("stage-loading");
+  const loadingText = $("loading-text");
+  const btnAnalyze = $("btn-analyze") as HTMLButtonElement;
+  const btnCapture = $("btn-capture") as HTMLButtonElement;
+  const btnReset = $("btn-reset") as HTMLButtonElement;
+  const message = $("message");
+  const results = $("results");
+  const idleHelp = $("idle-help");
+  const resultShape = $("result-shape");
+  const resultConfidence = $("result-confidence");
+  const resultDesc = $("result-desc");
+
+  // Lazily-loaded heavy modules (MediaPipe).
+  type LandmarkerMod = typeof import("../lib/faceLandmarker");
+  type OverlayMod = typeof import("../lib/meshOverlay");
+  let landmarkerMod: LandmarkerMod | null = null;
+  let overlayMod: OverlayMod | null = null;
+
+  let mode: "upload" | "camera" = "upload";
+  let stream: MediaStream | null = null;
+  let rafId = 0;
+  let lastLandmarks: any[] | null = null;
+  let videoReady = false;
+
+  async function loadModules() {
+    if (!landmarkerMod || !overlayMod) {
+      showLoading("Loading the on-device model…");
+      [landmarkerMod, overlayMod] = await Promise.all([
+        import("../lib/faceLandmarker"),
+        import("../lib/meshOverlay"),
+      ]);
+      hideLoading();
+    }
+    return { landmarkerMod: landmarkerMod!, overlayMod: overlayMod! };
+  }
+
+  // ── UI helpers ──────────────────────────────────────────────────────────
+  function showLoading(text: string) {
+    loadingText.textContent = text;
+    stageLoading.hidden = false;
+  }
+  function hideLoading() {
+    stageLoading.hidden = true;
+  }
+  function showMessage(text: string, kind: "error" | "info" = "error") {
+    message.textContent = text;
+    message.dataset.kind = kind;
+    message.hidden = false;
+  }
+  function clearMessage() {
+    message.hidden = true;
+    message.textContent = "";
+  }
+
+  function setMode(next: "upload" | "camera") {
+    if (next === mode) return;
+    stopCamera();
+    clearMessage();
+    hideResults();
+    mode = next;
+
+    const onUpload = next === "upload";
+    tabUpload.classList.toggle("is-active", onUpload);
+    tabCamera.classList.toggle("is-active", !onUpload);
+    tabUpload.setAttribute("aria-selected", String(onUpload));
+    tabCamera.setAttribute("aria-selected", String(!onUpload));
+
+    resetStage();
+    if (next === "camera") startCamera();
+  }
+
+  function resetStage() {
+    cancelAnimationFrame(rafId);
+    lastLandmarks = null;
+    videoReady = false;
+    mediaWrap.hidden = true;
+    previewImg.hidden = true;
+    previewVideo.hidden = true;
+    camStatus.hidden = true;
+    overlay.getContext("2d")?.clearRect(0, 0, overlay.width, overlay.height);
+    btnAnalyze.hidden = true;
+    btnCapture.hidden = true;
+    btnReset.hidden = true;
+    dropzone.hidden = mode !== "upload";
+    if (previewImg.src) {
+      URL.revokeObjectURL(previewImg.src);
+      previewImg.removeAttribute("src");
+    }
+  }
+
+  function hideResults() {
+    results.hidden = true;
+    idleHelp.hidden = false;
+  }
+  function showResults() {
+    results.hidden = false;
+    idleHelp.hidden = true;
+  }
+
+  // ── Rate limit gate ───────────────────────────────────────────────────────
+  function gateByRateLimit(): boolean {
+    const status = checkRateLimit();
+    if (!status.allowed) {
+      showMessage(
+        `You’ve reached the hourly limit. Please try again ${formatRetryAfter(
+          status.retryAfterMs,
+        )}.`,
+      );
+      return false;
+    }
+    return true;
+  }
+
+  // ── Upload flow ───────────────────────────────────────────────────────────
+  function handleFile(file: File) {
+    clearMessage();
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      showMessage("Please choose a JPG, PNG or WebP image.");
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      showMessage("That image is over 5MB. Please choose a smaller file.");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    previewImg.onload = () => {
+      dropzone.hidden = true;
+      mediaWrap.hidden = false;
+      previewImg.hidden = false;
+      btnAnalyze.hidden = false;
+      btnReset.hidden = false;
+    };
+    previewImg.src = url;
+  }
+
+  async function analyzeImage() {
+    if (!gateByRateLimit()) return;
+    btnAnalyze.disabled = true;
+    try {
+      const { landmarkerMod, overlayMod } = await loadModules();
+      showLoading("Analyzing…");
+      const res = await landmarkerMod.detectImage(previewImg);
+      hideLoading();
+
+      const faces = res.faceLandmarks;
+      if (!faces || faces.length === 0) {
+        showMessage("No face detected. Try a clearer, front-facing photo.");
+        return;
+      }
+      const w = previewImg.naturalWidth;
+      const h = previewImg.naturalHeight;
+      overlayMod.syncCanvasSize(overlay, previewImg);
+      overlayMod.drawMesh(overlay, faces[0], {});
+      recordAnalysis();
+      renderResult(classifyFace(faces[0], w, h));
+    } catch (err) {
+      hideLoading();
+      console.error(err);
+      showMessage("Something went wrong analyzing that image. Please try again.");
+    } finally {
+      btnAnalyze.disabled = false;
+    }
+  }
+
+  // ── Camera flow ───────────────────────────────────────────────────────────
+  async function startCamera() {
+    clearMessage();
+    if (!navigator.mediaDevices?.getUserMedia) {
+      showMessage("Your browser doesn’t support camera access.");
+      return;
+    }
+    try {
+      const { overlayMod } = await loadModules();
+      // Warm the VIDEO-mode landmarker before the loop starts.
+      await landmarkerMod!.preloadLandmarker("VIDEO");
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      previewVideo.srcObject = stream;
+      await previewVideo.play();
+
+      dropzone.hidden = true;
+      mediaWrap.hidden = false;
+      previewVideo.hidden = false;
+      camStatus.hidden = false;
+      btnCapture.hidden = false;
+      btnReset.hidden = false;
+      videoReady = true;
+      overlayMod.syncCanvasSize(overlay, previewVideo);
+      runVideoLoop();
+    } catch (err) {
+      console.error(err);
+      showMessage(
+        "Couldn’t access the camera. Check permissions, or use photo upload instead.",
+      );
+    }
+  }
+
+  function runVideoLoop() {
+    const loop = async () => {
+      if (!videoReady || !stream) return;
+      if (previewVideo.readyState >= 2 && landmarkerMod && overlayMod) {
+        try {
+          const res = landmarkerMod.detectVideoFrame(
+            previewVideo,
+            performance.now(),
+          );
+          // detectForVideo is synchronous in tasks-vision, but guard anyway.
+          const result = (res as any)?.faceLandmarks ? (res as any) : await res;
+          const faces = result.faceLandmarks;
+          overlayMod.syncCanvasSize(overlay, previewVideo);
+          if (faces && faces.length > 0) {
+            lastLandmarks = faces[0];
+            overlayMod.drawMesh(overlay, faces[0], { mirrored: true });
+            camStatusText.textContent = "Face detected — ready to capture";
+            camStatus.dataset.state = "ready";
+          } else {
+            lastLandmarks = null;
+            overlayMod.clearOverlay(overlay);
+            camStatusText.textContent = "Looking for your face…";
+            camStatus.dataset.state = "searching";
+          }
+        } catch (e) {
+          /* transient frame error — keep looping */
+        }
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function captureAndAnalyze() {
+    if (!gateByRateLimit()) return;
+    if (!lastLandmarks) {
+      showMessage("No face detected yet. Center your face and try again.");
+      return;
+    }
+    const w = previewVideo.videoWidth;
+    const h = previewVideo.videoHeight;
+    recordAnalysis();
+    renderResult(classifyFace(lastLandmarks, w, h));
+    // Freeze the loop on the captured result.
+    videoReady = false;
+    cancelAnimationFrame(rafId);
+    btnCapture.hidden = true;
+    camStatusText.textContent = "Captured";
+    camStatus.dataset.state = "ready";
+  }
+
+  function stopCamera() {
+    videoReady = false;
+    cancelAnimationFrame(rafId);
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+      stream = null;
+    }
+    previewVideo.srcObject = null;
+  }
+
+  // ── Result rendering ──────────────────────────────────────────────────────
+  function renderResult(result: ShapeResult) {
+    showResults();
+    clearMessage();
+
+    resultShape.textContent = result.top.label;
+    resultConfidence.textContent = `${result.confidence}% confidence`;
+
+    if (result.isBlend) {
+      resultDesc.textContent = `Mostly ${result.top.label} with ${result.runnerUp.label} traits. ${
+        SHAPE_DESCRIPTIONS[result.top.id]
+      }`;
+    } else {
+      resultDesc.textContent = SHAPE_DESCRIPTIONS[result.top.id];
+    }
+
+    // Reorder + fill the pre-rendered bars by probability.
+    const list = document.querySelector(".breakdown-list") as HTMLElement;
+    result.ranked.forEach((score, i) => {
+      const row = list.querySelector(
+        `[data-shape="${score.id}"]`,
+      ) as HTMLElement;
+      if (!row) return;
+      row.style.order = String(i);
+      row.classList.toggle("is-top", i === 0);
+      (row.querySelector("[data-fill]") as HTMLElement).style.setProperty(
+        "--pct",
+        String(score.probability / 100),
+      );
+      (row.querySelector("[data-pct]") as HTMLElement).textContent =
+        `${score.probability}%`;
+    });
+    list.style.display = "flex";
+    list.style.flexDirection = "column";
+
+    results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function reset() {
+    if (mode === "camera") {
+      hideResults();
+      clearMessage();
+      resetStage();
+      startCamera();
+    } else {
+      hideResults();
+      clearMessage();
+      resetStage();
+    }
+  }
+
+  // ── Wiring ────────────────────────────────────────────────────────────────
+  tabUpload.addEventListener("click", () => setMode("upload"));
+  tabCamera.addEventListener("click", () => setMode("camera"));
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  // Drag & drop
+  ["dragover", "dragenter"].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.add("is-dragover");
+    }),
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("is-dragover");
+    }),
+  );
+  dropzone.addEventListener("drop", (e) => {
+    const file = (e as DragEvent).dataTransfer?.files?.[0];
+    if (file) handleFile(file);
+  });
+
+  btnAnalyze.addEventListener("click", analyzeImage);
+  btnCapture.addEventListener("click", captureAndAnalyze);
+  btnReset.addEventListener("click", reset);
+
+  // Clean up the camera if the user navigates away.
+  window.addEventListener("pagehide", stopCamera);
+
+  // Start in upload mode with the dropzone visible.
+  resetStage();
+</script>
+
+<style>
+  .analyzer {
+    scroll-margin-top: 80px;
+    padding-block: var(--spacing-5xl);
+  }
+  .analyzer-head {
+    max-width: 640px;
+    margin-bottom: var(--spacing-xl);
+  }
+  .analyzer-head h2 {
+    margin: var(--spacing-xs) 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 40px;
+    letter-spacing: -1.28px;
+  }
+  .analyzer-sub {
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .analyzer-card {
+    padding: var(--spacing-xl);
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    display: inline-flex;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xxs);
+    background-color: var(--color-canvas-soft-2);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--spacing-xl);
+  }
+  .mode-tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: var(--spacing-xs) var(--spacing-lg);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-body);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .mode-tab.is-active {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    box-shadow: 0 1px 2px #0000000f;
+  }
+
+  .analyzer-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: start;
+  }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--color-canvas-soft);
+  }
+  .dropzone {
+    position: absolute;
+    inset: 0;
+    border: 1.5px dashed var(--color-hairline-strong);
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .dropzone.is-dragover {
+    border-color: var(--color-link);
+    background-color: var(--color-link-bg-soft);
+  }
+  .dropzone-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-align: center;
+    padding: var(--spacing-lg);
+    cursor: pointer;
+  }
+  .dropzone-icon {
+    font-size: 28px;
+    color: var(--color-hairline-strong);
+    line-height: 1;
+  }
+  .dropzone-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .dropzone-hint {
+    font-size: 13px;
+    color: var(--color-mute);
+    font-family: var(--font-mono);
+  }
+
+  .media-wrap {
+    position: absolute;
+    inset: 0;
+  }
+  .media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  #preview-video {
+    transform: scaleX(-1); /* mirror selfie view */
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .cam-status {
+    position: absolute;
+    left: var(--spacing-sm);
+    bottom: var(--spacing-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xxs) var(--spacing-sm);
+    background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
+    color: var(--color-on-primary);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    border-radius: var(--radius-full);
+    backdrop-filter: blur(4px);
+  }
+  .cam-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-warning);
+  }
+  .cam-status[data-state="ready"] .cam-dot {
+    background-color: var(--color-cyan);
+  }
+
+  .stage-loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--spacing-sm);
+    background-color: color-mix(in srgb, var(--color-canvas) 75%, transparent);
+    backdrop-filter: blur(2px);
+    font-size: 14px;
+    color: var(--color-body);
+    z-index: 2;
+  }
+  .spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--color-hairline);
+    border-top-color: var(--color-ink);
+    border-radius: var(--radius-full);
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation-duration: 1.5s;
+    }
+  }
+
+  /* Side panel */
+  .panel-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+  .message {
+    margin: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background-color: var(--color-error-soft);
+    color: var(--color-error-deep);
+  }
+  .message[data-kind="info"] {
+    background-color: var(--color-warning-soft);
+    color: var(--color-warning-deep);
+  }
+
+  /* Results */
+  .result-top-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xxs);
+  }
+  #result-shape {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -1.28px;
+    line-height: 40px;
+  }
+  .result-confidence {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-body);
+  }
+  .result-desc {
+    margin-top: var(--spacing-xs);
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .breakdown {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-hairline);
+  }
+  .breakdown-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-ink);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  /* Idle helper */
+  .idle-help-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+  }
+  .idle-help ul {
+    margin: 0 0 var(--spacing-md);
+    padding-left: var(--spacing-md);
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+  .privacy-note {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--color-body);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 860px) {
+    .analyzer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

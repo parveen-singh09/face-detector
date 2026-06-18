@@ -1,0 +1,54 @@
+---
+/**
+ * MeshGradient — the brand's signature multi-stop mesh gradient backdrop.
+ * Per DESIGN.md this is the ENTIRE decorative system: cyan / blue / violet /
+ * magenta / amber, used at hero scale only, never miniaturised.
+ *
+ * Rendered as a soft-blurred stack of radial gradients on a single element so
+ * it stays cheap (no SVG filters, no canvas). Honors prefers-reduced-motion by
+ * dropping the slow drift animation.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<div class:list={["mesh-gradient", className]} aria-hidden="true"></div>
+
+<style>
+  .mesh-gradient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* Multi-stop mesh built from layered radial gradients (the four brand pairs). */
+    background-color: #ffffff;
+    background-image:
+      radial-gradient(40% 50% at 18% 22%, #007cf0aa 0%, transparent 70%),
+      radial-gradient(38% 46% at 82% 18%, #00dfd899 0%, transparent 70%),
+      radial-gradient(46% 54% at 30% 82%, #7928ca88 0%, transparent 72%),
+      radial-gradient(42% 50% at 74% 78%, #ff008088 0%, transparent 72%),
+      radial-gradient(36% 44% at 54% 50%, #f9cb2877 0%, transparent 70%);
+    filter: blur(48px) saturate(1.05);
+    opacity: 0.7;
+    transform: scale(1.2);
+    animation: mesh-drift 24s ease-in-out infinite alternate;
+  }
+
+  @keyframes mesh-drift {
+    0% {
+      transform: scale(1.2) translate3d(0, 0, 0);
+    }
+    100% {
+      transform: scale(1.28) translate3d(-2%, -1.5%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mesh-gradient {
+      animation: none;
+    }
+  }
+</style>
