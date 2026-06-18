@@ -251,3 +251,17 @@ real faces.
 - Verified `npm run build` passes.
 
 
+## 2026-06-18 — Replaced 4 shape card photos with user-provided images
+
+- **New oval/rectangle/round/square portraits**: the user dropped in their own
+  images (as large 8–9MB PNGs) for these four shapes. Converted each to an optimized
+  JPG at the existing `/shapes/{id}.jpg` path (480×600, `cover` from top, mozjpeg
+  q82) via `sharp` — now ~30–44KB each — so the page markup (which expects `.jpg`)
+  needs no change and the cards stay light. Deleted the heavy PNG originals.
+- `heart.jpg` and `diamond.jpg` are unchanged (still the earlier Pexels portraits).
+- Note: `public/shapes/credits.json` still lists Pexels attribution for the four
+  replaced shapes — that attribution is now stale and should be cleared/updated if
+  these user images aren't Pexels-sourced.
+- Verified `npm run build` passes.
+
+
