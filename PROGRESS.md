@@ -839,3 +839,14 @@ the confirmed bugs:
   all screen sizes, so mobile users still see the accuracy note.
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-19 — Google Analytics (gtag.js)
+
+- **Added the GA4 tag** (`G-C5YZ9RK6FX`) to the top of `<head>` in
+  `src/layouts/BaseLayout.astro`, so it loads on every page and every locale
+  (BaseLayout is the shared shell for all 77 routes). Both the async loader
+  `<script>` and the inline `gtag('config', …)` snippet are marked `is:inline`
+  so Astro ships them verbatim instead of trying to bundle/process them.
+- Verified `npm run build` passes (77 pages); confirmed `G-C5YZ9RK6FX` /
+  `googletagmanager` render in `dist/index.html` and the localized pages
+  (e.g. `dist/ar/index.html`).
+
