@@ -828,3 +828,14 @@ the confirmed bugs:
   stale `public/shapes/credits.json` (orphaned Pexels attribution) can be removed.
 - Verified `npm run build` passes (77 pages) after all changes.
 
+## 2026-06-19 — Hide the in-result disclaimer on mobile
+
+- **`.result-disclaimer`** (the "Heads up: face shape is a subjective label…"
+  box rendered under the breakdown in `src/components/Analyzer.astro`) is now
+  `display: none` at the existing `≤560px` breakpoint. It stays visible on
+  tablet/desktop.
+- The **site-wide footer disclaimer** (`src/components/Footer.astro`) is
+  untouched — the shorter caveat still appears at the bottom of every page on
+  all screen sizes, so mobile users still see the accuracy note.
+- Verified `npm run build` passes (77 pages).
+
