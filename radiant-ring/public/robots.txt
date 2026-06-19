@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://aifaceshapeanalyzer.com/sitemap-index.xml

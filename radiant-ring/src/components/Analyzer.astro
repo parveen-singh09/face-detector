@@ -160,6 +160,14 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
               {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
             </div>
           </div>
+
+          <p class="result-disclaimer">
+            Heads up: face shape is a subjective label, not an exact science.
+            Results are an estimate and can vary with your photo angle, lighting,
+            expression, hair covering the face, glasses, and camera lens. Many
+            faces are a natural blend of two shapes — treat this as a helpful
+            guide, not a definitive verdict.
+          </p>
         </div>
 
         <!-- Idle helper copy (before first result) -->
@@ -1007,6 +1015,15 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     font-weight: 500;
     color: var(--color-ink);
     margin-bottom: var(--spacing-xs);
+  }
+  .result-disclaimer {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-hairline);
+    color: var(--color-mute);
+    font-size: 12px;
+    line-height: 18px;
+    text-wrap: pretty;
   }
 
   /* Idle helper */

@@ -11,7 +11,14 @@ const year = new Date().getFullYear();
   <div class="container-page footer-inner">
     <div class="footer-brand">
       <a href="/" class="footer-logo" aria-label="AI Face Shape Analyzer — home">
-        <span class="footer-logo-mark" aria-hidden="true"></span>
+        <img
+          class="footer-logo-mark"
+          src="/favicon-96x96.png"
+          width="20"
+          height="20"
+          alt=""
+          aria-hidden="true"
+        />
         <span>Face Shape Analyzer</span>
       </a>
       <p class="footer-tagline">
@@ -37,6 +44,16 @@ const year = new Date().getFullYear();
   <div class="container-page footer-base">
     <p>© {year} aifaceshapeanalyzer.com</p>
     <p class="footer-mono">Runs entirely in your browser</p>
+  </div>
+
+  <div class="container-page footer-disclaimer">
+    <p>
+      Disclaimer: face shape is a subjective label, not an exact measurement.
+      Results are an estimate generated from your photo and can vary with angle,
+      lighting, expression, hair, glasses, and camera lens. Many faces are a
+      blend of two shapes — use this as a guide for styling, not as definitive
+      or professional advice.
+    </p>
   </div>
 </footer>
 
@@ -65,12 +82,7 @@ const year = new Date().getFullYear();
     width: 20px;
     height: 20px;
     border-radius: var(--radius-sm);
-    background-image: linear-gradient(
-      135deg,
-      var(--color-grad-develop-start),
-      var(--color-grad-preview-end) 55%,
-      var(--color-grad-ship-end)
-    );
+    object-fit: cover;
   }
   .footer-tagline {
     margin-top: var(--spacing-sm);
@@ -111,6 +123,16 @@ const year = new Date().getFullYear();
   .footer-mono {
     font-family: var(--font-mono);
     font-size: 12px;
+  }
+  .footer-disclaimer {
+    margin-top: var(--spacing-md);
+  }
+  .footer-disclaimer p {
+    max-width: 80ch;
+    color: var(--color-mute);
+    font-size: 12px;
+    line-height: 18px;
+    text-wrap: pretty;
   }
 
   @media (max-width: 760px) {

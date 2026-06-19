@@ -381,3 +381,41 @@ real faces.
   invalidate any in-flight startup.
 - Verified `npm run build` passes.
 
+## 2026-06-19 — Full favicon set + web manifest
+
+- **Added the complete favicon/PWA icon set** to `src/layouts/BaseLayout.astro`
+  `<head>`, alongside the existing SVG favicon: `favicon-96x96.png` (96×96 PNG),
+  `favicon.ico` (shortcut icon), `apple-touch-icon.png` (180×180), an
+  `apple-mobile-web-app-title` of "FaceShape", and `site.webmanifest`.
+- Supporting assets dropped into `public/`: `apple-touch-icon.png`,
+  `favicon-96x96.png`, `site.webmanifest`, `web-app-manifest-192x192.png`,
+  `web-app-manifest-512x512.png` (192/512 referenced by the manifest), plus
+  updated `favicon.ico` / `favicon.svg`.
+- Verified `npm run build` passes (all 3 pages generated).
+
+## 2026-06-19 — Use the real favicon as the in-page logo mark
+
+- **Nav + Footer brand marks** (`src/components/Nav.astro`, `src/components/Footer.astro`)
+  were rendering a generic gradient `<span>` square (`.nav-logo-mark` /
+  `.footer-logo-mark`) that didn't match the site's actual favicon. Replaced each
+  with an `<img src="/favicon-96x96.png">` (22px in nav, 20px in footer), keeping the
+  rounded-corner frame (`--radius-sm`, `object-fit: cover`) and `aria-hidden`. Used
+  the 96×96 PNG (15KB) rather than `favicon.svg` (1MB) since the mark renders tiny.
+- Verified `npm run build` passes.
+
+## 2026-06-19 — Accuracy disclaimers (results + footer)
+
+- **Result disclaimer** (`src/components/Analyzer.astro`): added a `.result-disclaimer`
+  line inside the `#results` block (under the full breakdown), so it shows with every
+  analysis. Copy notes face shape is a subjective label, results are an estimate, and
+  can vary with photo angle, lighting, expression, hair, glasses, and camera lens —
+  many faces are a blend of two shapes. Styled as small muted text with a hairline
+  top border.
+- **Site-wide footer disclaimer** (`src/components/Footer.astro`): added a
+  `.footer-disclaimer` row below the footer base line with a shorter version of the
+  same caveat, framing results as a styling guide rather than definitive/professional
+  advice. Appears on every page.
+- Both reuse `--color-mute` + `text-wrap: pretty`, so they inherit dark mode and stay
+  visually quiet. Complements the existing "How accurate is it?" FAQ entry.
+- Verified `npm run build` passes.
+

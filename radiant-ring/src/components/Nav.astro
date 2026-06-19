@@ -9,7 +9,14 @@
 <header class="nav">
   <div class="container-page nav-inner">
     <a href="/" class="nav-logo" aria-label="AI Face Shape Analyzer — home">
-      <span class="nav-logo-mark" aria-hidden="true"></span>
+      <img
+        class="nav-logo-mark"
+        src="/favicon-96x96.png"
+        width="22"
+        height="22"
+        alt=""
+        aria-hidden="true"
+      />
       <span class="nav-logo-text">Face&nbsp;Shape&nbsp;Analyzer</span>
     </a>
 
@@ -92,12 +99,7 @@
     width: 22px;
     height: 22px;
     border-radius: var(--radius-sm);
-    background-image: linear-gradient(
-      135deg,
-      var(--color-grad-develop-start),
-      var(--color-grad-preview-end) 55%,
-      var(--color-grad-ship-end)
-    );
+    object-fit: cover;
   }
   .nav-links {
     display: flex;
