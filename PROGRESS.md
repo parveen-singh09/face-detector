@@ -759,3 +759,17 @@ source-tidiness pass, not a perf change.
   new `src/pages/*` routes, and the favicon/flag/og assets as untracked/modified.
   The repo was NOT committed as part of this pass (no commit was requested).
 
+## 2026-06-19 — Full-viewport hero gradient on every device
+
+- **Hero now fills the first screen** (`src/components/pages/HomePage.astro`):
+  `.hero` got `min-height: calc(100svh - 64px)` (with a `100vh` fallback line
+  above it) so the band always spans the viewport minus the 64px sticky nav, and
+  it now centers its content vertically (`display:flex; align-items:center`).
+  `.hero-inner` is `width:100%` with symmetric `4xl` block padding (was
+  `5xl`/`4xl`, since content is now centered rather than top-anchored).
+- **Mesh covers the whole first screen**: the `.hero-mesh` fade mask moved from
+  `linear-gradient(... black 40% ...)` to `black 88%`, so the gradient extends
+  across the full hero instead of fading out at ~40% height. Used `svh` so mobile
+  browser chrome (URL bar) doesn't leave a gap.
+- Verified `npm run build` passes (77 pages).
+
