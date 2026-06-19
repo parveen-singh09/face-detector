@@ -98,7 +98,7 @@ const faqs = [
     <MeshGradient class="hero-mesh" />
     <div class="container-page hero-inner">
       <h1>
-        Free AI face shape analyzer<br />— find your face shape.
+        Free AI <span class="hero-accent">Face Shape</span> Analyzer
       </h1>
       <p class="hero-sub">
         Upload a photo or use your camera for an accurate face shape
@@ -298,6 +298,16 @@ const faqs = [
     line-height: 1.02;
     letter-spacing: -0.04em;
     color: var(--color-ink);
+  }
+  .hero-accent {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-violet),
+      var(--color-cyan)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .hero-sub {
     margin: var(--spacing-lg) auto 0;

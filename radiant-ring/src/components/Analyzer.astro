@@ -417,7 +417,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       mediaWrap.hidden = false;
       previewVideo.hidden = false;
       btnCapture.hidden = false;
-      btnCapture.textContent = `Capture reading (1 of ${CAPTURE_FRAMES})`;
+      btnCapture.textContent = `Capture reading - [1/${CAPTURE_FRAMES}]`;
       btnReset.hidden = false;
       videoReady = true;
       captureFrames = [];
@@ -477,7 +477,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
     const remaining = CAPTURE_FRAMES - captureFrames.length;
     if (remaining > 0) {
-      btnCapture.textContent = `Capture reading (${captureFrames.length + 1} of ${CAPTURE_FRAMES})`;
+      btnCapture.textContent = `Capture reading - [${captureFrames.length + 1}/${CAPTURE_FRAMES}]`;
       return;
     }
 
@@ -496,7 +496,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       console.error(err);
       showMessage("Something went wrong during capture. Please try again.");
       captureFrames = [];
-      btnCapture.textContent = `Capture reading (1 of ${CAPTURE_FRAMES})`;
+      btnCapture.textContent = `Capture reading - [1/${CAPTURE_FRAMES}]`;
       videoReady = true;
       runVideoLoop();
     }
