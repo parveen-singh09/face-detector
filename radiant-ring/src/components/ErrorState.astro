@@ -5,7 +5,6 @@
  * explanation, and recovery CTAs. Kept generic so each error page is just a thin
  * wrapper that passes copy in.
  */
-import MeshGradient from "./MeshGradient.astro";
 
 interface Props {
   /** HTTP status code shown large, e.g. "404". */
@@ -20,7 +19,6 @@ const { code, title, message } = Astro.props;
 ---
 
 <section class="error">
-  <MeshGradient class="error-mesh" />
   <div class="container-page error-inner">
     <p class="error-code" aria-hidden="true">{code}</p>
     <p class="eyebrow error-eyebrow">Error {code}</p>
@@ -42,11 +40,6 @@ const { code, title, message } = Astro.props;
     /* Fill the viewport minus the sticky nav so the page never looks empty. */
     min-height: calc(100vh - 64px);
     padding-block: var(--spacing-5xl);
-  }
-
-  .error-mesh {
-    /* Calmer than the homepage hero — this is an interruption, not a welcome. */
-    opacity: 0.5;
   }
 
   .error-inner {

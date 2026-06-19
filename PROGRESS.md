@@ -506,3 +506,50 @@ real faces.
 - Verified `npm run build` passes (3 pages); OG regenerated.
 
 
+## 2026-06-19 — Added legal/company pages (Privacy, Terms, About, Contact)
+
+- **Kept the MPA model**: Astro already builds every file in `src/pages/` to its
+  own static HTML page at its own URL (e.g. `/about-us/index.html`), so each new
+  page is independently crawlable — ideal for SEO. No SSR/routing changes needed.
+- **New shared shell** `src/components/ContentPage.astro`: a calm brand hero
+  (eyebrow + h1 + optional lead + "Last updated") on the signature `MeshGradient`
+  over a soft band, followed by a 760px prose column. Styles the slotted page
+  markup via `:global()` (p/h2/h3/ul/ol/li/strong/a/hr) using DESIGN.md tokens, so
+  it inherits dark mode. Each page is a thin `BaseLayout` + `ContentPage` wrapper
+  that sets its own SEO (title/description/path/keywords) and passes body copy.
+- **Four pages added** (`src/pages/`): `privacy-policy.astro`,
+  `terms-and-conditions.astro`, `about-us.astro`, `contact.astro`. Each has
+  keyword-targeted meta + canonical path. Privacy/Terms note results are an
+  estimate / not professional advice (consistent with the site-wide disclaimer)
+  and carry a "not legal advice" footnote — placeholder legal copy the owner
+  should review.
+- **Contact page** is email-driven (no backend exists — static build): lists
+  `hello@` + `privacy@` addresses and a small JS-validated form that builds a
+  `mailto:` with the message pre-filled (`is:inline` script, no network call).
+  Inputs use focus-visible rings via `--color-primary`; `--color-error` for
+  validation text.
+- **Footer** (`src/components/Footer.astro`): added a 4th "Company" column linking
+  all four pages, so they're visible from the homepage (footer renders on every
+  page). Grid `2fr 1fr 1fr` → `2fr 1fr 1fr 1fr`; existing responsive rules already
+  collapse it (4→2 cols ≤760px, base stacks ≤480px). Also made the Product/About
+  anchor links root-absolute (`/#analyzer` etc.) so they jump to the homepage from
+  sub-pages instead of staying on the current page.
+- Verified `npm run build` passes (now 7 pages); confirmed all four new URLs are
+  in `dist/sitemap-0.xml` and the footer links resolve in `dist/index.html`.
+
+## 2026-06-19 — Mesh gradient restricted to home + nav links reworked
+
+- **`MeshGradient` now homepage-only**: removed it from `ContentPage.astro` (the
+  four legal/company pages) and `ErrorState.astro` (404/500), along with their
+  `.page-hero-mesh` / `.error-mesh` CSS. Those heros now sit on the plain page
+  background. (Earlier in the session the content-page hero's `border-bottom`
+  hairline was also removed — in dark mode it read as a hard bright seam where the
+  hero met the section below.) Grep confirms `MeshGradient` is referenced only by
+  `index.astro` + its own component file.
+- **Header nav links** (`src/components/Nav.astro`) changed from
+  How it works / Face shapes / FAQ → **Face shapes / About / Contact / T&C**. All
+  root-absolute (`/#shapes`, `/about-us`, `/contact`, `/terms-and-conditions`) so
+  they work from any sub-page, not just the homepage.
+- Verified `npm run build` passes (7 pages).
+
+
