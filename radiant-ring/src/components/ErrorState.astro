@@ -1,20 +1,11 @@
 ---
-/**
- * ErrorState — the shared shell for error pages (404, 500, …). A centered hero:
- * a big gradient status code, a heading, a short explanation, and recovery CTAs.
- * Kept generic so each error page is just a thin wrapper that passes copy in.
- */
 import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
 import { localizePath, useTranslations } from "../i18n/utils";
 
 interface Props {
-  /** HTTP status code shown large, e.g. "404". */
   code: string;
-  /** Short headline, e.g. "Page not found". */
   title: string;
-  /** One- or two-sentence explanation. */
   message: string;
-  /** Active locale (error pages default to English). */
   lang?: Locale;
 }
 
@@ -42,7 +33,6 @@ const L = (p: string) => localizePath(p, lang);
     overflow: hidden;
     display: flex;
     align-items: center;
-    /* Fill the viewport minus the sticky nav so the page never looks empty. */
     min-height: calc(100vh - 64px);
     padding-block: var(--spacing-5xl);
   }
@@ -63,7 +53,6 @@ const L = (p: string) => localizePath(p, lang);
     line-height: 1;
     letter-spacing: -0.04em;
     margin-bottom: var(--spacing-sm);
-    /* Brand gradient lettering (develop → preview stops). */
     background-image: linear-gradient(
       135deg,
       var(--color-grad-develop-start),

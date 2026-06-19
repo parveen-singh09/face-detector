@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const zh: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "脸型分析器",
     logoAria: "AI Face Shape Analyzer — 首页",
@@ -20,7 +19,6 @@ export const zh: UIStrings = {
     langLabel: "语言",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — 首页",
     brandName: "脸型分析器",
@@ -49,9 +47,7 @@ export const zh: UIStrings = {
       "免责声明：脸型是一种主观标签，而非精确测量。结果是根据你的照片生成的估计值，可能会因角度、光线、表情、发型、眼镜和相机镜头而有所不同。许多人的脸型是两种脸型的混合——请将此作为造型参考，而非确定性或专业建议。",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "免费 AI ",
     titleAccent: "脸型",
     titleAfter: "分析器",
@@ -65,7 +61,6 @@ export const zh: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "工作原理",
     heading: "三步找到你的脸型。",
@@ -88,7 +83,6 @@ export const zh: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "参考",
     heading: "六种脸型。",
@@ -117,7 +111,6 @@ export const zh: UIStrings = {
       "颧骨是最宽的部位，额头和下颌较窄，下巴轮廓分明且尖锐。",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "分析器",
     heading: "检测你的脸型",
@@ -156,8 +149,6 @@ export const zh: UIStrings = {
       "全部六种脸型的百分比排名",
       "当你的脸型是两种脸型的混合时给出提示",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "正在分析……",
       rateLimited:
@@ -175,20 +166,15 @@ export const zh: UIStrings = {
       noFaceYet:
         "尚未检测到人脸。请将脸部居中，然后点击拍摄。",
       captureError: "拍摄过程中出现问题。请重试。",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "拍摄读数 - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% 置信度",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "主要为{top}，带有{runnerUp}的特征。{desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "关于本工具",
     heading: "免费的在线 AI 脸型分析器。",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         我们的 <strong>AI 脸型分析器</strong> 是一款免费的在线工具，
@@ -253,7 +239,6 @@ export const zh: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "常见问题",
     heading: "常见问题解答。",
@@ -309,22 +294,18 @@ export const zh: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "最后更新：",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "本页面由机器翻译。英文版本为准；如有任何差异，以<a href=\"{enHref}\">英文原版</a>为准。",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "错误 {code}",
     ctaHome: "返回首页",
     ctaAnalyze: "分析我的脸型",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "免费在线 AI 脸型分析器 — 检测你的脸型",
@@ -433,7 +414,6 @@ export const zh: UIStrings = {
       fallback: "更喜欢直接写信？请发送邮件至 {email}。",
       errMissing: "请填写你的姓名、邮箱和消息。",
       errEmail: "请输入有效的电子邮件地址。",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "来自 {name} 的联系",
     },
     privacy: {
@@ -665,7 +645,6 @@ export const zh: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai 脸型分析器,最好的 ai 脸型分析器,免费 ai 脸型分析器,在线 ai 脸型分析器,免费在线 ai 脸型分析器,ai 脸型检测器,脸型 ai 分析器,脸型分析 ai,脸型,脸型轮廓,我的脸型是什么,如何确定脸型,脸型分析,脸型计算器,面部吸引力分析器",
 };

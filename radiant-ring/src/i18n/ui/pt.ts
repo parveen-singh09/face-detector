@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const pt: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Analisador de Formato de Rosto",
     logoAria: "AI Face Shape Analyzer — início",
@@ -20,7 +19,6 @@ export const pt: UIStrings = {
     langLabel: "Idioma",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — início",
     brandName: "Analisador de Formato de Rosto",
@@ -49,9 +47,7 @@ export const pt: UIStrings = {
       "Aviso: o formato do rosto é um rótulo subjetivo, não uma medida exata. Os resultados são uma estimativa gerada a partir da sua foto e podem variar conforme o ângulo, a iluminação, a expressão, o cabelo, os óculos e a lente da câmera. Muitos rostos são uma mistura de dois formatos — use isto como um guia de estilo, não como conselho definitivo ou profissional.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Analisador de ",
     titleAccent: "Formato de Rosto",
     titleAfter: " com IA grátis",
@@ -65,7 +61,6 @@ export const pt: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Como funciona",
     heading: "Três passos para o formato do seu rosto.",
@@ -88,7 +83,6 @@ export const pt: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Referência",
     heading: "Os seis formatos de rosto.",
@@ -117,7 +111,6 @@ export const pt: UIStrings = {
       "As maçãs do rosto são o ponto mais largo, com testa e mandíbula mais estreitas e um queixo definido e pontudo.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analisador",
     heading: "Detecte o formato do seu rosto",
@@ -156,8 +149,6 @@ export const pt: UIStrings = {
       "Uma porcentagem classificada entre todos os seis formatos de rosto",
       "Uma observação quando seu rosto é uma mistura de dois formatos",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analisando…",
       rateLimited:
@@ -175,20 +166,15 @@ export const pt: UIStrings = {
       noFaceYet:
         "Nenhum rosto detectado ainda. Centralize o rosto e clique para capturar.",
       captureError: "Algo deu errado durante a captura. Tente novamente.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Leitura de captura - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% de confiança",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Predominantemente {top} com traços de {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Sobre a ferramenta",
     heading: "O analisador de formato de rosto com IA grátis, online.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Nosso <strong>analisador de formato de rosto com IA</strong> é uma ferramenta
@@ -255,7 +241,6 @@ export const pt: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "Perguntas frequentes",
     heading: "Perguntas comuns.",
@@ -311,22 +296,18 @@ export const pt: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Última atualização:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Esta página foi traduzida automaticamente. A versão em inglês é a oficial; em caso de qualquer divergência, prevalece o <a href=\"{enHref}\">original em inglês</a>.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Erro {code}",
     ctaHome: "Voltar ao início",
     ctaAnalyze: "Analisar meu rosto",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Analisador de Formato de Rosto com IA Grátis Online — Detecte o Formato do Seu Rosto",
@@ -436,7 +417,6 @@ export const pt: UIStrings = {
       fallback: "Prefere escrever diretamente? Envie um e-mail para {email}.",
       errMissing: "Preencha seu nome, e-mail e mensagem.",
       errEmail: "Insira um endereço de e-mail válido.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Contato de {name}",
     },
     privacy: {
@@ -668,7 +648,6 @@ export const pt: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "analisador de formato de rosto com ia, melhor analisador de formato de rosto com ia, analisador de formato de rosto com ia grátis, analisador de formato de rosto com ia online, analisador de formato de rosto com ia online grátis, detector de formato de rosto com ia, analisador de rosto com ia, formato de rosto com ia, formatos de rosto, formato de rosto, qual é o formato do meu rosto, como determinar o formato do rosto, analisador de rosto, calculadora de formato de rosto, analisador de atratividade facial",
 };

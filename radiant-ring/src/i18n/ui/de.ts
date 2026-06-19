@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const de: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Gesichtsform-Analyse",
     logoAria: "AI Face Shape Analyzer — Startseite",
@@ -20,7 +19,6 @@ export const de: UIStrings = {
     langLabel: "Sprache",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — Startseite",
     brandName: "Gesichtsform-Analyse",
@@ -49,9 +47,7 @@ export const de: UIStrings = {
       "Hinweis: Die Gesichtsform ist eine subjektive Bezeichnung, keine exakte Messung. Die Ergebnisse sind eine Schätzung auf Basis deines Fotos und können je nach Winkel, Beleuchtung, Mimik, Haaren, Brille und Kameraobjektiv variieren. Viele Gesichter sind eine Mischung aus zwei Formen — nutze dies als Orientierung für dein Styling, nicht als endgültigen oder professionellen Rat.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Kostenlose KI-",
     titleAccent: "Gesichtsform",
     titleAfter: "-Analyse",
@@ -65,7 +61,6 @@ export const de: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "So funktioniert es",
     heading: "In drei Schritten zu deiner Gesichtsform.",
@@ -88,7 +83,6 @@ export const de: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Referenz",
     heading: "Die sechs Gesichtsformen.",
@@ -117,7 +111,6 @@ export const de: UIStrings = {
       "Die Wangenknochen sind der breiteste Punkt, mit einer schmaleren Stirn und einem schmaleren Kiefer sowie einem ausgeprägten, spitzen Kinn.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analyse",
     heading: "Erkenne deine Gesichtsform",
@@ -156,8 +149,6 @@ export const de: UIStrings = {
       "Eine prozentuale Rangliste über alle sechs Gesichtsformen",
       "Einen Hinweis, wenn dein Gesicht eine Mischung aus zwei Formen ist",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analysiere…",
       rateLimited:
@@ -175,20 +166,15 @@ export const de: UIStrings = {
       noFaceYet:
         "Noch kein Gesicht erkannt. Zentriere dein Gesicht und klicke dann zum Aufnehmen.",
       captureError: "Während der Aufnahme ist etwas schiefgelaufen. Bitte versuche es erneut.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Messung aufnehmen - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% Zuverlässigkeit",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Überwiegend {top} mit {runnerUp}-Zügen. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Über das Tool",
     heading: "Die kostenlose KI-Gesichtsform-Analyse, online.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Unsere <strong>KI-Gesichtsform-Analyse</strong> ist ein kostenloses Online-Tool, das
@@ -253,7 +239,6 @@ export const de: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "FAQ",
     heading: "Häufige Fragen.",
@@ -309,22 +294,18 @@ export const de: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Zuletzt aktualisiert:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Diese Seite wurde maschinell übersetzt. Die englische Version ist maßgeblich; im Falle von Abweichungen hat das <a href=\"{enHref}\">englische Original</a> Vorrang.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Fehler {code}",
     ctaHome: "Zurück zur Startseite",
     ctaAnalyze: "Mein Gesicht analysieren",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Kostenlose KI-Gesichtsform-Analyse online — Erkenne deine Gesichtsform",
@@ -433,7 +414,6 @@ export const de: UIStrings = {
       fallback: "Schreibst du lieber direkt? E-Mail an {email}.",
       errMissing: "Bitte gib deinen Namen, deine E-Mail und deine Nachricht ein.",
       errEmail: "Bitte gib eine gültige E-Mail-Adresse ein.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Kontakt von {name}",
     },
     privacy: {
@@ -665,7 +645,6 @@ export const de: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ki-gesichtsform-analyse, beste ki-gesichtsform-analyse, ki-gesichtsform-analyse kostenlos, ki-gesichtsform-analyse online, ki-gesichtsform-analyse online kostenlos, ki-gesichtsform-erkennung, gesichtsform-ki-analyse, gesichtsform-analyse ki, gesichtsformen, gesichtsform, welche gesichtsform habe ich, wie bestimme ich die gesichtsform, gesichtsanalyse, gesichtsform-rechner, attraktivitäts-analysetool für gesichter",
 };

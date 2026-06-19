@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const ko: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "얼굴형 분석기",
     logoAria: "AI Face Shape Analyzer — 홈",
@@ -20,7 +19,6 @@ export const ko: UIStrings = {
     langLabel: "언어",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — 홈",
     brandName: "얼굴형 분석기",
@@ -49,9 +47,7 @@ export const ko: UIStrings = {
       "면책 조항: 얼굴형은 주관적인 분류이며 정확한 측정값이 아닙니다. 결과는 사진을 바탕으로 생성된 추정치이며 각도, 조명, 표정, 머리카락, 안경, 카메라 렌즈에 따라 달라질 수 있습니다. 많은 얼굴은 두 가지 형태가 혼합되어 있으므로, 이를 스타일링을 위한 참고 자료로 활용하시고 확정적이거나 전문적인 조언으로 여기지 마세요.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "무료 AI ",
     titleAccent: "얼굴형",
     titleAfter: " 분석기",
@@ -65,7 +61,6 @@ export const ko: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "이용 방법",
     heading: "세 단계로 알아보는 당신의 얼굴형.",
@@ -88,7 +83,6 @@ export const ko: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "참고",
     heading: "여섯 가지 얼굴형.",
@@ -117,7 +111,6 @@ export const ko: UIStrings = {
       "광대뼈가 가장 넓은 지점이며, 이마와 턱은 더 좁고 또렷하고 뾰족한 턱끝을 가집니다.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "분석기",
     heading: "당신의 얼굴형을 감지하세요",
@@ -156,8 +149,6 @@ export const ko: UIStrings = {
       "여섯 가지 얼굴형 전체에 대한 순위별 백분율",
       "얼굴이 두 가지 형태의 혼합일 때 알려주는 안내",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "분석 중…",
       rateLimited:
@@ -175,20 +166,15 @@ export const ko: UIStrings = {
       noFaceYet:
         "아직 얼굴이 감지되지 않았습니다. 얼굴을 가운데에 맞춘 후 클릭하여 촬영하세요.",
       captureError: "촬영 중 문제가 발생했습니다. 다시 시도해 주세요.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "판독 촬영 - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% 신뢰도",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "대부분 {top}이며 {runnerUp}의 특징이 있습니다. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "도구 소개",
     heading: "무료 AI 얼굴형 분석기, 온라인.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         저희 <strong>AI 얼굴형 분석기</strong>는 몇 초 만에 당신의 얼굴형을
@@ -249,7 +235,6 @@ export const ko: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "자주 묻는 질문",
     heading: "자주 묻는 질문.",
@@ -305,22 +290,18 @@ export const ko: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "최종 업데이트:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "이 페이지는 기계 번역되었습니다. 영어 버전이 정본이며, 불일치가 있을 경우 <a href=\"{enHref}\">영어 원본</a>이 우선합니다.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "오류 {code}",
     ctaHome: "홈으로 돌아가기",
     ctaAnalyze: "내 얼굴 분석하기",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "무료 온라인 AI 얼굴형 분석기 — 당신의 얼굴형을 감지하세요",
@@ -429,7 +410,6 @@ export const ko: UIStrings = {
       fallback: "직접 작성하고 싶으신가요? {email}으로 이메일을 보내세요.",
       errMissing: "이름, 이메일, 메시지를 입력해 주세요.",
       errEmail: "유효한 이메일 주소를 입력해 주세요.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "{name}님의 문의",
     },
     privacy: {
@@ -656,7 +636,6 @@ export const ko: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai 얼굴형 분석기, 최고의 ai 얼굴형 분석기, 무료 ai 얼굴형 분석기, 온라인 ai 얼굴형 분석기, 온라인 무료 ai 얼굴형 분석기, ai 얼굴형 감지기, 얼굴형 ai 분석기, 얼굴형 분석기 ai, 얼굴형들, 얼굴형, 내 얼굴형은 무엇, 얼굴형 판단 방법, 얼굴 분석기, 얼굴형 계산기, 얼굴 매력도 분석기",
 };

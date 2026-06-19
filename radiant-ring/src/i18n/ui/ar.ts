@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const ar: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "محلّل شكل الوجه",
     logoAria: "AI Face Shape Analyzer — الصفحة الرئيسية",
@@ -20,7 +19,6 @@ export const ar: UIStrings = {
     langLabel: "اللغة",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — الصفحة الرئيسية",
     brandName: "محلّل شكل الوجه",
@@ -49,9 +47,7 @@ export const ar: UIStrings = {
       "إخلاء مسؤولية: شكل الوجه وصف ذاتي، وليس قياساً دقيقاً. النتائج تقدير مُولّد من صورتك وقد يختلف باختلاف الزاوية والإضاءة وتعبير الوجه والشعر والنظارات وعدسة الكاميرا. كثير من الوجوه مزيج من شكلين — استخدم هذا كدليل لاختيار الإطلالة، لا كنصيحة قاطعة أو احترافية.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "محلّل ",
     titleAccent: "شكل الوجه",
     titleAfter: " المجاني بالذكاء الاصطناعي",
@@ -65,7 +61,6 @@ export const ar: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "كيف يعمل",
     heading: "ثلاث خطوات إلى شكل وجهك.",
@@ -88,7 +83,6 @@ export const ar: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "مرجع",
     heading: "أشكال الوجه الستة.",
@@ -117,7 +111,6 @@ export const ar: UIStrings = {
       "عظام الوجنة هي أعرض نقطة، مع جبهة وفك أضيق وذقن مدبّب وواضح.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "المحلّل",
     heading: "اكتشف شكل وجهك",
@@ -156,8 +149,6 @@ export const ar: UIStrings = {
       "نسبة مئوية مرتّبة عبر الأشكال الستة للوجه جميعها",
       "ملاحظة عندما يكون وجهك مزيجاً من شكلين",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "جارٍ التحليل…",
       rateLimited:
@@ -175,20 +166,15 @@ export const ar: UIStrings = {
       noFaceYet:
         "لم يُكتشف أي وجه بعد. اجعل وجهك في المنتصف، ثم انقر للالتقاط.",
       captureError: "حدث خطأ ما أثناء الالتقاط. يرجى المحاولة مجدداً.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "التقاط قراءة - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "ثقة {pct}%",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "في الغالب {top} مع سمات {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "عن الأداة",
     heading: "محلّل شكل الوجه المجاني بالذكاء الاصطناعي، عبر الإنترنت.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         <strong>محلّل شكل الوجه بالذكاء الاصطناعي</strong> هو أداة مجانية عبر الإنترنت
@@ -253,7 +239,6 @@ export const ar: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "الأسئلة الشائعة",
     heading: "أسئلة متكررة.",
@@ -309,22 +294,18 @@ export const ar: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "آخر تحديث:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "تُرجمت هذه الصفحة آلياً. النسخة الإنجليزية هي المرجع المعتمد؛ في حال وجود أي تعارض، تكون <a href=\"{enHref}\">النسخة الإنجليزية الأصلية</a> هي السائدة.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "خطأ {code}",
     ctaHome: "العودة إلى الرئيسية",
     ctaAnalyze: "حلّل وجهي",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "محلّل شكل الوجه المجاني بالذكاء الاصطناعي عبر الإنترنت — اكتشف شكل وجهك",
@@ -434,7 +415,6 @@ export const ar: UIStrings = {
       fallback: "تفضّل المراسلة مباشرة؟ راسلنا على {email}.",
       errMissing: "يرجى ملء اسمك وبريدك الإلكتروني ورسالتك.",
       errEmail: "يرجى إدخال عنوان بريد إلكتروني صالح.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "رسالة من {name}",
     },
     privacy: {
@@ -665,7 +645,6 @@ export const ar: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "محلّل شكل الوجه بالذكاء الاصطناعي, أفضل محلّل شكل وجه بالذكاء الاصطناعي, محلّل شكل الوجه بالذكاء الاصطناعي مجاني, محلّل شكل الوجه بالذكاء الاصطناعي عبر الإنترنت, محلّل شكل الوجه بالذكاء الاصطناعي عبر الإنترنت مجاناً, كاشف شكل الوجه بالذكاء الاصطناعي, محلّل شكل الوجه بالذكاء الاصطناعي, محلّل شكل الوجه بالذكاء الاصطناعي, أشكال الوجه, شكل الوجه, ما شكل وجهي, كيف تحدّد شكل الوجه, محلّل الوجه, حاسبة شكل الوجه, محلّل جاذبية الوجه",
 };

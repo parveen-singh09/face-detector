@@ -1,25 +1,4 @@
 ---
-/**
- * LangSwitcher — a custom, fully-styled language dropdown that jumps to the
- * equivalent page in the chosen locale. Because the site is statically rendered
- * per-locale, we know the current path at build time: we delocalize it, then
- * localize it for every locale so each option points at the same page in that
- * language.
- *
- * Why not a native <select>? The browser renders a <select>'s option list using
- * the OS, so it ignores our design tokens entirely — no dark mode, no brand
- * colours, an OS-blue highlight, and cramped rows. This is a hand-built listbox
- * (button + popup) so it matches the rest of the UI and themes correctly, while
- * keeping the keyboard + screen-reader behaviour of a real listbox:
- *   - button: aria-haspopup="listbox", aria-expanded
- *   - popup: role="listbox" with aria-activedescendant
- *   - options: role="option", aria-selected
- *   - ↑/↓/Home/End to move, Enter/Space to choose, Esc to close, click-outside
- *
- * The component can render more than once per page (desktop nav + mobile menu),
- * so every instance gets a unique id namespace and the controller script is a
- * bundled module (deduped by Astro) that wires up each `[data-lang-switcher]`.
- */
 import {
   LOCALES,
   LOCALE_LABELS,
@@ -29,7 +8,6 @@ import {
 import { getLangFromUrl, localizePath, useTranslations } from "../i18n/utils";
 
 interface Props {
-  /** Extra class for context-specific sizing (e.g. full-width in the menu). */
   class?: string;
 }
 const { class: className } = Astro.props;
@@ -42,10 +20,8 @@ const options = LOCALES.map((loc) => ({
   selected: loc === current,
 }));
 const currentLabel = LOCALE_LABELS[current];
-// "Language" in the active locale, sourced from its own dictionary.
 const label = useTranslations(current).nav.langLabel;
 
-// Unique namespace so multiple instances on one page don't collide on ids.
 const uid = "ls-" + Math.random().toString(36).slice(2, 9);
 const listId = `${uid}-list`;
 ---
@@ -262,7 +238,6 @@ const listId = `${uid}-list`;
     display: inline-flex;
   }
 
-  /* ── Trigger (the always-visible pill) ── */
   .lang-trigger {
     display: inline-flex;
     align-items: center;
@@ -294,7 +269,6 @@ const listId = `${uid}-list`;
     stroke-width: 1.6;
   }
   .lang-current {
-    /* Keep the control compact in the nav; the menu variant overrides this. */
     max-width: 11ch;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -315,7 +289,6 @@ const listId = `${uid}-list`;
     transform: rotate(180deg);
   }
 
-  /* ── Popup listbox ── */
   .lang-menu {
     position: absolute;
     inset-inline-end: 0;
@@ -327,9 +300,6 @@ const listId = `${uid}-list`;
     max-height: min(60vh, 360px);
     overflow-y: auto;
     overscroll-behavior: contain;
-    /* Thin, subtle scrollbar — the native Windows bar (chunky, with arrow
-       buttons) looks out of place in the themed popup. Firefox uses the two
-       `scrollbar-*` props; Chromium/WebKit use `::-webkit-scrollbar` below. */
     scrollbar-width: thin;
     scrollbar-color: var(--color-hairline) transparent;
     margin: 0;
@@ -347,7 +317,6 @@ const listId = `${uid}-list`;
   .lang-menu:focus-visible {
     outline: none;
   }
-  /* Chromium/WebKit thin scrollbar (no arrow buttons), to match the design. */
   .lang-menu::-webkit-scrollbar {
     width: 8px;
   }
@@ -357,7 +326,6 @@ const listId = `${uid}-list`;
   .lang-menu::-webkit-scrollbar-thumb {
     background-color: var(--color-hairline);
     border-radius: var(--radius-full);
-    /* Inset the thumb so it reads as a slim pill, not a full-width bar. */
     border: 2px solid transparent;
     background-clip: padding-box;
   }
@@ -392,7 +360,6 @@ const listId = `${uid}-list`;
     user-select: none;
     white-space: nowrap;
   }
-  /* Hover and keyboard-active share one highlight so mouse + keyboard agree. */
   .lang-option:hover,
   .lang-option.is-active {
     color: var(--color-ink);
@@ -416,15 +383,12 @@ const listId = `${uid}-list`;
     flex: none;
     border-radius: var(--radius-full);
     object-fit: cover;
-    /* A hairline ring keeps light flags (e.g. Japan) from bleeding into the
-       menu surface in both themes. */
     box-shadow: 0 0 0 1px var(--color-hairline);
   }
   .lang-option-label {
     flex: 1;
   }
 
-  /* ── Menu variant: full-width row inside the mobile drawer ── */
   .lang-switcher.is-block {
     display: flex;
     width: 100%;
@@ -439,7 +403,6 @@ const listId = `${uid}-list`;
     max-width: none;
     text-align: start;
   }
-  /* In the drawer the trigger is full-width, so match the popup to it. */
   .lang-switcher.is-block .lang-menu {
     inset-inline: 0;
     width: auto;

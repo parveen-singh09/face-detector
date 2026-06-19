@@ -1,32 +1,13 @@
 ---
-/**
- * ContentPage — shared shell for static content pages (privacy, terms, about,
- * contact). A calm brand hero (eyebrow + h1 + lead/last-updated) on a soft band,
- * followed by a readable prose column. Each page is a thin wrapper that sets its
- * own SEO via the props and passes body copy into the default slot.
- *
- * Slotted markup is authored in the page, so the prose styles below target it
- * with `:global()` under the scoped `.legal-prose` wrapper.
- *
- * i18n: when `lang` is a non-default locale and `mtNotice` is true, a small
- * "machine-translated" banner is shown above the prose, linking to the English
- * original (the authoritative version).
- */
 import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
 import { delocalizePath, useTranslations } from "../i18n/utils";
 
 interface Props {
-  /** Small mono eyebrow above the title, e.g. "Legal". */
   eyebrow: string;
-  /** Page H1. */
   heading: string;
-  /** Optional lead paragraph under the title. */
   lead?: string;
-  /** Optional "Last updated" line (already formatted). */
   updated?: string;
-  /** Active locale (drives the "Last updated" label + MT notice). */
   lang?: Locale;
-  /** Show the machine-translation notice on non-default locales. */
   mtNotice?: boolean;
 }
 
@@ -41,7 +22,6 @@ const {
 
 const t = useTranslations(lang);
 const showNotice = mtNotice && lang !== DEFAULT_LOCALE;
-// Link the notice to the English original of THIS page.
 const enHref = delocalizePath(Astro.url.pathname) || "/";
 const noticeHtml = showNotice
   ? t.mtNotice.replace("{enHref}", enHref)
@@ -98,11 +78,9 @@ const noticeHtml = showNotice
     color: var(--color-mute);
   }
 
-  /* ── Prose column (styles the slotted page content) ── */
   .legal-prose {
     max-width: 760px;
   }
-  /* Machine-translation notice — quiet, set above the prose on translated pages. */
   .mt-notice {
     margin: 0 0 var(--spacing-lg);
     padding: var(--spacing-sm) var(--spacing-md);

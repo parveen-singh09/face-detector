@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const fr: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Analyseur de forme de visage",
     logoAria: "AI Face Shape Analyzer — accueil",
@@ -20,7 +19,6 @@ export const fr: UIStrings = {
     langLabel: "Langue",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — accueil",
     brandName: "Analyseur de forme de visage",
@@ -49,9 +47,7 @@ export const fr: UIStrings = {
       "Avertissement : la forme du visage est une appréciation subjective, et non une mesure exacte. Les résultats sont une estimation générée à partir de votre photo et peuvent varier selon l’angle, l’éclairage, l’expression, les cheveux, les lunettes et l’objectif de l’appareil. De nombreux visages sont un mélange de deux formes — utilisez ceci comme un repère pour votre style, et non comme un avis définitif ou professionnel.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Analyseur IA gratuit de ",
     titleAccent: "forme de visage",
     titleAfter: "",
@@ -65,7 +61,6 @@ export const fr: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Comment ça marche",
     heading: "Trois étapes vers la forme de votre visage.",
@@ -88,7 +83,6 @@ export const fr: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Référence",
     heading: "Les six formes de visage.",
@@ -117,7 +111,6 @@ export const fr: UIStrings = {
       "Les pommettes sont le point le plus large, avec un front et une mâchoire plus étroits et un menton défini et pointu.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analyseur",
     heading: "Détectez la forme de votre visage",
@@ -156,8 +149,6 @@ export const fr: UIStrings = {
       "Un classement en pourcentage des six formes de visage",
       "Une note lorsque votre visage est un mélange de deux formes",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analyse en cours…",
       rateLimited:
@@ -175,20 +166,15 @@ export const fr: UIStrings = {
       noFaceYet:
         "Aucun visage détecté pour l’instant. Centrez votre visage, puis cliquez pour capturer.",
       captureError: "Une erreur s’est produite pendant la capture. Veuillez réessayer.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Lecture de capture - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% de confiance",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Principalement {top} avec des traits {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "À propos de l’outil",
     heading: "L’analyseur IA gratuit de forme de visage, en ligne.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Notre <strong>analyseur IA de forme de visage</strong> est un outil
@@ -261,7 +247,6 @@ export const fr: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "FAQ",
     heading: "Questions fréquentes.",
@@ -317,22 +302,18 @@ export const fr: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Dernière mise à jour :",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Cette page a été traduite automatiquement. La version anglaise fait foi ; en cas de divergence, l’<a href=\"{enHref}\">original anglais</a> prévaut.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Erreur {code}",
     ctaHome: "Retour à l’accueil",
     ctaAnalyze: "Analyser mon visage",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Analyseur IA gratuit de forme de visage en ligne — Détectez votre forme de visage",
@@ -451,7 +432,6 @@ export const fr: UIStrings = {
       fallback: "Vous préférez écrire directement ? Écrivez à {email}.",
       errMissing: "Veuillez renseigner votre nom, votre e-mail et votre message.",
       errEmail: "Veuillez saisir une adresse e-mail valide.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Message de {name}",
     },
     privacy: {
@@ -701,7 +681,6 @@ export const fr: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "analyseur ia de forme de visage, meilleur analyseur ia de forme de visage, analyseur ia de forme de visage gratuit, analyseur ia de forme de visage en ligne, analyseur ia de forme de visage en ligne gratuit, détecteur ia de forme de visage, ia analyseur de forme de visage, analyseur de forme de visage ia, formes de visage, forme de visage, quelle est la forme de mon visage, comment déterminer la forme du visage, analyseur facial, calculateur de forme de visage, analyseur d’attractivité du visage",
 };

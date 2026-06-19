@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const id: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Penganalisis Bentuk Wajah",
     logoAria: "AI Face Shape Analyzer — beranda",
@@ -20,7 +19,6 @@ export const id: UIStrings = {
     langLabel: "Bahasa",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — beranda",
     brandName: "Penganalisis Bentuk Wajah",
@@ -49,9 +47,7 @@ export const id: UIStrings = {
       "Penafian: bentuk wajah adalah label subjektif, bukan pengukuran yang pasti. Hasilnya merupakan perkiraan yang dihasilkan dari foto Anda dan dapat berbeda tergantung sudut, pencahayaan, ekspresi, rambut, kacamata, dan lensa kamera. Banyak wajah merupakan perpaduan dua bentuk — gunakan ini sebagai panduan untuk penataan gaya, bukan sebagai saran yang pasti atau profesional.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Penganalisis ",
     titleAccent: "Bentuk Wajah",
     titleAfter: " AI Gratis",
@@ -65,7 +61,6 @@ export const id: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Cara kerjanya",
     heading: "Tiga langkah menuju bentuk wajah Anda.",
@@ -88,7 +83,6 @@ export const id: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Referensi",
     heading: "Enam bentuk wajah.",
@@ -117,7 +111,6 @@ export const id: UIStrings = {
       "Tulang pipi merupakan titik terlebar, dengan dahi dan rahang yang lebih sempit serta dagu yang tegas dan runcing.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Penganalisis",
     heading: "Deteksi bentuk wajah Anda",
@@ -156,8 +149,6 @@ export const id: UIStrings = {
       "Persentase berperingkat untuk keenam bentuk wajah",
       "Catatan ketika wajah Anda merupakan perpaduan dua bentuk",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Menganalisis…",
       rateLimited:
@@ -175,20 +166,15 @@ export const id: UIStrings = {
       noFaceYet:
         "Belum ada wajah terdeteksi. Posisikan wajah Anda di tengah, lalu klik untuk mengambil.",
       captureError: "Terjadi kesalahan saat pengambilan. Silakan coba lagi.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Pengambilan pembacaan - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% kepercayaan",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Sebagian besar {top} dengan ciri-ciri {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Tentang alat ini",
     heading: "Penganalisis bentuk wajah AI gratis, online.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         <strong>Penganalisis bentuk wajah AI</strong> kami adalah alat online gratis yang
@@ -254,7 +240,6 @@ export const id: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "FAQ",
     heading: "Pertanyaan umum.",
@@ -310,22 +295,18 @@ export const id: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Terakhir diperbarui:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Halaman ini diterjemahkan secara mesin. Versi bahasa Inggris bersifat otoritatif; jika terjadi perbedaan, <a href=\"{enHref}\">naskah asli bahasa Inggris</a> yang berlaku.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Kesalahan {code}",
     ctaHome: "Kembali ke beranda",
     ctaAnalyze: "Analisis wajah saya",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Penganalisis Bentuk Wajah AI Gratis Online — Deteksi Bentuk Wajah Anda",
@@ -436,7 +417,6 @@ export const id: UIStrings = {
       fallback: "Lebih suka menulis langsung? Kirim email ke {email}.",
       errMissing: "Silakan isi nama, email, dan pesan Anda.",
       errEmail: "Silakan masukkan alamat email yang valid.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Kontak dari {name}",
     },
     privacy: {
@@ -673,7 +653,6 @@ export const id: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "penganalisis bentuk wajah ai, penganalisis bentuk wajah ai terbaik, penganalisis bentuk wajah ai gratis, penganalisis bentuk wajah ai online, penganalisis bentuk wajah ai online gratis, pendeteksi bentuk wajah ai, penganalisis bentuk wajah ai, penganalisis bentuk wajah, bentuk wajah, apa bentuk wajah saya, cara menentukan bentuk wajah, penganalisis wajah, kalkulator bentuk wajah, penganalisis daya tarik wajah",
 };

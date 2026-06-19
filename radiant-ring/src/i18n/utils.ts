@@ -1,13 +1,3 @@
-/**
- * i18n utilities — path localization, locale detection, and the translation
- * accessor used across `.astro` files.
- *
- * Translation dictionaries live in `./ui/<locale>.ts`. The English dictionary
- * (`en.ts`) is the source of truth and defines the `UIStrings` shape; every other
- * locale must satisfy that same type. `useTranslations(lang)` returns the requested
- * locale's dictionary and falls back to English for any locale that isn't loaded.
- */
-
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./config";
 import { en, type UIStrings } from "./ui/en";
 import { es } from "./ui/es";
@@ -43,38 +33,23 @@ const DICTS: Record<Locale, UIStrings> = {
   tr,
 };
 
-/**
- * Read the locale from a URL pathname. `/es/about-us` → `es`; `/about-us` → `en`
- * (the default locale lives at the root with no prefix).
- */
 export function getLangFromUrl(url: URL): Locale {
   const [, maybeLocale] = url.pathname.split("/");
   if (maybeLocale && isLocale(maybeLocale)) return maybeLocale;
   return DEFAULT_LOCALE;
 }
 
-/** Returns the full typed dictionary for `lang`, falling back to English. */
 export function useTranslations(lang: string): UIStrings {
   if (isLocale(lang)) return DICTS[lang];
   return DICTS[DEFAULT_LOCALE];
 }
 
-/**
- * Strip any leading locale segment from a path, returning the canonical
- * default-locale path. `/es/about-us` → `/about-us`; `/fr/` → `/`; `/` → `/`.
- */
 export function delocalizePath(path: string): string {
   const segments = path.split("/").filter(Boolean);
   if (segments.length && isLocale(segments[0])) segments.shift();
   return "/" + segments.join("/");
 }
 
-/**
- * Build the path for a default-locale (canonical) path in `lang`. The default
- * locale stays at the root; every other locale gets a `/<lang>` prefix.
- * `("/about-us", "es")` → `/es/about-us`; `("/", "fr")` → `/fr/`;
- * `("/about-us", "en")` → `/about-us`.
- */
 export function localizePath(path: string, lang: Locale): string {
   const canonical = delocalizePath(path);
   if (lang === DEFAULT_LOCALE) return canonical;

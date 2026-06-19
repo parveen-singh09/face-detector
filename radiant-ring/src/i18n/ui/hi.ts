@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const hi: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "फेस शेप एनालाइज़र",
     logoAria: "AI Face Shape Analyzer — होम",
@@ -20,7 +19,6 @@ export const hi: UIStrings = {
     langLabel: "भाषा",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — होम",
     brandName: "फेस शेप एनालाइज़र",
@@ -49,9 +47,7 @@ export const hi: UIStrings = {
       "अस्वीकरण: चेहरे का आकार एक व्यक्तिपरक लेबल है, कोई सटीक माप नहीं। परिणाम आपकी फ़ोटो से उत्पन्न एक अनुमान हैं और कोण, रोशनी, हावभाव, बाल, चश्मे और कैमरा लेंस के अनुसार बदल सकते हैं। कई चेहरे दो आकारों का मिश्रण होते हैं — इसे स्टाइलिंग के लिए एक मार्गदर्शक के रूप में लें, न कि निश्चित या पेशेवर सलाह के रूप में।",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "मुफ़्त AI ",
     titleAccent: "फेस शेप",
     titleAfter: " एनालाइज़र",
@@ -65,7 +61,6 @@ export const hi: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "यह कैसे काम करता है",
     heading: "आपके चेहरे के आकार तक तीन चरण।",
@@ -88,7 +83,6 @@ export const hi: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "संदर्भ",
     heading: "चेहरे के छह आकार।",
@@ -117,7 +111,6 @@ export const hi: UIStrings = {
       "गालों की हड्डियां सबसे चौड़ा बिंदु होती हैं, जिसमें संकरा माथा व जबड़ा और एक स्पष्ट, नुकीली ठोड़ी होती है।",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "एनालाइज़र",
     heading: "अपने चेहरे का आकार पहचानें",
@@ -156,8 +149,6 @@ export const hi: UIStrings = {
       "सभी छह चेहरे के आकारों में रैंक की गई प्रतिशत",
       "जब आपका चेहरा दो आकारों का मिश्रण हो तो एक नोट",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "विश्लेषण हो रहा है…",
       rateLimited:
@@ -175,20 +166,15 @@ export const hi: UIStrings = {
       noFaceYet:
         "अभी तक कोई चेहरा नहीं मिला। अपना चेहरा केंद्र में रखें, फिर कैप्चर करने के लिए क्लिक करें।",
       captureError: "कैप्चर के दौरान कुछ गड़बड़ हो गई। कृपया फिर से प्रयास करें।",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "कैप्चर रीडिंग - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% आत्मविश्वास",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "मुख्य रूप से {top} जिसमें {runnerUp} के लक्षण हैं। {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "टूल के बारे में",
     heading: "मुफ़्त AI फेस शेप एनालाइज़र, ऑनलाइन।",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         हमारा <strong>AI फेस शेप एनालाइज़र</strong> एक मुफ़्त, ऑनलाइन टूल है जो
@@ -253,7 +239,6 @@ export const hi: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "अक्सर पूछे जाने वाले प्रश्न",
     heading: "आम सवाल।",
@@ -309,22 +294,18 @@ export const hi: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "अंतिम बार अपडेट किया गया:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "इस पृष्ठ का मशीनी अनुवाद किया गया है। अंग्रेज़ी संस्करण आधिकारिक है; किसी भी विसंगति की स्थिति में, <a href=\"{enHref}\">अंग्रेज़ी मूल</a> मान्य होगा।",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "त्रुटि {code}",
     ctaHome: "होम पर वापस जाएं",
     ctaAnalyze: "मेरे चेहरे का विश्लेषण करें",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "मुफ़्त AI फेस शेप एनालाइज़र ऑनलाइन — अपने चेहरे का आकार पहचानें",
@@ -434,7 +415,6 @@ export const hi: UIStrings = {
       fallback: "सीधे लिखना पसंद करते हैं? {email} पर ईमेल करें।",
       errMissing: "कृपया अपना नाम, ईमेल और संदेश भरें।",
       errEmail: "कृपया एक वैध ईमेल पता दर्ज करें।",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "{name} की ओर से संपर्क",
     },
     privacy: {
@@ -672,7 +652,6 @@ export const hi: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai face shape analyzer, सबसे अच्छा ai face shape analyzer, ai face shape analyzer मुफ़्त, ai face shape analyzer ऑनलाइन, ai face shape analyzer ऑनलाइन मुफ़्त, ai face shape detector, face shape ai analyzer, face shape analyzer ai, चेहरे के आकार, चेहरे का आकार, मेरे चेहरे का आकार क्या है, चेहरे का आकार कैसे निर्धारित करें, face analyzer, फेस शेप कैलकुलेटर, face attractiveness analyzer",
 };

@@ -1,10 +1,4 @@
 ---
-/**
- * ContactPage — the Contact body + email form, parameterized by locale. Rendered
- * by `/contact` (en) and `/[lang]/contact`. The form opens a pre-filled mailto;
- * validation messages + the subject template come from the dictionary via a JSON
- * island the inline script reads.
- */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ContentPage from "../ContentPage.astro";
 import { DEFAULT_LOCALE, type Locale } from "../../i18n/config";
@@ -20,7 +14,6 @@ const p = t.pages.contact;
 const HELLO = "hello@aifaceshapeanalyzer.com";
 const PRIVACY_EMAIL = "privacy@aifaceshapeanalyzer.com";
 
-// Interpolate the intro paragraph's policy/terms links (locale-aware hrefs).
 const introHtml = p.emailIntro
   .replace(
     "{privacyLink}",
@@ -35,7 +28,6 @@ const fallbackHtml = p.fallback.replace(
   `<a href="mailto:${HELLO}">${HELLO}</a>`,
 );
 
-// Strings the inline validation script needs at runtime.
 const formI18n = {
   to: HELLO,
   errMissing: p.errMissing,

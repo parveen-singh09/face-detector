@@ -727,3 +727,35 @@ Cleanup pass ahead of deployment. Removed the temporary calibration scaffolding
   strings, and `src/` has no `console.log`/`console.table`/`result-metrics`
   leftovers.
 
+## 2026-06-19 — Full comment strip across the source tree
+
+Per a follow-up "remove comments also" before deploy, stripped ALL comments from
+every source file (`src/**/*.{ts,astro,css}` + `astro.config.mjs`). Comments don't
+ship to users (the build already strips them from the bundle), so this is a
+source-tidiness pass, not a perf change.
+
+- **Scope**: all 48 source files — the 31 i18n files (`config.ts`, `utils.ts`,
+  `en.ts` source-of-truth + 14 locale dicts), all `.astro` components/layouts/pages,
+  the 4 `src/lib/*.ts` modules, `global.css`, and `astro.config.mjs`. Removed `//`,
+  `/* */`, `/** */` (JS/TS), `/* */` (CSS), and `<!-- -->` (HTML) comments;
+  collapsed resulting 2+ blank-line runs to one.
+- **Preserved (NOT comments / functional)**: `// @ts-check` in `astro.config.mjs`
+  (a directive that enables config type-checking); Astro frontmatter `---` fences;
+  the empty `catch {}` / `catch (e) {}` blocks whose only body was a comment (kept
+  as valid empty blocks so the fail-open / skip-bad-frame logic is unchanged).
+- **Safety method**: pre-verified that NO `//`, `/*`, `*/`, or `<!--` sequence
+  existed inside any string literal anywhere in `src/`, and that the only `://`
+  URL literals were 3 in `src/` (HomePage `schema.org`, BaseLayout `SITE` +
+  `schema.org`) + 2 in the config. Treated `://` count as an invariant. Ran the
+  strip as 6 parallel sub-agents grouped by file type with strict
+  preserve-strings rules; one agent hash-checked all non-comment lines before/after
+  to prove zero string bytes changed.
+- **Verified**: `npm run build` passes (77 pages); post-strip `grep` confirms zero
+  `//` / `/* */` / `<!--` comment markers remain in `src/` (and only `// @ts-check`
+  in the config); the `://` invariant holds (3 in src + 2 in config = 5, all the
+  original URL literals, none corrupted).
+- Note: this session also revealed the earlier i18n/legal-pages/icons work was
+  never committed — `git status` shows `src/i18n/`, `src/components/pages/`, the
+  new `src/pages/*` routes, and the favicon/flag/og assets as untracked/modified.
+  The repo was NOT committed as part of this pass (no commit was requested).
+

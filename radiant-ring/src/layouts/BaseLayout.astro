@@ -1,15 +1,5 @@
 ---
-/**
- * BaseLayout — the page shell: SEO <head>, self-hosted fonts, global styles,
- * skip link, sticky Nav, main slot, Footer. Used by every page.
- *
- * i18n: every page passes its `lang`. The layout sets <html lang/dir>, localizes
- * the canonical URL, and emits hreflang alternates for all locales (+ x-default)
- * from the canonical default-locale `path`.
- */
 import "../styles/global.css";
-// Self-hosted variable fonts (DESIGN.md substitutes: Inter for the geometric
-// sans, JetBrains Mono for the technical/mono voice). No external CDN.
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 
@@ -26,13 +16,10 @@ import {
 import { localizePath } from "../i18n/utils";
 
 interface Props {
-  /** Active locale. Defaults to English (root routes). */
   lang?: Locale;
   title?: string;
   description?: string;
-  /** Canonical (default-locale) path for canonical/OG/hreflang, e.g. "/about-us". */
   path?: string;
-  /** Comma-separated keyword meta override. */
   keywords?: string;
 }
 
@@ -49,7 +36,6 @@ const dir = isRtl(lang) ? "rtl" : "ltr";
 const canonical = new URL(localizePath(path, lang), SITE).href;
 const ogImage = new URL("/og.png", SITE).href;
 
-// hreflang alternates: one per locale (+ x-default → the default locale).
 const alternates = LOCALES.map((loc) => ({
   hreflang: HREFLANG[loc],
   href: new URL(localizePath(path, loc), SITE).href,
@@ -63,9 +49,6 @@ const xDefault = new URL(localizePath(path, DEFAULT_LOCALE), SITE).href;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Resolve the theme BEFORE first paint to avoid a flash of the wrong
-         polarity. Honours a saved choice, else the OS preference. Inlined and
-         blocking on purpose — it must run before the body renders. -->
     <script is:inline>
       (() => {
         try {
@@ -100,7 +83,6 @@ const xDefault = new URL(localizePath(path, DEFAULT_LOCALE), SITE).href;
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="theme-color" content="#ffffff" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -112,17 +94,14 @@ const xDefault = new URL(localizePath(path, DEFAULT_LOCALE), SITE).href;
     <meta property="og:site_name" content="AI Face Shape Analyzer" />
     <meta property="og:locale" content={OG_LOCALE[lang]} />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content="AI Face Shape Analyzer — detect your face shape from a photo" />
 
-    <!-- The face-landmarker model is large; warm the connection early. -->
     <link rel="preconnect" href={SITE} />
 
-    <!-- Structured data: WebApplication -->
     <script
       type="application/ld+json"
       set:html={JSON.stringify({

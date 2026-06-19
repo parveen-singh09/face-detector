@@ -1,16 +1,3 @@
-/**
- * faceShape.ts — the classification engine (the product's differentiator).
- *
- * MediaPipe gives us 478 landmarks but NOT a face shape. We derive scale-invariant
- * anthropometric ratios from the landmarks, then run soft rules-based scoring to
- * produce a probability for each of the 6 canonical shapes — not just a single
- * answer. Every threshold lives in SHAPE_PROFILES / FEATURE_WEIGHTS so the
- * classifier is easy to calibrate later.
- *
- * IMPORTANT: MediaPipe normalizes x by image width and y by image height
- * independently, so normalized coords are NOT isotropic. We convert to pixel
- * space (using the real media dimensions) before measuring distances/angles.
- */
 import type { Landmark } from "./faceLandmarker";
 
 export type ShapeId =
@@ -24,41 +11,23 @@ export type ShapeId =
 export interface ShapeScore {
   id: ShapeId;
   label: string;
-  /** 0..100, the full distribution sums to 100. */
   probability: number;
 }
 
 export interface ShapeResult {
-  /** All six shapes, ranked high → low. */
   ranked: ShapeScore[];
-  /** The winning shape. */
   top: ShapeScore;
-  /** Runner-up (used for the "blend" copy). */
   runnerUp: ShapeScore;
-  /** 0..100 — how decisive the result is (top strength + margin over #2). */
   confidence: number;
-  /** True when top two are close enough to call it a blend of shapes. */
   isBlend: boolean;
-  /** The raw normalized ratios, exposed for debugging / future metrics panel. */
   features: Features;
 }
 
 export interface Features {
-  /** Face length ÷ cheekbone width. */
   lengthToWidth: number;
-  /** Forehead width ÷ cheekbone width. */
   foreheadToCheek: number;
-  /** Jaw width ÷ cheekbone width. */
   jawToCheek: number;
-  /** Chin angle in degrees (low = pointed, high = wide/square). */
   chinAngle: number;
-  /**
-   * Jaw angularity 0..1 — how sharp vs. curved the jawline is, measured from the
-   * deviation of the mid-jaw point off the straight cheek→chin line. ~0 = the jaw
-   * follows a smooth round arc; ~1 = a hard angular (square) corner. This is the
-   * signal that actually separates round (soft) from square (sharp), since both
-   * share length≈width. Mirrors Omnicalculator's "sharpness" input.
-   */
   jawAngularity: number;
 }
 
@@ -83,30 +52,20 @@ export const SHAPE_DESCRIPTIONS: Record<ShapeId, string> = {
     "Cheekbones are the widest point, with a narrower forehead and jaw and a defined, pointed chin.",
 };
 
-/** Stable, ordered list of shape ids — useful for building localized lookups. */
 export const SHAPE_IDS = Object.keys(SHAPE_LABELS) as ShapeId[];
 
-/**
- * MediaPipe Face Mesh landmark indices used for measurements.
- * Kept here so they're tunable / auditable in one place.
- */
 const IDX = {
-  foreheadTop: 10, // top of forehead (NOT the hairline — sits below it)
-  glabella: 9, // midline point between the eyebrows (lower bound of upper third)
-  chin: 152, // bottom of chin
-  cheekRight: 234, // widest face contour, right (subject's right)
-  cheekLeft: 454, // widest face contour, left
-  foreheadRight: 71, // upper face oval, right temple
-  foreheadLeft: 301, // upper face oval, left temple
-  jawRight: 172, // jaw angle (gonial), right
-  jawLeft: 397, // jaw angle (gonial), left
+  foreheadTop: 10,
+  glabella: 9,
+  chin: 152,
+  cheekRight: 234,
+  cheekLeft: 454,
+  foreheadRight: 71,
+  foreheadLeft: 301,
+  jawRight: 172,
+  jawLeft: 397,
 } as const;
 
-/**
- * Target ratio profiles per shape. mu = ideal value, sigma = tolerance.
- * Derived from classic anthropometric face-shape definitions; tune these to
- * recalibrate the classifier without touching the scoring logic.
- */
 interface Profile {
   lengthToWidth: [mu: number, sigma: number];
   foreheadToCheek: [mu: number, sigma: number];
@@ -116,7 +75,6 @@ interface Profile {
 }
 
 const SHAPE_PROFILES: Record<ShapeId, Profile> = {
-  // length>width, cheek widest, jaw a touch narrower, soft chin, soft jaw
   oval: {
     lengthToWidth: [1.5, 0.18],
     foreheadToCheek: [0.92, 0.13],
@@ -124,7 +82,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
     chinAngle: [140, 26],
     jawAngularity: [0.35, 0.2],
   },
-  // length≈width, soft wide jaw, rounded chin, smooth (low-angularity) jawline
   round: {
     lengthToWidth: [1.05, 0.13],
     foreheadToCheek: [0.9, 0.14],
@@ -132,7 +89,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
     chinAngle: [152, 24],
     jawAngularity: [0.25, 0.18],
   },
-  // length≈width, parallel sides, wide angular chin, SHARP jaw corner
   square: {
     lengthToWidth: [1.05, 0.13],
     foreheadToCheek: [0.97, 0.1],
@@ -140,7 +96,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
     chinAngle: [166, 20],
     jawAngularity: [0.7, 0.18],
   },
-  // long face, parallel sides, fairly angular jaw
   rectangle: {
     lengthToWidth: [1.68, 0.2],
     foreheadToCheek: [0.95, 0.12],
@@ -148,7 +103,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
     chinAngle: [160, 24],
     jawAngularity: [0.55, 0.2],
   },
-  // wide forehead, narrow pointed chin, moderately defined jaw
   heart: {
     lengthToWidth: [1.4, 0.22],
     foreheadToCheek: [1.05, 0.12],
@@ -156,7 +110,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
     chinAngle: [116, 26],
     jawAngularity: [0.4, 0.22],
   },
-  // cheek widest, narrow forehead AND jaw, pointed chin, defined jaw
   diamond: {
     lengthToWidth: [1.5, 0.22],
     foreheadToCheek: [0.8, 0.12],
@@ -166,7 +119,6 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
   },
 };
 
-/** Relative importance of each feature in the combined score. */
 const FEATURE_WEIGHTS = {
   lengthToWidth: 1.1,
   foreheadToCheek: 1.0,
@@ -175,7 +127,6 @@ const FEATURE_WEIGHTS = {
   jawAngularity: 0.9,
 } as const;
 
-/** Gaussian membership: 1 when x == mu, decaying with distance. */
 function membership(x: number, [mu, sigma]: [number, number]): number {
   const d = (x - mu) / sigma;
   return Math.exp(-0.5 * d * d);
@@ -189,7 +140,6 @@ function dist(a: [number, number], b: [number, number]): number {
   return Math.hypot(a[0] - b[0], a[1] - b[1]);
 }
 
-/** Angle (degrees) at vertex `v` between rays to `a` and `b`. */
 function angleAt(
   v: [number, number],
   a: [number, number],
@@ -205,7 +155,6 @@ function angleAt(
   return (Math.acos(cos) * 180) / Math.PI;
 }
 
-/** Compute the scale-invariant feature ratios from landmarks. */
 export function computeFeatures(
   landmarks: Landmark[],
   width: number,
@@ -213,13 +162,6 @@ export function computeFeatures(
 ): Features {
   const p = (i: number) => px(landmarks[i], width, height);
 
-  // Face length: the forehead-top landmark (10) sits BELOW the hairline, so
-  // measuring 10→chin under-reports length and pushes every face toward "round"
-  // (length≈width). Instead use the facial-thirds rule: glabella (between the
-  // brows) to chin is the lower two-thirds of the face, so the full hairline-to-
-  // chin length ≈ that distance × 1.5. This matches the textbook ratios the
-  // SHAPE_PROFILES were built from. We take the max of the two estimates so a
-  // genuinely tall forehead isn't clipped.
   const lowerTwoThirds = dist(p(IDX.glabella), p(IDX.chin));
   const faceLength = Math.max(
     lowerTwoThirds * 1.5,
@@ -230,11 +172,6 @@ export function computeFeatures(
   const jawWidth = dist(p(IDX.jawRight), p(IDX.jawLeft));
   const chinAngle = angleAt(p(IDX.chin), p(IDX.jawRight), p(IDX.jawLeft));
 
-  // Jaw angularity: the interior angle at each jaw corner (gonion) between the
-  // cheek above it and the chin below. A smooth ROUND jaw bends gently → wide
-  // angle; a SQUARE jaw turns hard → narrow angle. Average both sides, then map
-  // the angle [~160°→soft .. ~100°→sharp] onto 0..1. This is the signal that
-  // separates round from square, which otherwise share length≈width.
   const gonionRight = angleAt(p(IDX.jawRight), p(IDX.cheekRight), p(IDX.chin));
   const gonionLeft = angleAt(p(IDX.jawLeft), p(IDX.cheekLeft), p(IDX.chin));
   const gonionAvg = (gonionRight + gonionLeft) / 2;
@@ -250,10 +187,6 @@ export function computeFeatures(
   };
 }
 
-/**
- * Classify a face from its landmarks into a probability distribution over the
- * six shapes. `width`/`height` are the pixel dimensions of the source media.
- */
 export function classifyFace(
   landmarks: Landmark[],
   width: number,
@@ -262,12 +195,6 @@ export function classifyFace(
   return classifyFromFeatures(computeFeatures(landmarks, width, height));
 }
 
-/**
- * Classify across several frames of the SAME face and average for stability.
- * We take the median of each feature (robust to the odd bad frame from a blink,
- * tilt, or motion blur), then score once. This is what the camera capture uses:
- * 5 readings beat a single snapshot.
- */
 export function classifyFaceMulti(
   landmarkSets: Landmark[][],
   width: number,
@@ -292,7 +219,6 @@ export function classifyFaceMulti(
   return classifyFromFeatures(features);
 }
 
-/** Score a set of (possibly averaged) features into the full shape distribution. */
 export function classifyFromFeatures(features: Features): ShapeResult {
   const totalWeight =
     FEATURE_WEIGHTS.lengthToWidth +
@@ -301,7 +227,6 @@ export function classifyFromFeatures(features: Features): ShapeResult {
     FEATURE_WEIGHTS.chinAngle +
     FEATURE_WEIGHTS.jawAngularity;
 
-  // Weighted-geometric-mean of per-feature memberships → one score per shape.
   const rawScores = (Object.keys(SHAPE_PROFILES) as ShapeId[]).map((id) => {
     const prof = SHAPE_PROFILES[id];
     const logScore =
@@ -319,7 +244,6 @@ export function classifyFromFeatures(features: Features): ShapeResult {
     return { id, score: Math.exp(logScore) };
   });
 
-  // Normalize to probabilities summing to 100.
   const sum = rawScores.reduce((acc, s) => acc + s.score, 0) || 1;
   const ranked: ShapeScore[] = rawScores
     .map((s) => ({
@@ -329,30 +253,23 @@ export function classifyFromFeatures(features: Features): ShapeResult {
     }))
     .sort((a, b) => b.probability - a.probability);
 
-  // Round to whole %, fixing drift so the displayed values still sum to 100.
   roundToHundred(ranked);
 
   const top = ranked[0];
   const runnerUp = ranked[1];
 
-  // Confidence blends absolute strength of the top shape with its margin over #2.
-  // A small upward bias keeps the figure encouraging, and we snap to the nearest
-  // 5 so it reads as an approximate estimate rather than a precise measurement.
   const margin = top.probability - runnerUp.probability;
   const raw = top.probability * 0.6 + margin * 1.4 + 8;
   const confidence = Math.min(100, Math.max(0, Math.round(raw / 5) * 5));
 
-  // A blend when the runner-up is within ~75% of the top score.
   const isBlend = runnerUp.probability >= top.probability * 0.75;
 
   return { ranked, top, runnerUp, confidence, isBlend, features };
 }
 
-/** Round probabilities to integers while preserving a sum of 100 (largest-remainder). */
 function roundToHundred(scores: ShapeScore[]): void {
   const floors = scores.map((s) => Math.floor(s.probability));
   let remainder = 100 - floors.reduce((a, b) => a + b, 0);
-  // Distribute the leftover to the largest fractional parts.
   const order = scores
     .map((s, i) => ({ i, frac: s.probability - floors[i] }))
     .sort((a, b) => b.frac - a.frac);

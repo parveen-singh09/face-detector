@@ -1,19 +1,4 @@
-/**
- * en.ts — the English UI dictionary and the SOURCE OF TRUTH for every locale.
- *
- * The exported `UIStrings` type is derived from this object, so every other
- * locale file (`./es.ts`, `./fr.ts`, …) must provide the exact same key shape;
- * a missing or mistyped key is a compile error. Translators replace the string
- * VALUES only — never the keys, the HTML tag structure, the `{placeholders}`,
- * or the hrefs inside prose.
- *
- * Prose-heavy content (the homepage SEO section and the legal/about pages) is
- * stored as HTML strings rendered with `set:html`. Keep the markup identical
- * across locales — translate the text nodes, leave tags/links/attributes alone.
- */
-
 export const en = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Face Shape Analyzer",
     logoAria: "AI Face Shape Analyzer — home",
@@ -32,7 +17,6 @@ export const en = {
     langLabel: "Language",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — home",
     brandName: "Face Shape Analyzer",
@@ -61,9 +45,7 @@ export const en = {
       "Disclaimer: face shape is a subjective label, not an exact measurement. Results are an estimate generated from your photo and can vary with angle, lighting, expression, hair, glasses, and camera lens. Many faces are a blend of two shapes — use this as a guide for styling, not as definitive or professional advice.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Free AI ",
     titleAccent: "Face Shape",
     titleAfter: " Analyzer",
@@ -77,7 +59,6 @@ export const en = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "How it works",
     heading: "Three steps to your face shape.",
@@ -100,7 +81,6 @@ export const en = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Reference",
     heading: "The six face shapes.",
@@ -129,7 +109,6 @@ export const en = {
       "Cheekbones are the widest point, with a narrower forehead and jaw and a defined, pointed chin.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analyzer",
     heading: "Detect your face shape",
@@ -168,8 +147,6 @@ export const en = {
       "A ranked percentage across all six face shapes",
       "A note when your face is a blend of two shapes",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analyzing…",
       rateLimited:
@@ -187,20 +164,15 @@ export const en = {
       noFaceYet:
         "No face detected yet. Center your face, then click to capture.",
       captureError: "Something went wrong during capture. Please try again.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Capture reading - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% confidence",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Mostly {top} with {runnerUp} traits. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "About the tool",
     heading: "The free AI face shape analyzer, online.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Our <strong>AI face shape analyzer</strong> is a free, online tool that
@@ -265,7 +237,6 @@ export const en = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "FAQ",
     heading: "Common questions.",
@@ -321,22 +292,18 @@ export const en = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Last updated:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "This page was machine-translated. The English version is authoritative; in case of any discrepancy, the <a href=\"{enHref}\">English original</a> prevails.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Error {code}",
     ctaHome: "Back to home",
     ctaAnalyze: "Analyze my face",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Free AI Face Shape Analyzer Online — Detect Your Face Shape",
@@ -446,7 +413,6 @@ export const en = {
       fallback: "Prefer to write directly? Email {email}.",
       errMissing: "Please fill in your name, email, and message.",
       errEmail: "Please enter a valid email address.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Contact from {name}",
     },
     privacy: {
@@ -678,14 +644,8 @@ export const en = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai face shape analyzer, best ai face shape analyzer, ai face shape analyzer free, ai face shape analyzer online, ai face shape analyzer online free, ai face shape detector, face shape ai analyzer, face shape analyzer ai, face shapes, face shape, whats my face shape, how to determine face shape, face analyzer, face shape calculator, face attractiveness analyzer",
 };
 
-/**
- * The shape every locale dictionary must satisfy. Note `en` is intentionally
- * NOT `as const` — that widens string literals to `string` and tuples to arrays
- * so translated locale files can supply different text under the same key shape.
- */
 export type UIStrings = typeof en;

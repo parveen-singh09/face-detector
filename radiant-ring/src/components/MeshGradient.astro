@@ -1,13 +1,4 @@
 ---
-/**
- * MeshGradient — the brand's signature multi-stop mesh gradient backdrop.
- * Per DESIGN.md this is the ENTIRE decorative system: cyan / blue / violet /
- * magenta / amber, used at hero scale only, never miniaturised.
- *
- * Rendered as a soft-blurred stack of radial gradients on a single element so
- * it stays cheap (no SVG filters, no canvas). Honors prefers-reduced-motion by
- * dropping the slow drift animation.
- */
 interface Props {
   class?: string;
 }
@@ -23,7 +14,6 @@ const { class: className = "" } = Astro.props;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    /* Multi-stop mesh built from layered radial gradients (the four brand pairs). */
     background-color: var(--mesh-base, #ffffff);
     background-image:
       radial-gradient(40% 50% at 18% 22%, #007cf0aa 0%, transparent 70%),
@@ -52,8 +42,6 @@ const { class: className = "" } = Astro.props;
     }
   }
 
-  /* In dark mode the brand colours glow against the dark base; ease the
-     saturation/opacity so the hero stays calm rather than neon. */
   :global(html[data-theme="dark"]) .mesh-gradient {
     opacity: 0.55;
     filter: blur(52px) saturate(0.9);

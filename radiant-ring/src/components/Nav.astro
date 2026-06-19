@@ -1,12 +1,4 @@
 ---
-/**
- * Nav — sticky top nav bar (DESIGN.md nav-bar: 64px, logo left, links, CTA right).
- *
- * Desktop (>760px): logo + section links + language switcher + theme toggle, all
- * inline. Mobile (≤760px): logo + theme toggle + a hamburger button that opens a
- * dropdown panel holding the links and the language switcher. All hrefs and
- * labels are locale-aware; logical CSS properties keep the layout RTL-correct.
- */
 import LangSwitcher from "./LangSwitcher.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
 import { localizePath, useTranslations } from "../i18n/utils";
@@ -82,7 +74,6 @@ const links = [
     </div>
   </div>
 
-  <!-- Mobile dropdown menu (revealed by the hamburger ≤760px) -->
   <div id="mobile-menu" class="mobile-menu" hidden>
     <nav class="mobile-links container-page" aria-label={t.nav.primaryAria}>
       {links.map((l) => <a href={l.href}>{l.label}</a>)}
@@ -95,7 +86,6 @@ const links = [
   (() => {
     const root = document.documentElement;
 
-    // ── Theme toggle ──
     const btn = document.getElementById("theme-toggle");
     if (btn) {
       const meta = document.querySelector('meta[name="theme-color"]');
@@ -114,7 +104,6 @@ const links = [
       });
     }
 
-    // ── Mobile menu ──
     const menuBtn = document.getElementById("menu-toggle");
     const menu = document.getElementById("mobile-menu");
     if (menuBtn && menu) {
@@ -129,14 +118,12 @@ const links = [
       menuBtn.addEventListener("click", () =>
         setOpen(menuBtn.getAttribute("aria-expanded") !== "true"),
       );
-      // Close on Escape or when a link is chosen.
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") setOpen(false);
       });
       menu.querySelectorAll("a").forEach((a) =>
         a.addEventListener("click", () => setOpen(false)),
       );
-      // Close when resizing up to desktop so state never gets stuck.
       const mq = window.matchMedia("(min-width: 761px)");
       mq.addEventListener("change", (e) => {
         if (e.matches) setOpen(false);
@@ -203,7 +190,6 @@ const links = [
     gap: var(--spacing-sm);
   }
 
-  /* Theme toggle — circular icon button (DESIGN.md icon-button-circular). */
   .theme-toggle,
   .menu-toggle {
     display: inline-grid;
@@ -235,7 +221,6 @@ const links = [
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  /* Show the icon for the theme you'd switch TO: moon in light, sun in dark. */
   .theme-icon-sun {
     display: none;
   }
@@ -249,7 +234,6 @@ const links = [
     display: none;
   }
 
-  /* Hamburger: bars by default, X when open. Hidden on desktop. */
   .menu-toggle {
     display: none;
   }
@@ -263,7 +247,6 @@ const links = [
     display: block;
   }
 
-  /* Mobile dropdown menu */
   .mobile-menu {
     border-top: 1px solid var(--color-hairline);
     background-color: var(--color-canvas);
@@ -293,14 +276,12 @@ const links = [
     margin-top: var(--spacing-xs);
   }
 
-  /* ≤760px: collapse the inline links + lang switcher into the hamburger menu. */
   @media (max-width: 760px) {
     .nav-links,
     .nav-lang {
       display: none;
     }
   }
-  /* Desktop: the mobile menu never shows even if [hidden] is toggled. */
   @media (min-width: 761px) {
     .mobile-menu {
       display: none !important;

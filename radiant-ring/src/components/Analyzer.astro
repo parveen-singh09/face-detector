@@ -1,19 +1,4 @@
 ---
-/**
- * Analyzer — the interactive core: upload OR camera, a live face-mesh overlay,
- * and a full probability breakdown across all six shapes.
- *
- * Rendering strategy: all static chrome is server-rendered (zero JS until the
- * user interacts). The client script statically imports only the tiny pure
- * modules (faceShape, rateLimit) and DYNAMICALLY imports the heavy MediaPipe
- * wrappers (faceLandmarker, meshOverlay) the first time a mode is activated, so
- * the ~15MB WASM+model never touches the homepage's critical path.
- *
- * i18n: all server-rendered strings come from the dictionary. Strings the client
- * script needs at runtime (status/error messages, dynamic labels, localized
- * shape names + descriptions) are serialized into a JSON island the script reads
- * on load — so the logic stays untouched and copy stays in the dictionary.
- */
 import ShapeBar from "./ShapeBar.astro";
 import { SHAPE_IDS, type ShapeId } from "../lib/faceShape";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
@@ -26,10 +11,8 @@ const { lang = DEFAULT_LOCALE } = Astro.props;
 const t = useTranslations(lang);
 const a = t.analyzer;
 
-// Localized shape label list for the pre-rendered breakdown bars.
 const SHAPES = SHAPE_IDS.map((id) => [id, t.shapeLabels[id]] as [ShapeId, string]);
 
-// Strings the client script reads from the JSON island below.
 const scriptI18n = {
   messages: a.msg,
   shapeLabels: t.shapeLabels,
@@ -45,7 +28,6 @@ const scriptI18n = {
   </div>
 
   <div class="card-lg analyzer-card">
-    <!-- Mode tabs -->
     <div class="mode-tabs" role="tablist" aria-label={a.tablistAria}>
       <button
         id="tab-upload"
@@ -72,11 +54,8 @@ const scriptI18n = {
     </div>
 
     <div class="analyzer-grid">
-      <!-- Left column: stage + disclaimer -->
       <div class="panel-main">
-        <!-- Stage: dropzone / image / video + overlay -->
-      <div id="panel-stage" class="stage" role="tabpanel" aria-labelledby="tab-upload">
-        <!-- Upload dropzone -->
+        <div id="panel-stage" class="stage" role="tabpanel" aria-labelledby="tab-upload">
         <div id="dropzone" class="dropzone" data-view="upload">
           <input
             id="file-input"
@@ -92,7 +71,6 @@ const scriptI18n = {
           </label>
         </div>
 
-        <!-- Media preview (image or video) with the mesh overlay canvas -->
         <div id="media-wrap" class="media-wrap" hidden>
           <img id="preview-img" class="media" alt={a.previewImgAlt} hidden />
           <video
@@ -105,23 +83,19 @@ const scriptI18n = {
           <canvas id="overlay" class="overlay" aria-hidden="true"></canvas>
         </div>
 
-        <!-- Loading / model-init state -->
         <div id="stage-loading" class="stage-loading" hidden role="status">
           <span class="spinner" aria-hidden="true"></span>
           <span id="loading-text">{a.loadingModel}</span>
         </div>
       </div>
 
-      <!-- Disclaimer sits directly under the stage -->
       <p class="result-disclaimer">
         <span class="result-disclaimer-icon" aria-hidden="true">ⓘ</span>
         <span>{a.resultDisclaimer}</span>
       </p>
       </div>
 
-      <!-- Controls + results -->
       <div class="panel-side">
-        <!-- Action row -->
         <div class="actions">
           <button id="btn-analyze" class="btn-primary" type="button" hidden>
             {a.btnAnalyze}
@@ -134,7 +108,6 @@ const scriptI18n = {
           </button>
         </div>
 
-        <!-- Capture progress (camera mode): one segment per reading -->
         <div
           id="capture-progress"
           class="capture-progress"
@@ -146,24 +119,20 @@ const scriptI18n = {
           <span id="capture-dots" class="capture-dots" aria-hidden="true"></span>
         </div>
 
-        <!-- Inline messages (errors / rate limit) -->
         <p id="message" class="message" role="alert" hidden></p>
 
-        <!-- Upload tips (shown only in upload mode) -->
         <ul id="upload-tips" class="cam-tips" aria-label={a.uploadTipsAria}>
           <li><span aria-hidden="true">📸</span> {a.uploadTips[0]}</li>
           <li><span aria-hidden="true">🖼️</span> {a.uploadTips[1]}</li>
           <li><span aria-hidden="true">💇</span> {a.uploadTips[2]}</li>
         </ul>
 
-        <!-- Camera capture tips (shown only in camera mode) -->
         <ul id="cam-tips" class="cam-tips" hidden aria-label={a.camTipsAria}>
           <li><span aria-hidden="true">👓</span> {a.camTips[0]}</li>
           <li><span aria-hidden="true">🧑</span> {a.camTips[1]}</li>
           <li><span aria-hidden="true">🤚</span> {a.camTips[2]}</li>
         </ul>
 
-        <!-- Results -->
         <div id="results" class="results" hidden aria-live="polite">
           <div class="result-headline">
             <span class="eyebrow">{a.resultEyebrow}</span>
@@ -182,7 +151,6 @@ const scriptI18n = {
           </div>
         </div>
 
-        <!-- Idle helper copy (before first result) -->
         <div id="idle-help" class="idle-help">
           <p class="idle-help-title">{a.idleTitle}</p>
           <ul>
@@ -195,7 +163,6 @@ const scriptI18n = {
     </div>
   </div>
 
-  <!-- i18n island: strings the client script reads at runtime. -->
   <script type="application/json" id="analyzer-i18n" set:html={JSON.stringify(scriptI18n)}></script>
 </section>
 
@@ -212,7 +179,6 @@ const scriptI18n = {
     formatRetryAfter,
   } from "../lib/rateLimit";
 
-  // ── i18n strings (from the JSON island) ────────────────────────────────────
   type I18n = {
     messages: Record<string, string>;
     shapeLabels: Record<ShapeId, string>;
@@ -222,16 +188,12 @@ const scriptI18n = {
     document.getElementById("analyzer-i18n")?.textContent || "{}",
   );
   const M = I.messages;
-  // Tiny placeholder interpolator: fill("{n}/{total}", {n:1,total:5}).
   const fill = (tpl: string, vars: Record<string, string | number>) =>
     tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
 
   const MAX_BYTES = 10 * 1024 * 1024;
-  // How many camera readings the user clicks to capture, then we average them
-  // for a more stable, accurate result.
   const CAPTURE_FRAMES = 5;
 
-  // ── Element refs ──────────────────────────────────────────────────────────
   const $ = <T extends HTMLElement>(id: string) =>
     document.getElementById(id) as T;
 
@@ -259,7 +221,6 @@ const scriptI18n = {
   const resultConfidence = $("result-confidence");
   const resultDesc = $("result-desc");
 
-  // Lazily-loaded heavy modules (MediaPipe).
   type LandmarkerMod = typeof import("../lib/faceLandmarker");
   type OverlayMod = typeof import("../lib/meshOverlay");
   let landmarkerMod: LandmarkerMod | null = null;
@@ -267,14 +228,10 @@ const scriptI18n = {
 
   let mode: "upload" | "camera" = "upload";
   let stream: MediaStream | null = null;
-  // Bumped on every stopCamera (and at the start of each startCamera) so a
-  // startCamera whose async startup finishes AFTER the user switched away can
-  // detect it's stale and bail instead of painting the camera over the stage.
   let camGen = 0;
   let rafId = 0;
   let lastLandmarks: any[] | null = null;
   let videoReady = false;
-  // Readings collected one-per-click in camera mode; classified on the 5th.
   let captureFrames: any[][] = [];
 
   async function loadModules() {
@@ -289,7 +246,6 @@ const scriptI18n = {
     return { landmarkerMod: landmarkerMod!, overlayMod: overlayMod! };
   }
 
-  // ── UI helpers ──────────────────────────────────────────────────────────
   function showLoading(text: string) {
     loadingText.textContent = text;
     stageLoading.hidden = false;
@@ -307,7 +263,6 @@ const scriptI18n = {
     message.textContent = "";
   }
 
-  // Camera capture progress: one segment per reading, filled as they're taken.
   function renderCaptureProgress(filled: number, total: number) {
     captureProgress.setAttribute("aria-valuemax", String(total));
     captureProgress.setAttribute("aria-valuenow", String(filled));
@@ -372,7 +327,6 @@ const scriptI18n = {
       URL.revokeObjectURL(previewImg.src);
       previewImg.removeAttribute("src");
     }
-    // Clear the input value so re-selecting the SAME file still fires `change`.
     fileInput.value = "";
   }
 
@@ -385,7 +339,6 @@ const scriptI18n = {
     idleHelp.hidden = true;
   }
 
-  // ── Rate limit gate ───────────────────────────────────────────────────────
   function gateByRateLimit(): boolean {
     const status = checkRateLimit();
     if (!status.allowed) {
@@ -399,7 +352,6 @@ const scriptI18n = {
     return true;
   }
 
-  // ── Upload flow ───────────────────────────────────────────────────────────
   function handleFile(file: File) {
     clearMessage();
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -455,21 +407,17 @@ const scriptI18n = {
     }
   }
 
-  // ── Camera flow ───────────────────────────────────────────────────────────
   async function startCamera() {
     clearMessage();
     if (!navigator.mediaDevices?.getUserMedia) {
       showMessage(M.noCameraSupport);
       return;
     }
-    // Tag this startup. If the user switches away (stopCamera bumps camGen)
-    // while we're awaiting below, this run is stale and must not touch the UI.
     const myGen = ++camGen;
     const stale = () => myGen !== camGen || mode !== "camera";
     try {
       const { overlayMod } = await loadModules();
       if (stale()) return;
-      // Warm the VIDEO-mode landmarker before the loop starts.
       await landmarkerMod!.preloadLandmarker("VIDEO");
       if (stale()) return;
 
@@ -477,7 +425,6 @@ const scriptI18n = {
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
-      // If we switched away while waiting on the permission/stream, discard it.
       if (stale()) {
         s.getTracks().forEach((t) => t.stop());
         return;
@@ -514,7 +461,6 @@ const scriptI18n = {
             previewVideo,
             performance.now(),
           );
-          // detectForVideo is synchronous in tasks-vision, but guard anyway.
           const result = (res as any)?.faceLandmarks ? (res as any) : await res;
           const faces = result.faceLandmarks;
           overlayMod.syncCanvasSize(overlay, previewVideo);
@@ -526,7 +472,6 @@ const scriptI18n = {
             overlayMod.clearOverlay(overlay);
           }
         } catch (e) {
-          /* transient frame error — keep looping */
         }
       }
       rafId = requestAnimationFrame(loop);
@@ -534,9 +479,6 @@ const scriptI18n = {
     rafId = requestAnimationFrame(loop);
   }
 
-  // One click = one reading. The live preview loop keeps running and tracks the
-  // latest landmarks; each click snapshots them and fills a progress dot. On the
-  // CAPTURE_FRAMES-th click we average the readings and show the result.
   function captureAndAnalyze() {
     if (!gateByRateLimit()) return;
     if (!lastLandmarks || !landmarkerMod || !overlayMod) {
@@ -545,7 +487,6 @@ const scriptI18n = {
     }
     clearMessage();
 
-    // Snapshot the current reading.
     captureFrames.push(lastLandmarks);
     renderCaptureProgress(captureFrames.length, CAPTURE_FRAMES);
 
@@ -558,7 +499,6 @@ const scriptI18n = {
       return;
     }
 
-    // Final reading collected — stop the live loop and classify.
     const w = previewVideo.videoWidth;
     const h = previewVideo.videoHeight;
     videoReady = false;
@@ -567,7 +507,6 @@ const scriptI18n = {
     try {
       recordAnalysis();
       renderResult(classifyFaceMulti(captureFrames, w, h));
-      // Freeze on the captured result.
       btnCapture.hidden = true;
       hideCaptureProgress();
     } catch (err) {
@@ -583,7 +522,7 @@ const scriptI18n = {
 
   function stopCamera() {
     videoReady = false;
-    camGen++; // invalidate any in-flight startCamera startup
+    camGen++;
     cancelAnimationFrame(rafId);
     if (stream) {
       stream.getTracks().forEach((t) => t.stop());
@@ -592,7 +531,6 @@ const scriptI18n = {
     previewVideo.srcObject = null;
   }
 
-  // ── Result rendering ──────────────────────────────────────────────────────
   function renderResult(result: ShapeResult) {
     showResults();
     clearMessage();
@@ -612,7 +550,6 @@ const scriptI18n = {
       resultDesc.textContent = I.shapeDescriptions[topId];
     }
 
-    // Reorder + fill the pre-rendered bars by probability.
     const list = document.querySelector(".breakdown-list") as HTMLElement;
     result.ranked.forEach((score, i) => {
       const row = list.querySelector(
@@ -647,7 +584,6 @@ const scriptI18n = {
     }
   }
 
-  // ── Wiring ────────────────────────────────────────────────────────────────
   tabUpload.addEventListener("click", () => setMode("upload"));
   tabCamera.addEventListener("click", () => setMode("camera"));
 
@@ -656,7 +592,6 @@ const scriptI18n = {
     if (file) handleFile(file);
   });
 
-  // Drag & drop
   ["dragover", "dragenter"].forEach((evt) =>
     dropzone.addEventListener(evt, (e) => {
       e.preventDefault();
@@ -678,10 +613,8 @@ const scriptI18n = {
   btnCapture.addEventListener("click", captureAndAnalyze);
   btnReset.addEventListener("click", reset);
 
-  // Clean up the camera if the user navigates away.
   window.addEventListener("pagehide", stopCamera);
 
-  // Start in upload mode with the dropzone visible.
   resetStage();
 </script>
 
@@ -710,7 +643,6 @@ const scriptI18n = {
     padding: clamp(var(--spacing-md), 4vw, var(--spacing-xl));
   }
 
-  /* Mode tabs */
   .mode-tabs {
     display: inline-flex;
     gap: var(--spacing-xxs);
@@ -745,7 +677,6 @@ const scriptI18n = {
     align-items: start;
   }
 
-  /* Stage */
   .stage {
     position: relative;
     aspect-ratio: 4 / 3;
@@ -799,13 +730,11 @@ const scriptI18n = {
   .media {
     width: 100%;
     height: 100%;
-    /* Show the whole photo as-is (no crop/zoom). The overlay canvas matches
-       this fit so the mesh stays aligned within the letterboxed area. */
     object-fit: contain;
     display: block;
   }
   #preview-video {
-    transform: scaleX(-1); /* mirror selfie view */
+    transform: scaleX(-1);
   }
   .overlay {
     position: absolute;
@@ -848,7 +777,6 @@ const scriptI18n = {
     }
   }
 
-  /* Side panel */
   .panel-main {
     display: flex;
     flex-direction: column;
@@ -877,7 +805,6 @@ const scriptI18n = {
     color: var(--color-warning-deep);
   }
 
-  /* Camera capture progress — one segment per reading */
   .capture-progress {
     margin: calc(-1 * var(--spacing-xxs)) 0 var(--spacing-xxs);
   }
@@ -901,7 +828,6 @@ const scriptI18n = {
     }
   }
 
-  /* Camera capture tips */
   .cam-tips {
     list-style: none;
     margin: 0;
@@ -922,7 +848,6 @@ const scriptI18n = {
     gap: var(--spacing-xs);
   }
 
-  /* Results */
   .result-top-row {
     display: flex;
     align-items: baseline;
@@ -980,7 +905,6 @@ const scriptI18n = {
     color: var(--color-hairline-strong);
   }
 
-  /* Idle helper */
   .idle-help-title {
     font-size: 13px;
     font-weight: 500;

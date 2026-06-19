@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const it: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Analizzatore della Forma del Viso",
     logoAria: "AI Face Shape Analyzer — home",
@@ -20,7 +19,6 @@ export const it: UIStrings = {
     langLabel: "Lingua",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — home",
     brandName: "Analizzatore della Forma del Viso",
@@ -49,9 +47,7 @@ export const it: UIStrings = {
       "Avvertenza: la forma del viso è un'etichetta soggettiva, non una misurazione esatta. I risultati sono una stima generata dalla tua foto e possono variare in base ad angolazione, illuminazione, espressione, capelli, occhiali e obiettivo della fotocamera. Molti visi sono un mix di due forme — usa questo strumento come guida per lo styling, non come consiglio definitivo o professionale.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Analizzatore AI ",
     titleAccent: "della Forma",
     titleAfter: " del Viso",
@@ -65,7 +61,6 @@ export const it: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Come funziona",
     heading: "Tre passi per scoprire la forma del tuo viso.",
@@ -88,7 +83,6 @@ export const it: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Riferimento",
     heading: "Le sei forme del viso.",
@@ -117,7 +111,6 @@ export const it: UIStrings = {
       "Gli zigomi sono il punto più largo, con una fronte e una mascella più strette e un mento definito e appuntito.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analizzatore",
     heading: "Rileva la forma del tuo viso",
@@ -156,8 +149,6 @@ export const it: UIStrings = {
       "Una percentuale classificata su tutte e sei le forme del viso",
       "Una nota quando il tuo viso è un mix di due forme",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analisi in corso…",
       rateLimited:
@@ -175,20 +166,15 @@ export const it: UIStrings = {
       noFaceYet:
         "Nessun viso ancora rilevato. Centra il tuo viso, poi clicca per acquisire.",
       captureError: "Si è verificato un problema durante l'acquisizione. Riprova.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Acquisizione lettura - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% di affidabilità",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Prevalentemente {top} con tratti {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Informazioni sullo strumento",
     heading: "L'analizzatore AI gratuito della forma del viso, online.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Il nostro <strong>analizzatore AI della forma del viso</strong> è uno strumento gratuito e
@@ -253,7 +239,6 @@ export const it: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "FAQ",
     heading: "Domande frequenti.",
@@ -309,22 +294,18 @@ export const it: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Ultimo aggiornamento:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Questa pagina è stata tradotta automaticamente. La versione inglese fa fede; in caso di discrepanza, prevale l'<a href=\"{enHref}\">originale inglese</a>.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Errore {code}",
     ctaHome: "Torna alla home",
     ctaAnalyze: "Analizza il mio viso",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Analizzatore AI Gratuito della Forma del Viso Online — Rileva la Forma del Tuo Viso",
@@ -434,7 +415,6 @@ export const it: UIStrings = {
       fallback: "Preferisci scrivere direttamente? Scrivi a {email}.",
       errMissing: "Inserisci nome, email e messaggio.",
       errEmail: "Inserisci un indirizzo email valido.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Contatto da {name}",
     },
     privacy: {
@@ -666,7 +646,6 @@ export const it: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "analizzatore ai forma del viso, miglior analizzatore ai forma del viso, analizzatore ai forma del viso gratuito, analizzatore ai forma del viso online, analizzatore ai forma del viso online gratuito, rilevatore ai forma del viso, analizzatore ai del viso, analizzatore della forma del viso ai, forme del viso, forma del viso, qual è la forma del mio viso, come determinare la forma del viso, analizzatore del viso, calcolatore della forma del viso, analizzatore di attrattiva del viso",
 };

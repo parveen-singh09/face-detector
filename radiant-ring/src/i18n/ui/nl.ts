@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const nl: UIStrings = {
-  // ── Navigatie ───────────────────────────────────────────────────────────
   nav: {
     logoText: "Gezichtsvorm-analyse",
     logoAria: "AI Face Shape Analyzer — home",
@@ -20,7 +19,6 @@ export const nl: UIStrings = {
     langLabel: "Taal",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — home",
     brandName: "Gezichtsvorm-analyse",
@@ -49,9 +47,7 @@ export const nl: UIStrings = {
       "Disclaimer: gezichtsvorm is een subjectief label, geen exacte meting. De resultaten zijn een schatting op basis van je foto en kunnen variëren met hoek, belichting, expressie, haar, bril en cameralens. Veel gezichten zijn een mix van twee vormen — gebruik dit als leidraad voor styling, niet als definitief of professioneel advies.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // De kop is gesplitst zodat "Gezichtsvorm" het kleurverloop kan dragen.
     titleBefore: "Gratis AI ",
     titleAccent: "Gezichtsvorm",
     titleAfter: "-analyse",
@@ -65,7 +61,6 @@ export const nl: UIStrings = {
     },
   },
 
-  // ── Hoe het werkt ─────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Hoe het werkt",
     heading: "Drie stappen naar je gezichtsvorm.",
@@ -88,7 +83,6 @@ export const nl: UIStrings = {
     },
   ],
 
-  // ── Gezichtsvormen (labels + beschrijvingen; gebruikt door faceShape-lookups) ─
   shapesSection: {
     eyebrow: "Referentie",
     heading: "De zes gezichtsvormen.",
@@ -117,7 +111,6 @@ export const nl: UIStrings = {
       "De jukbeenderen vormen het breedste punt, met een smaller voorhoofd en kaak en een uitgesproken, puntige kin.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analyzer",
     heading: "Detecteer je gezichtsvorm",
@@ -156,8 +149,6 @@ export const nl: UIStrings = {
       "Een gerangschikt percentage over alle zes gezichtsvormen",
       "Een notitie wanneer je gezicht een mix van twee vormen is",
     ],
-    // Strings gebruikt door het client-script. {placeholders} worden tijdens runtime ingevuld —
-    // houd ze letterlijk en op hun plaats.
     msg: {
       analyzing: "Bezig met analyseren…",
       rateLimited:
@@ -175,20 +166,15 @@ export const nl: UIStrings = {
       noFaceYet:
         "Nog geen gezicht gedetecteerd. Centreer je gezicht en klik dan om vast te leggen.",
       captureError: "Er ging iets mis tijdens het vastleggen. Probeer het opnieuw.",
-      // {n} = huidig metingnummer, {total} = CAPTURE_FRAMES.
       captureReading: "Meting vastleggen - [{n}/{total}]",
-      // {pct} = betrouwbaarheidspercentage.
       confidence: "{pct}% betrouwbaarheid",
-      // {top} = winnende vormlabel, {runnerUp} = tweede vorm, {desc} = beschrijving van top.
       blendDesc: "Voornamelijk {top} met kenmerken van {runnerUp}. {desc}",
     },
   },
 
-  // ── Uitgebreide SEO-sectie (#about op de homepage) ────────────────────────
   seo: {
     eyebrow: "Over de tool",
     heading: "De gratis AI-gezichtsvormanalyse, online.",
-    // Gerenderd met set:html. Vertaal de tekst, behoud tags + de #analyzer-link.
     html: `
       <p>
         Onze <strong>AI-gezichtsvormanalyse</strong> is een gratis, online tool die
@@ -253,7 +239,6 @@ export const nl: UIStrings = {
     `,
   },
 
-  // ── Veelgestelde vragen ─────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "Veelgestelde vragen",
     heading: "Veelgestelde vragen.",
@@ -309,22 +294,18 @@ export const nl: UIStrings = {
     },
   ],
 
-  // ── Gedeelde chrome voor contentpagina’s ──────────────────────────────────
   contentPage: {
     lastUpdated: "Laatst bijgewerkt:",
   },
-  // Melding over machinevertaling op vertaalde juridische/over-pagina’s (set:html).
   mtNotice:
     "Deze pagina is machinaal vertaald. De Engelse versie is leidend; bij eventuele discrepanties prevaleert het <a href=\"{enHref}\">Engelse origineel</a>.",
 
-  // ── Foutpagina’s ──────────────────────────────────────────────────────────
   error: {
     eyebrow: "Fout {code}",
     ctaHome: "Terug naar home",
     ctaAnalyze: "Analyseer mijn gezicht",
   },
 
-  // ── SEO-meta per pagina + copy voor contentpagina’s ───────────────────────
   pages: {
     home: {
       title: "Gratis AI-gezichtsvormanalyse online — Detecteer je gezichtsvorm",
@@ -434,7 +415,6 @@ export const nl: UIStrings = {
       fallback: "Liever rechtstreeks schrijven? E-mail {email}.",
       errMissing: "Vul je naam, e-mail en bericht in.",
       errEmail: "Voer een geldig e-mailadres in.",
-      // {name} vult beide; de e-mailtekst behoudt de gedachtestreep + e-mail tussen haakjes.
       mailSubject: "Contact van {name}",
     },
     privacy: {
@@ -666,7 +646,6 @@ export const nl: UIStrings = {
     },
   },
 
-  // Gedeelde keyword-meta (home + standaard). Localebestanden mogen licht lokaliseren.
   keywords:
     "ai-gezichtsvormanalyse, beste ai-gezichtsvormanalyse, ai-gezichtsvormanalyse gratis, ai-gezichtsvormanalyse online, ai-gezichtsvormanalyse online gratis, ai-gezichtsvormdetector, gezichtsvorm ai-analyse, gezichtsvormanalyse ai, gezichtsvormen, gezichtsvorm, wat is mijn gezichtsvorm, hoe gezichtsvorm bepalen, gezichtsanalysator, gezichtsvormcalculator, gezichtsaantrekkelijkheidsanalysator",
 };

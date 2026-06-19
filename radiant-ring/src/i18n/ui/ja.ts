@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const ja: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "顔型アナライザー",
     logoAria: "AI Face Shape Analyzer — ホーム",
@@ -20,7 +19,6 @@ export const ja: UIStrings = {
     langLabel: "言語",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — ホーム",
     brandName: "顔型アナライザー",
@@ -49,9 +47,7 @@ export const ja: UIStrings = {
       "免責事項：顔の形は主観的なラベルであり、正確な測定値ではありません。結果はあなたの写真から生成された推定値であり、角度、照明、表情、髪、メガネ、カメラレンズによって変わることがあります。多くの顔は2つの形が混ざり合っています。確定的な判断や専門的なアドバイスとしてではなく、スタイリングの参考としてご利用ください。",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "無料AI ",
     titleAccent: "顔型",
     titleAfter: " アナライザー",
@@ -65,7 +61,6 @@ export const ja: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "使い方",
     heading: "3ステップで顔の形がわかります。",
@@ -88,7 +83,6 @@ export const ja: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "リファレンス",
     heading: "6つの顔の形。",
@@ -117,7 +111,6 @@ export const ja: UIStrings = {
       "頬骨が最も広い部分で、額とあごが狭く、はっきりと尖ったあご先を持ちます。",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "アナライザー",
     heading: "あなたの顔の形を判定",
@@ -156,8 +149,6 @@ export const ja: UIStrings = {
       "6つの顔型すべてにわたるランク付けされた割合",
       "あなたの顔が2つの形の混合である場合の注記",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "分析中…",
       rateLimited:
@@ -175,20 +166,15 @@ export const ja: UIStrings = {
       noFaceYet:
         "まだ顔が検出されていません。顔を中央に合わせてから、クリックして撮影してください。",
       captureError: "撮影中に問題が発生しました。もう一度お試しください。",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "読み取り中 - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "信頼度{pct}%",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "主に{top}で、{runnerUp}の特徴があります。{desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "ツールについて",
     heading: "無料のAI顔型アナライザー、オンラインで。",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         私たちの<strong>AI顔型アナライザー</strong>は、数秒であなたの顔の形を
@@ -250,7 +236,6 @@ export const ja: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "よくある質問",
     heading: "よくある質問。",
@@ -306,22 +291,18 @@ export const ja: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "最終更新：",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "このページは機械翻訳されたものです。英語版が正本であり、相違がある場合は<a href=\"{enHref}\">英語の原文</a>が優先されます。",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "エラー {code}",
     ctaHome: "ホームに戻る",
     ctaAnalyze: "顔を分析する",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "無料AI顔型アナライザー オンライン — あなたの顔の形を判定",
@@ -431,7 +412,6 @@ export const ja: UIStrings = {
       fallback: "直接書きたい場合は、{email}までメールしてください。",
       errMissing: "お名前、メールアドレス、メッセージを入力してください。",
       errEmail: "有効なメールアドレスを入力してください。",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "{name}様からのお問い合わせ",
     },
     privacy: {
@@ -660,7 +640,6 @@ export const ja: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai顔型アナライザー, 最高のai顔型アナライザー, ai顔型アナライザー 無料, ai顔型アナライザー オンライン, ai顔型アナライザー オンライン無料, ai顔型検出器, 顔型aiアナライザー, 顔型アナライザーai, 顔の形, 顔型, 私の顔の形, 顔の形を判定する方法, フェイスアナライザー, 顔型計算機, 顔の魅力アナライザー",
 };

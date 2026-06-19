@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const ru: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Анализатор формы лица",
     logoAria: "AI Face Shape Analyzer — главная",
@@ -20,7 +19,6 @@ export const ru: UIStrings = {
     langLabel: "Язык",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — главная",
     brandName: "Анализатор формы лица",
@@ -49,9 +47,7 @@ export const ru: UIStrings = {
       "Оговорка: форма лица — это субъективная характеристика, а не точное измерение. Результаты являются оценкой, сформированной по вашей фотографии, и могут меняться в зависимости от ракурса, освещения, выражения лица, причёски, очков и объектива камеры. Многие лица представляют собой сочетание двух форм — используйте это как ориентир для стиля, а не как окончательный или профессиональный вердикт.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Бесплатный ИИ-",
     titleAccent: "анализатор формы",
     titleAfter: " лица",
@@ -65,7 +61,6 @@ export const ru: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Как это работает",
     heading: "Три шага к форме вашего лица.",
@@ -88,7 +83,6 @@ export const ru: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Справочник",
     heading: "Шесть форм лица.",
@@ -117,7 +111,6 @@ export const ru: UIStrings = {
       "Скулы — самая широкая точка, лоб и челюсть уже, а подбородок чёткий и заострённый.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Анализатор",
     heading: "Определите форму своего лица",
@@ -156,8 +149,6 @@ export const ru: UIStrings = {
       "Ранжированный процент по всем шести формам лица",
       "Пометку, когда ваше лицо является сочетанием двух форм",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Анализируем…",
       rateLimited:
@@ -175,20 +166,15 @@ export const ru: UIStrings = {
       noFaceYet:
         "Лицо пока не обнаружено. Расположите лицо по центру, затем нажмите, чтобы снять.",
       captureError: "Во время съёмки что-то пошло не так. Пожалуйста, попробуйте снова.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Измерение - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "{pct}% уверенности",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Преимущественно {top} с чертами {runnerUp}. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Об инструменте",
     heading: "Бесплатный ИИ-анализатор формы лица, онлайн.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         Наш <strong>ИИ-анализатор формы лица</strong> — это бесплатный онлайн-инструмент,
@@ -253,7 +239,6 @@ export const ru: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "Вопросы и ответы",
     heading: "Частые вопросы.",
@@ -309,22 +294,18 @@ export const ru: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Последнее обновление:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Эта страница переведена машинным способом. Английская версия является основной; в случае любых расхождений преимущественную силу имеет <a href=\"{enHref}\">английский оригинал</a>.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Ошибка {code}",
     ctaHome: "Вернуться на главную",
     ctaAnalyze: "Анализ лица",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Бесплатный ИИ-анализатор формы лица онлайн — определите форму лица",
@@ -434,7 +415,6 @@ export const ru: UIStrings = {
       fallback: "Предпочитаете написать напрямую? Напишите на {email}.",
       errMissing: "Пожалуйста, укажите ваше имя, email и сообщение.",
       errEmail: "Пожалуйста, введите действительный адрес электронной почты.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "Сообщение от {name}",
     },
     privacy: {
@@ -666,7 +646,6 @@ export const ru: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ии-анализатор формы лица, лучший ии-анализатор формы лица, ии-анализатор формы лица бесплатно, ии-анализатор формы лица онлайн, ии-анализатор формы лица онлайн бесплатно, ии-детектор формы лица, ии-анализатор лица, анализатор формы лица, формы лица, форма лица, какая у меня форма лица, как определить форму лица, анализатор лица, калькулятор формы лица, анализатор привлекательности лица",
 };

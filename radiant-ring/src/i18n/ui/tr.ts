@@ -1,7 +1,6 @@
 import { type UIStrings } from "./en";
 
 export const tr: UIStrings = {
-  // ── Navigation ──────────────────────────────────────────────────────────
   nav: {
     logoText: "Yüz Şekli Analizcisi",
     logoAria: "AI Face Shape Analyzer — ana sayfa",
@@ -20,7 +19,6 @@ export const tr: UIStrings = {
     langLabel: "Dil",
   },
 
-  // ── Footer ──────────────────────────────────────────────────────────────
   footer: {
     logoAria: "AI Face Shape Analyzer — ana sayfa",
     brandName: "Yüz Şekli Analizcisi",
@@ -49,9 +47,7 @@ export const tr: UIStrings = {
       "Sorumluluk reddi: yüz şekli kesin bir ölçüm değil, öznel bir etikettir. Sonuçlar fotoğrafınızdan üretilen bir tahmindir ve açı, ışık, ifade, saç, gözlük ve kamera lensine göre değişebilir. Birçok yüz iki şeklin karışımıdır — bunu kesin veya profesyonel bir tavsiye olarak değil, stil için bir rehber olarak kullanın.",
   },
 
-  // ── Hero ────────────────────────────────────────────────────────────────
   hero: {
-    // The headline is split so "Face Shape" can carry the gradient accent.
     titleBefore: "Ücretsiz Yapay Zekâ ",
     titleAccent: "Yüz Şekli",
     titleAfter: " Analizcisi",
@@ -65,7 +61,6 @@ export const tr: UIStrings = {
     },
   },
 
-  // ── How it works ──────────────────────────────────────────────────────────
   howItWorks: {
     eyebrow: "Nasıl çalışır",
     heading: "Yüz şeklinize üç adım.",
@@ -88,7 +83,6 @@ export const tr: UIStrings = {
     },
   ],
 
-  // ── Face shapes (labels + descriptions; consumed by faceShape lookups) ────
   shapesSection: {
     eyebrow: "Referans",
     heading: "Altı yüz şekli.",
@@ -117,7 +111,6 @@ export const tr: UIStrings = {
       "Elmacık kemikleri en geniş noktadır, daha dar bir alın ve çene ile belirgin, sivri bir çene vardır.",
   },
 
-  // ── Analyzer ──────────────────────────────────────────────────────────────
   analyzer: {
     eyebrow: "Analizci",
     heading: "Yüz şeklinizi tespit edin",
@@ -156,8 +149,6 @@ export const tr: UIStrings = {
       "Altı yüz şeklinin tamamına dair sıralı bir yüzde",
       "Yüzünüz iki şeklin karışımı olduğunda bir not",
     ],
-    // Strings used by the client script. {placeholders} are filled at runtime —
-    // keep them verbatim and in place.
     msg: {
       analyzing: "Analiz ediliyor…",
       rateLimited:
@@ -175,20 +166,15 @@ export const tr: UIStrings = {
       noFaceYet:
         "Henüz yüz algılanmadı. Yüzünüzü ortalayın, ardından yakalamak için tıklayın.",
       captureError: "Yakalama sırasında bir şeyler ters gitti. Lütfen tekrar deneyin.",
-      // {n} = current reading number, {total} = CAPTURE_FRAMES.
       captureReading: "Okuma yakalanıyor - [{n}/{total}]",
-      // {pct} = confidence percentage.
       confidence: "%{pct} güven",
-      // {top} = winning shape label, {runnerUp} = second shape, {desc} = top description.
       blendDesc: "Çoğunlukla {top}, {runnerUp} özellikleriyle. {desc}",
     },
   },
 
-  // ── Long-form SEO section (#about on the homepage) ────────────────────────
   seo: {
     eyebrow: "Araç hakkında",
     heading: "Ücretsiz yapay zekâ yüz şekli analizcisi, çevrimiçi.",
-    // Rendered with set:html. Translate the text, keep tags + the #analyzer link.
     html: `
       <p>
         <strong>Yapay zekâ yüz şekli analizcimiz</strong>, yüz şeklinizi
@@ -260,7 +246,6 @@ export const tr: UIStrings = {
     `,
   },
 
-  // ── FAQ ───────────────────────────────────────────────────────────────────
   faqSection: {
     eyebrow: "SSS",
     heading: "Sık sorulan sorular.",
@@ -316,22 +301,18 @@ export const tr: UIStrings = {
     },
   ],
 
-  // ── Shared content-page chrome ────────────────────────────────────────────
   contentPage: {
     lastUpdated: "Son güncelleme:",
   },
-  // Machine-translation notice shown on translated legal/about pages (set:html).
   mtNotice:
     "Bu sayfa makine tarafından çevrilmiştir. İngilizce sürüm bağlayıcıdır; herhangi bir uyuşmazlık durumunda <a href=\"{enHref}\">İngilizce orijinal</a> geçerlidir.",
 
-  // ── Error pages ─────────────────────────────────────────────────────────
   error: {
     eyebrow: "Hata {code}",
     ctaHome: "Ana sayfaya dön",
     ctaAnalyze: "Yüzümü analiz et",
   },
 
-  // ── Per-page SEO meta + content-page copy ─────────────────────────────────
   pages: {
     home: {
       title: "Ücretsiz Çevrimiçi Yapay Zekâ Yüz Şekli Analizcisi — Yüz Şeklinizi Tespit Edin",
@@ -445,7 +426,6 @@ export const tr: UIStrings = {
       fallback: "Doğrudan yazmayı mı tercih edersiniz? {email} adresine e-posta gönderin.",
       errMissing: "Lütfen adınızı, e-postanızı ve mesajınızı doldurun.",
       errEmail: "Lütfen geçerli bir e-posta adresi girin.",
-      // {name} fills both; the email body keeps the em dash + parenthesised email.
       mailSubject: "{name} kişisinden iletişim",
     },
     privacy: {
@@ -685,7 +665,6 @@ export const tr: UIStrings = {
     },
   },
 
-  // Shared keyword meta (home + default). Locale files may localize lightly.
   keywords:
     "ai face shape analyzer, en iyi ai yüz şekli analizcisi, ücretsiz ai yüz şekli analizcisi, çevrimiçi ai yüz şekli analizcisi, çevrimiçi ücretsiz ai yüz şekli analizcisi, ai yüz şekli dedektörü, yüz şekli ai analizcisi, yüz şekli analizci ai, yüz şekilleri, yüz şekli, yüz şeklim ne, yüz şekli nasıl belirlenir, yüz analizcisi, yüz şekli hesaplayıcısı, yüz çekiciliği analizcisi",
 };

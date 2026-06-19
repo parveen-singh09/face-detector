@@ -1,17 +1,10 @@
 @import "tailwindcss";
 
-/* ────────────────────────────────────────────────────────────────────────
-   Theme — mapped from DESIGN.md (Vercel-inspired design language).
-   Tailwind v4 @theme: each token becomes a utility (e.g. --color-ink → text-ink,
-   --spacing-lg → p-lg, --radius-pill → rounded-pill, --font-sans → font-sans).
-   ──────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* Fonts (self-hosted via @fontsource, imported in BaseLayout) */
   --font-sans: "Inter Variable", Inter, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace,
     SFMono-Regular, Menlo, Monaco, monospace;
 
-  /* ── Colors ── */
   --color-primary: #171717;
   --color-on-primary: #ffffff;
   --color-ink: #171717;
@@ -39,7 +32,6 @@
   --color-highlight-pink: #ff0080;
   --color-highlight-magenta: #eb367f;
 
-  /* Brand gradient stops */
   --color-grad-develop-start: #007cf0;
   --color-grad-develop-end: #00dfd8;
   --color-grad-preview-start: #7928ca;
@@ -47,7 +39,6 @@
   --color-grad-ship-start: #ff4d4d;
   --color-grad-ship-end: #f9cb28;
 
-  /* ── Spacing (4px base) ── */
   --spacing-xxs: 4px;
   --spacing-xs: 8px;
   --spacing-sm: 12px;
@@ -61,7 +52,6 @@
   --spacing-6xl: 128px;
   --spacing-section: 192px;
 
-  /* ── Radius ── */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -71,26 +61,11 @@
   --radius-pill: 100px;
   --radius-full: 9999px;
 
-  /* ── Container ── */
   --breakpoint-wide: 1400px;
 }
 
-/* ────────────────────────────────────────────────────────────────────────
-   Theme polarity — light defaults + a dark override toggled via
-   html[data-theme="dark"] (set before paint by the inline script in
-   BaseLayout, flipped at runtime by the Nav toggle).
-
-   These rules are intentionally UNLAYERED: Tailwind's @theme emits the light
-   tokens to :root unlayered, so the dark overrides must also be unlayered (and
-   carry higher specificity than :root) to win the cascade. They redefine the
-   same --color-* custom properties, so every component that reads them adapts
-   with no per-component changes.
-   ──────────────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: light;
-  /* Dedicated "dark band" tokens (the privacy polarity-flip section). Kept
-     separate from --color-primary so CTA buttons and the band can diverge in
-     dark mode — buttons go white, the band stays a deliberate dark surface. */
   --color-band: #171717;
   --color-on-band: #ffffff;
 }
@@ -120,25 +95,18 @@ html[data-theme="dark"] {
   --color-band: #141414;
   --color-on-band: #ededed;
 
-  /* On dark surfaces a black drop-shadow is invisible — lean on a brighter
-     inset ring + a deeper ambient drop so cards still read as elevated. */
   --shadow-ring: #ffffff1f;
   --shadow-soft: #00000040;
 
-  /* Mesh gradient sits on a dark base in dark mode so the brand colours read as
-     a soft glow instead of washing out against white. */
   --mesh-base: #000000;
 }
 
-/* ── Base / Preflight overrides ── */
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
   }
 
-  /* Guard against horizontal scroll on small screens (overflowing children
-     never widen the viewport). `clip` keeps position: sticky working. */
   html,
   body {
     overflow-x: clip;
@@ -172,13 +140,11 @@ html[data-theme="dark"] {
     color: var(--color-canvas);
   }
 
-  /* Balance multi-line headings (Web Interface Guidelines: typography). */
   h1,
   h2 {
     text-wrap: balance;
   }
 
-  /* Visible focus ring for keyboard users (DESIGN.md: accessible by default) */
   :focus-visible {
     outline: 2px solid var(--color-link);
     outline-offset: 2px;
@@ -186,11 +152,6 @@ html[data-theme="dark"] {
   }
 }
 
-/* ────────────────────────────────────────────────────────────────────────
-   Component utilities — reusable design-system primitives from DESIGN.md.
-   ──────────────────────────────────────────────────────────────────────── */
-
-/* Centered page container, caps at the brand 1400px content width */
 .container-page {
   width: 100%;
   max-width: 1400px;
@@ -203,7 +164,6 @@ html[data-theme="dark"] {
   }
 }
 
-/* Marketing-scale pill CTA (button-primary) */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -233,7 +193,6 @@ html[data-theme="dark"] {
   cursor: not-allowed;
 }
 
-/* Marketing-scale white pill (button-secondary) */
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -263,7 +222,6 @@ html[data-theme="dark"] {
   cursor: not-allowed;
 }
 
-/* Mono eyebrow label — the technical voice (caption-mono) */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -273,7 +231,6 @@ html[data-theme="dark"] {
   text-transform: uppercase;
 }
 
-/* Card chrome with stacked-shadow elevation (Level 3 — soft stack) */
 .card {
   background-color: var(--color-canvas);
   border-radius: var(--radius-md);
@@ -283,7 +240,6 @@ html[data-theme="dark"] {
     0 8px 8px -8px var(--shadow-soft, #0000000a);
 }
 
-/* Larger float-stack card (Level 4) */
 .card-lg {
   background-color: var(--color-canvas);
   border-radius: var(--radius-lg);
@@ -293,7 +249,6 @@ html[data-theme="dark"] {
     0 8px 16px -4px var(--shadow-soft, #0000000a);
 }
 
-/* Announcement / status pill (banner-marketing) */
 .pill-banner {
   display: inline-flex;
   align-items: center;

@@ -1,10 +1,4 @@
 ---
-/**
- * HomePage — the full homepage body, parameterized by locale. Rendered by both
- * the root route (`/`, lang="en") and the localized routes (`/[lang]/`). All copy
- * comes from the dictionary; the FAQ accordion and FAQPage JSON-LD are built from
- * the same `faqs` array so structured data stays in sync with the visible text.
- */
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import MeshGradient from "../MeshGradient.astro";
 import Analyzer from "../Analyzer.astro";
@@ -30,7 +24,6 @@ const faqs = t.faqs;
   keywords={t.keywords}
   path="/"
 >
-  <!-- Structured data: FAQPage (rich results) -->
   <script
     type="application/ld+json"
     is:inline
@@ -45,7 +38,6 @@ const faqs = t.faqs;
     })}
   />
 
-  <!-- ── Hero ── -->
   <section class="hero">
     <MeshGradient class="hero-mesh" />
     <div class="container-page hero-inner">
@@ -65,10 +57,8 @@ const faqs = t.faqs;
     </div>
   </section>
 
-  <!-- ── Analyzer ── -->
   <Analyzer lang={lang} />
 
-  <!-- ── How it works ── -->
   <section id="how-it-works" class="section">
     <div class="container-page">
       <div class="section-head">
@@ -89,7 +79,6 @@ const faqs = t.faqs;
     </div>
   </section>
 
-  <!-- ── Face shapes ── -->
   <section id="shapes" class="section section-soft">
     <div class="container-page">
       <div class="section-head">
@@ -120,7 +109,6 @@ const faqs = t.faqs;
     </div>
   </section>
 
-  <!-- ── SEO long-form content ── -->
   <section id="about" class="section section-soft">
     <div class="container-page seo-content">
       <div class="section-head">
@@ -131,7 +119,6 @@ const faqs = t.faqs;
     </div>
   </section>
 
-  <!-- ── FAQ ── -->
   <section id="faq" class="section">
     <div class="container-page faq-wrap">
       <div class="section-head">
@@ -153,7 +140,6 @@ const faqs = t.faqs;
 </BaseLayout>
 
 <style>
-  /* ── Hero ── */
   .hero {
     position: relative;
     overflow: hidden;
@@ -225,7 +211,6 @@ const faqs = t.faqs;
     font-weight: 600;
   }
 
-  /* ── Sections ── */
   .section {
     padding-block: clamp(var(--spacing-4xl), 10vw, var(--spacing-5xl));
   }
@@ -250,7 +235,6 @@ const faqs = t.faqs;
     line-height: 24px;
   }
 
-  /* Steps */
   .steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -277,7 +261,6 @@ const faqs = t.faqs;
     line-height: 22px;
   }
 
-  /* Shapes grid */
   .shape-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -286,7 +269,6 @@ const faqs = t.faqs;
   .shape-card {
     padding: var(--spacing-xl);
   }
-  /* Simple, uniform frame for every shape card. */
   .shape-glyph {
     display: block;
     width: 80px;
@@ -310,7 +292,6 @@ const faqs = t.faqs;
     line-height: 22px;
   }
 
-  /* SEO long-form content */
   .seo-content {
     max-width: 760px;
   }
@@ -337,7 +318,6 @@ const faqs = t.faqs;
     text-decoration: underline;
   }
 
-  /* FAQ */
   .faq-wrap {
     max-width: 760px;
   }
@@ -382,7 +362,6 @@ const faqs = t.faqs;
     line-height: 22px;
   }
 
-  /* Responsive */
   @media (max-width: 860px) {
     .steps,
     .shape-grid {
