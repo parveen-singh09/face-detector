@@ -21,8 +21,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     <p class="eyebrow">Analyzer</p>
     <h2 id="analyzer-heading">Detect your face shape</h2>
     <p class="analyzer-sub">
-      Upload a clear, front-facing photo or use your camera. Everything runs in
-      your browser — your image is never uploaded or stored.
+      Upload a clear, front-facing photo or use your camera.
     </p>
   </div>
 
@@ -83,24 +82,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
             hidden
             aria-label="Camera preview"></video>
           <canvas id="overlay" class="overlay" aria-hidden="true"></canvas>
-
-          <!-- Camera live status pill -->
-          <div id="cam-status" class="cam-status" hidden>
-            <span class="cam-dot" aria-hidden="true"></span>
-            <span id="cam-status-text">Looking for your face…</span>
-          </div>
-
-          <!-- Capture progress: one dot per reading, fills as we capture -->
-          <div
-            id="cap-progress"
-            class="cap-progress"
-            hidden
-            role="status"
-            aria-label="Capture progress"
-          >
-            <span id="cap-progress-dots" class="cap-progress-dots" aria-hidden="true"></span>
-            <span id="cap-progress-text" class="cap-progress-text">0 of 5 readings</span>
-          </div>
         </div>
 
         <!-- Loading / model-init state -->
@@ -178,10 +159,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
             <li>A ranked percentage across all six face shapes</li>
             <li>A note when your face is a blend of two shapes</li>
           </ul>
-          <p class="privacy-note">
-            <span aria-hidden="true">🔒</span>
-            100% private — processed on your device, never uploaded.
-          </p>
         </div>
       </div>
     </div>
@@ -219,11 +196,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   const previewImg = $("preview-img") as HTMLImageElement;
   const previewVideo = $("preview-video") as HTMLVideoElement;
   const overlay = $("overlay") as HTMLCanvasElement;
-  const camStatus = $("cam-status");
-  const camStatusText = $("cam-status-text");
-  const capProgress = $("cap-progress");
-  const capProgressDots = $("cap-progress-dots");
-  const capProgressText = $("cap-progress-text");
   const camTips = $("cam-tips");
   const uploadTips = $("upload-tips");
   const stageLoading = $("stage-loading");
@@ -287,33 +259,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     message.textContent = "";
   }
 
-  // ── Capture progress (camera) ─────────────────────────────────────────────
-  // A row of dots — one per reading — that fill in as we capture, so the user
-  // can see how many of the CAPTURE_FRAMES readings are still to go.
-  function buildCaptureProgress() {
-    capProgressDots.replaceChildren();
-    for (let i = 0; i < CAPTURE_FRAMES; i++) {
-      const dot = document.createElement("span");
-      dot.className = "cap-dot";
-      capProgressDots.appendChild(dot);
-    }
-  }
-  function showCaptureProgress() {
-    buildCaptureProgress();
-    updateCaptureProgress(0);
-    capProgress.hidden = false;
-  }
-  function updateCaptureProgress(done: number) {
-    const dots = capProgressDots.children;
-    for (let i = 0; i < dots.length; i++) {
-      (dots[i] as HTMLElement).classList.toggle("is-filled", i < done);
-    }
-    capProgressText.textContent = `${done} of ${CAPTURE_FRAMES} readings`;
-  }
-  function hideCaptureProgress() {
-    capProgress.hidden = true;
-  }
-
   function setMode(next: "upload" | "camera") {
     if (next === mode) return;
     stopCamera();
@@ -339,8 +284,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     mediaWrap.hidden = true;
     previewImg.hidden = true;
     previewVideo.hidden = true;
-    camStatus.hidden = true;
-    hideCaptureProgress();
     overlay.getContext("2d")?.clearRect(0, 0, overlay.width, overlay.height);
     btnAnalyze.hidden = true;
     btnCapture.hidden = true;
@@ -473,13 +416,11 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       dropzone.hidden = true;
       mediaWrap.hidden = false;
       previewVideo.hidden = false;
-      camStatus.hidden = false;
       btnCapture.hidden = false;
       btnCapture.textContent = `Capture reading (1 of ${CAPTURE_FRAMES})`;
       btnReset.hidden = false;
       videoReady = true;
       captureFrames = [];
-      showCaptureProgress();
       overlayMod.syncCanvasSize(overlay, previewVideo);
       runVideoLoop();
     } catch (err) {
@@ -507,17 +448,9 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
           if (faces && faces.length > 0) {
             lastLandmarks = faces[0];
             overlayMod.drawMesh(overlay, faces[0], { mirrored: true });
-            const n = captureFrames.length;
-            camStatusText.textContent =
-              n === 0
-                ? "Face detected — click to capture"
-                : `Face detected — ${n} of ${CAPTURE_FRAMES} captured, click for the next`;
-            camStatus.dataset.state = "ready";
           } else {
             lastLandmarks = null;
             overlayMod.clearOverlay(overlay);
-            camStatusText.textContent = "Looking for your face…";
-            camStatus.dataset.state = "searching";
           }
         } catch (e) {
           /* transient frame error — keep looping */
@@ -541,13 +474,10 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
     // Snapshot the current reading.
     captureFrames.push(lastLandmarks);
-    updateCaptureProgress(captureFrames.length);
 
     const remaining = CAPTURE_FRAMES - captureFrames.length;
     if (remaining > 0) {
       btnCapture.textContent = `Capture reading (${captureFrames.length + 1} of ${CAPTURE_FRAMES})`;
-      camStatusText.textContent = `Captured ${captureFrames.length} of ${CAPTURE_FRAMES} — click for the next reading`;
-      camStatus.dataset.state = "ready";
       return;
     }
 
@@ -562,13 +492,10 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       renderResult(classifyFaceMulti(captureFrames, w, h));
       // Freeze on the captured result.
       btnCapture.hidden = true;
-      camStatusText.textContent = `Captured — averaged ${captureFrames.length} readings`;
-      camStatus.dataset.state = "ready";
     } catch (err) {
       console.error(err);
       showMessage("Something went wrong during capture. Please try again.");
       captureFrames = [];
-      showCaptureProgress();
       btnCapture.textContent = `Capture reading (1 of ${CAPTURE_FRAMES})`;
       videoReady = true;
       runVideoLoop();
@@ -829,70 +756,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     pointer-events: none;
   }
 
-  .cam-status {
-    position: absolute;
-    left: var(--spacing-sm);
-    bottom: var(--spacing-sm);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xxs) var(--spacing-sm);
-    background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
-    color: var(--color-on-primary);
-    font-size: 12px;
-    font-family: var(--font-mono);
-    border-radius: var(--radius-full);
-    backdrop-filter: blur(4px);
-  }
-  .cam-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-full);
-    background-color: var(--color-warning);
-  }
-  .cam-status[data-state="ready"] .cam-dot {
-    background-color: var(--color-cyan);
-  }
-
-  /* Capture progress — dots fill as each reading is taken. Pinned top-left so it
-     doesn't collide with the live status pill (bottom-left). */
-  .cap-progress {
-    position: absolute;
-    left: var(--spacing-sm);
-    top: var(--spacing-sm);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-xxs) var(--spacing-sm);
-    background-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
-    color: var(--color-on-primary);
-    font-size: 12px;
-    font-family: var(--font-mono);
-    border-radius: var(--radius-full);
-    backdrop-filter: blur(4px);
-  }
-  .cap-progress-dots {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .cap-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-full);
-    background-color: color-mix(in srgb, var(--color-on-primary) 35%, transparent);
-    transition: background-color 0.2s ease, transform 0.2s ease;
-  }
-  .cap-dot.is-filled {
-    background-color: var(--color-cyan);
-    transform: scale(1.15);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cap-dot {
-      transition: none;
-    }
-  }
-
   .stage-loading {
     position: absolute;
     inset: 0;
@@ -1038,17 +901,6 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     color: var(--color-body);
     font-size: 14px;
     line-height: 22px;
-  }
-  .privacy-note {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    color: var(--color-body);
   }
 
   .visually-hidden {

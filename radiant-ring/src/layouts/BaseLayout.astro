@@ -17,13 +17,16 @@ interface Props {
   description?: string;
   /** Path for canonical/OG URL, e.g. "/" */
   path?: string;
+  /** Comma-separated keyword meta override. */
+  keywords?: string;
 }
 
 const SITE = "https://aifaceshapeanalyzer.com";
 const {
-  title = "AI Face Shape Analyzer — Find Your Face Shape Free & Private",
-  description = "Find your face shape in seconds. Upload a photo or use your camera for an accurate, private analysis with a full breakdown across all 6 face shapes. 100% in your browser — your photo never leaves your device.",
+  title = "Free AI Face Shape Analyzer Online — Detect Your Face Shape",
+  description = "Free AI face shape analyzer online — upload a photo or use your camera to find your face shape instantly with a full breakdown across all 6 shapes. No sign-up.",
   path = "/",
+  keywords = "ai face shape analyzer, best ai face shape analyzer, ai face shape analyzer free, ai face shape analyzer online, ai face shape analyzer online free, ai face shape detector, face shape ai analyzer, face shape analyzer ai, face shapes, face shape, whats my face shape, how to determine face shape, face analyzer, face shape calculator, face attractiveness analyzer",
 } = Astro.props;
 
 const canonical = new URL(path, SITE).href;
@@ -62,6 +65,9 @@ const ogImage = new URL("/og.png", SITE).href;
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content={keywords} />
+    <meta name="author" content="AI Face Shape Analyzer" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="theme-color" content="#ffffff" />
 
     <!-- Open Graph -->
@@ -70,13 +76,18 @@ const ogImage = new URL("/og.png", SITE).href;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AI Face Shape Analyzer — detect your face shape from a photo" />
     <meta property="og:site_name" content="AI Face Shape Analyzer" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="AI Face Shape Analyzer — detect your face shape from a photo" />
 
     <!-- The face-landmarker model is large; warm the connection early. -->
     <link rel="preconnect" href={SITE} />
@@ -88,11 +99,19 @@ const ogImage = new URL("/og.png", SITE).href;
         "@context": "https://schema.org",
         "@type": "WebApplication",
         name: "AI Face Shape Analyzer",
+        alternateName: "AI Face Shape Detector & Face Analyzer",
         url: SITE,
         applicationCategory: "LifestyleApplication",
         operatingSystem: "Any (web browser)",
+        browserRequirements: "Requires JavaScript. Works in any modern browser.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         description,
+        featureList: [
+          "Detect your face shape from a photo or live camera",
+          "Full probability breakdown across all 6 face shapes",
+          "Real-time face mesh overlay using 478 facial landmarks",
+          "Free, no sign-up and no download required",
+        ],
       })}
     />
   </head>

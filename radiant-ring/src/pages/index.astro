@@ -11,7 +11,7 @@ const steps = [
   {
     n: "01",
     title: "Upload or open your camera",
-    body: "Pick a clear, front-facing photo (up to 10MB) or use your camera for a live read. Nothing is uploaded.",
+    body: "Pick a clear, front-facing photo (up to 10MB) or use your camera for a live read.",
   },
   {
     n: "02",
@@ -27,40 +27,82 @@ const steps = [
 
 const faqs = [
   {
-    q: "Is my photo uploaded anywhere?",
-    a: "No. The entire analysis runs inside your browser using an on-device model. Your photo and camera feed never leave your device and are never stored.",
+    q: "What is a face shape analyzer?",
+    a: "A face shape analyzer is a tool that looks at the proportions of your face — forehead, cheekbones, jawline, and length — and tells you which shape you’re closest to. Our AI face shape analyzer does this automatically by mapping 478 facial landmarks from a photo or your camera, then ranking your match across all six shapes.",
   },
   {
-    q: "How accurate is it?",
-    a: "We measure real facial geometry from 478 landmarks rather than guessing. Accuracy depends on a clear, front-facing image with hair off the face and even lighting. Many faces are a natural blend of two shapes, so we show the full distribution instead of forcing one answer.",
+    q: "How do I determine my face shape?",
+    a: "To determine your face shape, compare four things: the width of your forehead, your cheekbones, and your jaw, plus the overall length of your face. The shape whose proportions match yours is your face shape. This analyzer measures those ratios for you automatically, so there’s no guessing or measuring tape needed.",
   },
   {
-    q: "Which face shapes can it detect?",
-    a: "All six common shapes: oval, round, square, rectangle, heart, and diamond.",
+    q: "What face shape do I have?",
+    a: "You most likely have one of six common face shapes: oval, round, square, rectangle, heart, or diamond. Upload a clear, front-facing photo or open your camera and the analyzer will tell you which one you have, along with a confidence score and a full percentage breakdown.",
   },
   {
-    q: "Do I need to sign up?",
-    a: "No account, no sign-up, no download. It’s free and works right in your browser.",
+    q: "What is my face shape?",
+    a: "Your face shape is the overall outline of your face, defined by how wide your forehead, cheekbones, and jaw are relative to your face length. The fastest way to find out is to run a photo through the analyzer above — it reads your real facial geometry and shows your closest match in seconds.",
+  },
+  {
+    q: "What shape is my face?",
+    a: "The shape of your face comes down to its widest point and its length. If your face is clearly longer than it is wide, it may be oval or rectangle; if width and length are similar, round or square; if your forehead is the widest part, heart or diamond. The analyzer pinpoints it precisely from your measurements.",
+  },
+  {
+    q: "How can I determine my face shape?",
+    a: "The easiest way is to let the AI do it: pull your hair back, face the camera straight on, and upload a photo or use live camera. The tool measures your jaw, cheekbone, forehead, and length ratios and returns your face shape instantly — far more consistent than eyeballing it in a mirror.",
+  },
+  {
+    q: "How can I tell my face shape?",
+    a: "You can tell your face shape by finding your face’s widest feature and checking whether your face is longer than it is wide. Rather than tracing your outline on a mirror, this analyzer tells your face shape for you from a single photo, with no manual measuring.",
+  },
+  {
+    q: "How do I tell what face shape I have?",
+    a: "Look at three signals: where your face is widest, how angular or soft your jaw is, and whether your face is long or balanced. The analyzer reads all three from 478 landmarks and tells you exactly what face shape you have, plus how strongly you match the runner-up shapes.",
+  },
+  {
+    q: "What's my face shape?",
+    a: "Whatever your face shape is, the analyzer can name it in seconds. Add a photo or open your camera above and you’ll get your best-match shape, a confidence percentage, and a ranked breakdown across oval, round, square, rectangle, heart, and diamond.",
+  },
+  {
+    q: "How can I find out my face shape?",
+    a: "You can find out your face shape for free right here — no sign-up and no download. Upload a front-facing photo or use your camera, and the AI measures your facial proportions and shows your result in seconds.",
+  },
+  {
+    q: "How do I find my face shape?",
+    a: "To find your face shape, use a clear, well-lit photo with your hair off your face and glasses removed, then run it through the analyzer. It compares your measured ratios against all six shape profiles and finds the closest match for you automatically.",
+  },
+  {
+    q: "How do I identify my face shape?",
+    a: "Identifying your face shape means matching your forehead, cheekbone, and jaw widths and your face length to one of the six standard profiles. The analyzer identifies it precisely using facial-landmark geometry, so you get an objective answer instead of a subjective guess.",
   },
 ];
 ---
 
 <BaseLayout>
+  <!-- Structured data: FAQPage (rich results) -->
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    })}
+  />
+
   <!-- ── Hero ── -->
   <section class="hero">
     <MeshGradient class="hero-mesh" />
     <div class="container-page hero-inner">
-      <p class="pill-banner hero-badge">
-        <span class="hero-badge-dot" aria-hidden="true"></span>
-        100% private · runs in your browser
-      </p>
       <h1>
-        Find your face shape<br />in seconds.
+        Free AI face shape analyzer<br />— find your face shape.
       </h1>
       <p class="hero-sub">
-        Upload a photo or use your camera for an accurate, private face shape
-        analysis — with a full breakdown across all six shapes. No upload, no
-        sign-up, no data leaves your device.
+        Upload a photo or use your camera for an accurate face shape
+        analysis — with a full breakdown across all six shapes.
       </p>
       <div class="hero-cta">
         <a href="#analyzer" class="btn-primary">Analyze my face</a>
@@ -132,32 +174,79 @@ const faqs = [
     </div>
   </section>
 
-  <!-- ── Privacy (polarity-flipped dark band) ── -->
-  <section id="privacy" class="section section-dark">
-    <div class="container-page privacy-band">
-      <div>
-        <p class="eyebrow eyebrow-on-dark">Privacy</p>
-        <h2>Your face never leaves your device.</h2>
-        <p class="privacy-band-sub">
-          Competitors ask you to trust a server. We don’t need one. The model
-          runs locally in your browser, so your photo and camera feed are never
-          uploaded, stored, or shared. Close the tab and nothing remains.
-        </p>
+  <!-- ── SEO long-form content ── -->
+  <section id="about" class="section section-soft">
+    <div class="container-page seo-content">
+      <div class="section-head">
+        <p class="eyebrow">About the tool</p>
+        <h2>The free AI face shape analyzer, online.</h2>
       </div>
-      <ul class="privacy-points">
-        <li>
-          <span class="privacy-point-k">No upload</span>
-          <span class="privacy-point-v">Images are processed in-browser only.</span>
-        </li>
-        <li>
-          <span class="privacy-point-k">No storage</span>
-          <span class="privacy-point-v">Nothing is saved or sent anywhere.</span>
-        </li>
-        <li>
-          <span class="privacy-point-k">No account</span>
-          <span class="privacy-point-v">No sign-up, no tracking of your face.</span>
-        </li>
-      </ul>
+
+      <p>
+        Our <strong>AI face shape analyzer</strong> is a free, online tool that
+        tells you your face shape in seconds — no sign-up and no download
+        required. If you have ever asked
+        <em>“what’s my face shape?”</em> and weren’t sure how to answer it, this
+        is the fast way to find out. Just upload a clear, front-facing
+        photo or open your camera, and the <strong>face shape AI analyzer</strong>
+        does the rest: it maps 478 facial landmarks, measures the geometry of
+        your face, and ranks every result across all six common shapes.
+      </p>
+
+      <h3>What makes the best AI face shape analyzer</h3>
+      <p>
+        Most tools hand you a single label and hope it’s right. We built what we
+        think is the <strong>best AI face shape analyzer</strong> by showing the
+        full picture instead. As a combined <strong>AI face shape detector and
+        face analyzer</strong>, it returns a confidence score plus a ranked
+        percentage breakdown for oval, round, square, rectangle, heart, and
+        diamond — because real faces are often a blend of two shapes rather than
+        one perfect match. A live face mesh overlay shows exactly what the model
+        is reading as it works, so the analysis never feels like a black box.
+      </p>
+
+      <h3>How to determine your face shape</h3>
+      <p>
+        Wondering <strong>how to determine face shape</strong> without a mirror
+        and a measuring tape? The classic method compares four measurements —
+        forehead width, cheekbone width, jawline width, and face length — and
+        weighs them against each other. That’s exactly what this
+        <strong>face shape calculator</strong> automates. Where a manual
+        <strong>face analyzer</strong> leaves room for guesswork, our
+        <strong>face shape analyzer AI</strong> reads precise anthropometric
+        ratios and jaw angularity directly from the landmarks, so you get a
+        consistent answer every time. For the most accurate read, pull your hair
+        off your face, remove glasses, keep a neutral expression, and use even,
+        front-on lighting.
+      </p>
+
+      <h3>Free to use, online</h3>
+      <p>
+        This <strong>AI face shape analyzer online free</strong> tool runs
+        online with nothing to install. It works the same on phone or desktop,
+        and it’s genuinely an <strong>AI face shape analyzer free</strong> of
+        charge, with no usage caps for normal use.
+      </p>
+
+      <h3>From face shapes to flattering choices</h3>
+      <p>
+        Knowing your <strong>face shape</strong> is the starting point for better
+        everyday choices. People use it to pick haircuts and hairstyles, choose
+        glasses and sunglasses frames that complement their proportions, shape
+        eyebrows, and frame makeup or beard styling. While some people search for
+        a <strong>face attractiveness analyzer</strong>, beauty is subjective and
+        face shape isn’t a score — every one of the six
+        <strong>face shapes</strong> has its own strengths, and the goal here is
+        to help you style with confidence, not to rank faces. Treat the result as
+        a helpful guide rather than a verdict.
+      </p>
+
+      <p>
+        Ready to stop guessing? Scroll up to the
+        <a href="#analyzer">analyzer</a>, add a photo or open your camera, and let
+        the <strong>face shape analyzer AI</strong> show you your full breakdown
+        in seconds — completely free.
+      </p>
     </div>
   </section>
 
@@ -201,15 +290,6 @@ const faqs = [
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-  .hero-badge {
-    margin-bottom: var(--spacing-lg);
-  }
-  .hero-badge-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: var(--radius-full);
-    background-color: var(--color-cyan);
   }
   .hero h1 {
     margin: 0;
@@ -339,59 +419,31 @@ const faqs = [
     line-height: 22px;
   }
 
-  /* Privacy dark band */
-  .section-dark {
-    background-color: var(--color-band);
-    color: var(--color-on-band);
+  /* SEO long-form content */
+  .seo-content {
+    max-width: 760px;
   }
-  .eyebrow-on-dark {
-    color: #a1a1a1;
-  }
-  .privacy-band {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: var(--spacing-3xl);
-    align-items: center;
-  }
-  .privacy-band h2 {
-    margin: var(--spacing-xs) 0 0;
-    font-size: clamp(26px, 5vw, 32px);
-    font-weight: 600;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
-    color: var(--color-on-band);
-  }
-  .privacy-band-sub {
-    margin-top: var(--spacing-md);
-    color: #ebebeb;
+  .seo-content p {
+    margin: 0 0 var(--spacing-md);
+    color: var(--color-body);
     font-size: 16px;
-    line-height: 24px;
+    line-height: 26px;
+    text-wrap: pretty;
   }
-  .privacy-points {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
+  .seo-content h3 {
+    margin: var(--spacing-xl) 0 var(--spacing-xs);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
   }
-  .privacy-points li {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: var(--spacing-md);
-    background-color: #ffffff0d;
-    border: 1px solid #ffffff1a;
-    border-radius: var(--radius-md);
+  .seo-content strong {
+    color: var(--color-ink);
+    font-weight: 600;
   }
-  .privacy-point-k {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--color-cyan);
-  }
-  .privacy-point-v {
-    font-size: 14px;
-    color: #ebebeb;
+  .seo-content a {
+    color: var(--color-link);
+    text-decoration: underline;
   }
 
   /* FAQ */
@@ -444,10 +496,6 @@ const faqs = [
     .steps,
     .shape-grid {
       grid-template-columns: 1fr 1fr;
-    }
-    .privacy-band {
-      grid-template-columns: 1fr;
-      gap: var(--spacing-xl);
     }
   }
   @media (max-width: 560px) {

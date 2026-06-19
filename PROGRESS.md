@@ -419,3 +419,90 @@ real faces.
   visually quiet. Complements the existing "How accurate is it?" FAQ entry.
 - Verified `npm run build` passes.
 
+## 2026-06-19 — On-page SEO pass (keywords, OG, structured data, 600-word copy)
+
+- **Keyword-optimized meta** (`src/layouts/BaseLayout.astro`): retitled the home
+  default to "Free AI Face Shape Analyzer Online — Detect Your Face Shape" and
+  rewrote the meta description around the target terms. Added a `keywords` meta
+  (all the requested phrases: ai face shape analyzer + best/free/online/online-free
+  variants, ai face shape detector, face shape ai analyzer, face shapes, whats my
+  face shape, how to determine face shape, face analyzer, face shape calculator,
+  face attractiveness analyzer), plus `author` and a `robots`
+  (`index, follow, max-image-preview:large, max-snippet:-1`) meta. New optional
+  `keywords` prop so inner pages can override.
+- **Richer Open Graph / Twitter**: added `og:image:width`/`height` (1200×630),
+  `og:image:alt`, `og:locale` (en_US), and `twitter:image:alt` alongside the
+  existing OG/Twitter set.
+- **Enhanced WebApplication JSON-LD**: added `alternateName`
+  ("AI Face Shape Detector & Face Analyzer"), `browserRequirements`, and a
+  `featureList`.
+- **Homepage** (`src/pages/index.astro`): worked the primary keyword into the
+  `<h1>` ("Free AI face shape analyzer — find your face shape."); expanded the FAQ
+  from 4 → 6 entries targeting "what is my face shape", "how do I determine my
+  face shape", and "is this … free"; added **FAQPage JSON-LD** (built from the
+  `faqs` array, `is:inline`) for rich-result eligibility.
+- **~600-word SEO section** (`#about`, `.seo-content`): a new soft-band section
+  before the FAQ with five sub-headed paragraphs naturally weaving every target
+  keyword (best ai face shape analyzer, face shape ai analyzer, how to determine
+  face shape, ai face shape analyzer online free, face shape calculator, face
+  attractiveness analyzer, etc.), ending with a CTA anchor to `#analyzer`. Styled
+  for readable prose (760px max, 26px line-height, `text-wrap: pretty`,
+  dark-mode-safe tokens).
+- **Generated the missing `/og.png`** (was referenced site-wide but absent —
+  broken previews on every share). New `scripts/make-og.mjs` rasterizes a
+  brand-matched 1200×630 card (mesh-gradient glow, ink headline, mono URL eyebrow,
+  Free/No sign-up/Private pills) via `sharp` → `public/og.png` (~290KB). Re-run with
+  `node scripts/make-og.mjs`.
+- Verified `npm run build` passes (3 pages); confirmed keywords meta, FAQPage
+  schema, and og:image:width all render in `dist/index.html`.
+
+## 2026-06-19 — Reworked the FAQ around face-shape search queries
+
+- **Replaced the 6-entry FAQ** (`src/pages/index.astro`) with a 12-entry set
+  targeting the requested long-tail queries: what is a face shape analyzer, how to
+  determine / how can I determine my face shape, what face shape do I have, what is
+  my / what's my face shape, what shape is my face, how can I / how do I tell my
+  face shape, how to tell what face shape you have, how can I find out / how do I
+  find / how do I identify my face shape. Each answer is a self-contained,
+  search-friendly paragraph that also points back to the analyzer.
+- Both the **visible FAQ accordion** and the **FAQPage JSON-LD** are generated from
+  the same `faqs` array, so the structured data stayed in sync automatically — no
+  separate schema block to maintain (Google requires the on-page and schema FAQ
+  text to match).
+- Verified `npm run build` passes; confirmed all 12 questions render in the
+  FAQPage JSON-LD in `dist/index.html`.
+
+## 2026-06-19 — Removed all privacy / no-upload claims (site-wide)
+
+- **Why**: dropped the "your face never leaves your device / nothing is
+  uploaded / 100% private / runs in your browser" messaging everywhere it was
+  user-facing. (Internal code comments in `rateLimit.ts`, `faceLandmarker.ts`,
+  `meshOverlay.ts` describing the client-side architecture were left as-is —
+  they're accurate technical docs, not marketing claims.)
+- **Removed the entire Privacy dark band** (`src/pages/index.astro`): deleted the
+  `#privacy` `.section-dark` section (heading, sub-copy, the three No
+  upload/storage/account points) plus its now-dead CSS (`.section-dark`,
+  `.eyebrow-on-dark`, `.privacy-band*`, `.privacy-point*`) and the
+  `.privacy-band` responsive rule.
+- **Hero**: badge `100% private · runs in your browser` → `Free · 478-point
+  face mesh`; sub-copy dropped "private" + "No upload, no sign-up, no data
+  leaves your device".
+- **Steps / SEO copy / FAQ** (`index.astro`): removed "Nothing is uploaded" from
+  step 01; rewrote the "Private by design" SEO sub-section to "Free to use,
+  online" (no device/server claims); stripped "private"/"without your image
+  leaving your device" from the intro, closing CTA, and the "how can I find out"
+  FAQ answer.
+- **Analyzer** (`src/components/Analyzer.astro`): trimmed the analyzer sub-copy
+  and removed the `.privacy-note` 🔒 line + its dead CSS.
+- **Nav / Footer**: removed the `#privacy` "Privacy" links (footer About now
+  links `#about`); footer tagline + `footer-mono` line reworded off the privacy
+  message.
+- **Meta / structured data** (`src/layouts/BaseLayout.astro`): dropped "100%
+  private" from the default meta description and from the WebApplication
+  `featureList`.
+- **500 page** + **OG image** (`scripts/make-og.mjs`): removed the "runs in your
+  browser" reassurance; OG sub-line + "✓ Private" pill replaced with face-mesh /
+  "✓ 6 shapes" messaging. Regenerated `public/og.png`.
+- Verified `npm run build` passes (3 pages); OG regenerated.
+
+
