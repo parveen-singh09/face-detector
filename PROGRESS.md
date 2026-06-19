@@ -553,3 +553,29 @@ real faces.
 - Verified `npm run build` passes (7 pages).
 
 
+## 2026-06-19 — Tuned the auto-generated sitemap
+
+- The sitemap was already wired (`@astrojs/sitemap` in `astro.config.mjs`,
+  `robots.txt` points to `/sitemap-index.xml`) but emitted with defaults — it
+  listed the `404`/`500` error pages and had no priorities/changefreq.
+- **Updated `sitemap()` config** (`radiant-ring/astro.config.mjs`):
+  - `filter` drops `/404` and `/500` (both trailing-slash variants) so error
+    pages stay out of the index.
+  - `serialize` sets the homepage to `priority 1.0` / `changefreq weekly` and
+    every other page to `0.7` / `monthly`.
+- Output is generated at build time → `dist/sitemap-index.xml` +
+  `dist/sitemap-0.xml` (NOT a hand-written `public/sitemap.xml`, which would
+  drift as pages are added). Re-runs automatically on every `npm run build`.
+- Verified `npm run build` passes; confirmed `sitemap-0.xml` contains the 5
+  real pages with correct priorities and excludes 404/500.
+
+## 2026-06-19 — Added Privacy link to the header nav
+
+- **Header nav** (`src/components/Nav.astro`) now reads Face shapes / About /
+  Contact / **Privacy** / T&C. Added a root-absolute `/privacy-policy` link
+  (matching the existing pattern) between Contact and T&C, so the privacy page
+  is reachable from the header on every page (it was already linked in the
+  footer Company column). Mobile still hides `.nav-links` ≤760px — unchanged.
+- Verified `npm run build` passes (7 pages).
+
+
