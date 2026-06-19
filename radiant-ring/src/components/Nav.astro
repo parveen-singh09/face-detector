@@ -1,14 +1,35 @@
 ---
 /**
  * Nav — sticky top nav bar (DESIGN.md nav-bar: 64px, logo left, links, CTA right).
- * Marketing nav: logo + section anchors + a single ink pill CTA that jumps to
- * the analyzer. Collapses to logo + CTA on mobile (links hidden under 600px).
+ *
+ * Desktop (>760px): logo + section links + language switcher + theme toggle, all
+ * inline. Mobile (≤760px): logo + theme toggle + a hamburger button that opens a
+ * dropdown panel holding the links and the language switcher. All hrefs and
+ * labels are locale-aware; logical CSS properties keep the layout RTL-correct.
  */
+import LangSwitcher from "./LangSwitcher.astro";
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { localizePath, useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+
+const links = [
+  { href: L("/#shapes"), label: t.nav.links.shapes },
+  { href: L("/about-us"), label: t.nav.links.about },
+  { href: L("/contact"), label: t.nav.links.contact },
+  { href: L("/privacy-policy"), label: t.nav.links.privacy },
+  { href: L("/terms-and-conditions"), label: t.nav.links.terms },
+];
 ---
 
 <header class="nav">
   <div class="container-page nav-inner">
-    <a href="/" class="nav-logo" aria-label="AI Face Shape Analyzer — home">
+    <a href={L("/")} class="nav-logo" aria-label={t.nav.logoAria}>
       <img
         class="nav-logo-mark"
         src="/favicon-96x96.png"
@@ -17,24 +38,22 @@
         alt=""
         aria-hidden="true"
       />
-      <span class="nav-logo-text">Face&nbsp;Shape&nbsp;Analyzer</span>
+      <span class="nav-logo-text" set:html={t.nav.logoText.replace(/ /g, "&nbsp;")} />
     </a>
 
-    <nav class="nav-links" aria-label="Primary">
-      <a href="/#shapes">Face shapes</a>
-      <a href="/about-us">About</a>
-      <a href="/contact">Contact</a>
-      <a href="/privacy-policy">Privacy</a>
-      <a href="/terms-and-conditions">T&amp;C</a>
+    <nav class="nav-links" aria-label={t.nav.primaryAria}>
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
     </nav>
 
     <div class="nav-actions">
+      <LangSwitcher class="nav-lang" />
+
       <button
         id="theme-toggle"
         class="theme-toggle"
         type="button"
-        aria-label="Toggle dark mode"
-        title="Toggle theme"
+        aria-label={t.nav.themeToggleAria}
+        title={t.nav.themeToggleTitle}
       >
         <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="4.2"></circle>
@@ -44,29 +63,85 @@
           <path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"></path>
         </svg>
       </button>
+
+      <button
+        id="menu-toggle"
+        class="menu-toggle"
+        type="button"
+        aria-label={t.nav.menuOpenAria}
+        data-open-label={t.nav.menuOpenAria}
+        data-close-label={t.nav.menuCloseAria}
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path class="menu-icon-bars" d="M3 6h18M3 12h18M3 18h18"></path>
+          <path class="menu-icon-x" d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
     </div>
+  </div>
+
+  <!-- Mobile dropdown menu (revealed by the hamburger ≤760px) -->
+  <div id="mobile-menu" class="mobile-menu" hidden>
+    <nav class="mobile-links container-page" aria-label={t.nav.primaryAria}>
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+      <LangSwitcher class="is-block mobile-lang" />
+    </nav>
   </div>
 </header>
 
 <script is:inline>
   (() => {
-    const btn = document.getElementById("theme-toggle");
-    if (!btn) return;
     const root = document.documentElement;
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const apply = (dark) => {
-      root.dataset.theme = dark ? "dark" : "light";
-      btn.setAttribute("aria-pressed", String(dark));
-      if (meta) meta.setAttribute("content", dark ? "#000000" : "#ffffff");
-    };
-    apply(root.dataset.theme === "dark");
-    btn.addEventListener("click", () => {
-      const dark = root.dataset.theme !== "dark";
-      apply(dark);
-      try {
-        localStorage.setItem("theme", dark ? "dark" : "light");
-      } catch (_) {}
-    });
+
+    // ── Theme toggle ──
+    const btn = document.getElementById("theme-toggle");
+    if (btn) {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      const apply = (dark) => {
+        root.dataset.theme = dark ? "dark" : "light";
+        btn.setAttribute("aria-pressed", String(dark));
+        if (meta) meta.setAttribute("content", dark ? "#000000" : "#ffffff");
+      };
+      apply(root.dataset.theme === "dark");
+      btn.addEventListener("click", () => {
+        const dark = root.dataset.theme !== "dark";
+        apply(dark);
+        try {
+          localStorage.setItem("theme", dark ? "dark" : "light");
+        } catch (_) {}
+      });
+    }
+
+    // ── Mobile menu ──
+    const menuBtn = document.getElementById("menu-toggle");
+    const menu = document.getElementById("mobile-menu");
+    if (menuBtn && menu) {
+      const openLabel = menuBtn.dataset.openLabel || "Open menu";
+      const closeLabel = menuBtn.dataset.closeLabel || openLabel;
+      const setOpen = (open) => {
+        menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn.setAttribute("aria-label", open ? closeLabel : openLabel);
+        menu.hidden = !open;
+        menuBtn.classList.toggle("is-open", open);
+      };
+      menuBtn.addEventListener("click", () =>
+        setOpen(menuBtn.getAttribute("aria-expanded") !== "true"),
+      );
+      // Close on Escape or when a link is chosen.
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setOpen(false);
+      });
+      menu.querySelectorAll("a").forEach((a) =>
+        a.addEventListener("click", () => setOpen(false)),
+      );
+      // Close when resizing up to desktop so state never gets stuck.
+      const mq = window.matchMedia("(min-width: 761px)");
+      mq.addEventListener("change", (e) => {
+        if (e.matches) setOpen(false);
+      });
+    }
   })();
 </script>
 
@@ -129,11 +204,12 @@
   }
 
   /* Theme toggle — circular icon button (DESIGN.md icon-button-circular). */
-  .theme-toggle {
+  .theme-toggle,
+  .menu-toggle {
     display: inline-grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     color: var(--color-body);
     background-color: var(--color-canvas);
@@ -144,11 +220,13 @@
     transition: color 0.15s ease, background-color 0.15s ease,
       border-color 0.15s ease;
   }
-  .theme-toggle:hover {
+  .theme-toggle:hover,
+  .menu-toggle:hover {
     color: var(--color-ink);
     background-color: var(--color-canvas-soft-2);
   }
-  .theme-icon {
+  .theme-icon,
+  .menu-icon {
     width: 18px;
     height: 18px;
     fill: none;
@@ -171,9 +249,61 @@
     display: none;
   }
 
+  /* Hamburger: bars by default, X when open. Hidden on desktop. */
+  .menu-toggle {
+    display: none;
+  }
+  .menu-icon-x {
+    display: none;
+  }
+  .menu-toggle.is-open .menu-icon-bars {
+    display: none;
+  }
+  .menu-toggle.is-open .menu-icon-x {
+    display: block;
+  }
+
+  /* Mobile dropdown menu */
+  .mobile-menu {
+    border-top: 1px solid var(--color-hairline);
+    background-color: var(--color-canvas);
+  }
+  .mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    padding-block: var(--spacing-sm);
+  }
+  .mobile-links a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: var(--spacing-sm);
+    color: var(--color-body);
+    text-decoration: none;
+    font-size: 15px;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .mobile-links a:hover {
+    color: var(--color-ink);
+    background-color: var(--color-canvas-soft-2);
+  }
+  .mobile-lang {
+    margin-top: var(--spacing-xs);
+  }
+
+  /* ≤760px: collapse the inline links + lang switcher into the hamburger menu. */
   @media (max-width: 760px) {
-    .nav-links {
+    .nav-links,
+    .nav-lang {
       display: none;
+    }
+  }
+  /* Desktop: the mobile menu never shows even if [hidden] is toggled. */
+  @media (min-width: 761px) {
+    .mobile-menu {
+      display: none !important;
     }
   }
   @media (max-width: 380px) {

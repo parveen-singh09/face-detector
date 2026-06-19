@@ -1,10 +1,11 @@
 ---
 /**
- * ErrorState — the shared shell for error pages (404, 500, …). A centered hero
- * on the signature mesh gradient: a big gradient status code, a heading, a short
- * explanation, and recovery CTAs. Kept generic so each error page is just a thin
- * wrapper that passes copy in.
+ * ErrorState — the shared shell for error pages (404, 500, …). A centered hero:
+ * a big gradient status code, a heading, a short explanation, and recovery CTAs.
+ * Kept generic so each error page is just a thin wrapper that passes copy in.
  */
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { localizePath, useTranslations } from "../i18n/utils";
 
 interface Props {
   /** HTTP status code shown large, e.g. "404". */
@@ -13,20 +14,24 @@ interface Props {
   title: string;
   /** One- or two-sentence explanation. */
   message: string;
+  /** Active locale (error pages default to English). */
+  lang?: Locale;
 }
 
-const { code, title, message } = Astro.props;
+const { code, title, message, lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
 ---
 
 <section class="error">
   <div class="container-page error-inner">
     <p class="error-code" aria-hidden="true">{code}</p>
-    <p class="eyebrow error-eyebrow">Error {code}</p>
+    <p class="eyebrow error-eyebrow">{t.error.eyebrow.replace("{code}", code)}</p>
     <h1>{title}</h1>
     <p class="error-sub">{message}</p>
     <div class="error-cta">
-      <a href="/" class="btn-primary">Back to home</a>
-      <a href="/#analyzer" class="btn-secondary">Analyze my face</a>
+      <a href={L("/")} class="btn-primary">{t.error.ctaHome}</a>
+      <a href={L("/#analyzer")} class="btn-secondary">{t.error.ctaAnalyze}</a>
     </div>
   </div>
 </section>

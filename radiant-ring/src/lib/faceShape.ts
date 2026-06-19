@@ -83,6 +83,9 @@ export const SHAPE_DESCRIPTIONS: Record<ShapeId, string> = {
     "Cheekbones are the widest point, with a narrower forehead and jaw and a defined, pointed chin.",
 };
 
+/** Stable, ordered list of shape ids — useful for building localized lookups. */
+export const SHAPE_IDS = Object.keys(SHAPE_LABELS) as ShapeId[];
+
 /**
  * MediaPipe Face Mesh landmark indices used for measurements.
  * Kept here so they're tunable / auditable in one place.

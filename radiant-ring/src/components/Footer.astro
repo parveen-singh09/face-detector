@@ -1,16 +1,24 @@
 ---
 /**
  * Footer — bottom band (DESIGN.md footer: canvas bg, body text, mono eyebrows).
- * Marketing footer with brand line + lightweight link columns. Content pages
- * (per-shape, FAQ, blog) are deferred, so links point at on-page anchors for now.
+ * All links + copy are locale-aware; layout uses logical properties for RTL.
  */
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { localizePath, useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
 const year = new Date().getFullYear();
 ---
 
 <footer class="footer">
   <div class="container-page footer-inner">
     <div class="footer-brand">
-      <a href="/" class="footer-logo" aria-label="AI Face Shape Analyzer — home">
+      <a href={L("/")} class="footer-logo" aria-label={t.footer.logoAria}>
         <img
           class="footer-logo-mark"
           src="/favicon-96x96.png"
@@ -19,49 +27,40 @@ const year = new Date().getFullYear();
           alt=""
           aria-hidden="true"
         />
-        <span>Face Shape Analyzer</span>
+        <span>{t.footer.brandName}</span>
       </a>
-      <p class="footer-tagline">
-        Find your face shape in seconds — free and accurate, with a full
-        breakdown across all six shapes.
-      </p>
+      <p class="footer-tagline">{t.footer.tagline}</p>
     </div>
 
-    <nav class="footer-col" aria-label="Product">
-      <p class="eyebrow">Product</p>
-      <a href="/#analyzer">Analyze my face</a>
-      <a href="/#how-it-works">How it works</a>
-      <a href="/#shapes">Face shapes</a>
+    <nav class="footer-col" aria-label={t.footer.productEyebrow}>
+      <p class="eyebrow">{t.footer.productEyebrow}</p>
+      <a href={L("/#analyzer")}>{t.footer.productLinks.analyze}</a>
+      <a href={L("/#how-it-works")}>{t.footer.productLinks.how}</a>
+      <a href={L("/#shapes")}>{t.footer.productLinks.shapes}</a>
     </nav>
 
-    <nav class="footer-col" aria-label="About">
-      <p class="eyebrow">About</p>
-      <a href="/#about">About the tool</a>
-      <a href="/#faq">FAQ</a>
+    <nav class="footer-col" aria-label={t.footer.aboutEyebrow}>
+      <p class="eyebrow">{t.footer.aboutEyebrow}</p>
+      <a href={L("/#about")}>{t.footer.aboutLinks.aboutTool}</a>
+      <a href={L("/#faq")}>{t.footer.aboutLinks.faq}</a>
     </nav>
 
-    <nav class="footer-col" aria-label="Company">
-      <p class="eyebrow">Company</p>
-      <a href="/about-us">About us</a>
-      <a href="/contact">Contact us</a>
-      <a href="/privacy-policy">Privacy policy</a>
-      <a href="/terms-and-conditions">Terms &amp; conditions</a>
+    <nav class="footer-col" aria-label={t.footer.companyEyebrow}>
+      <p class="eyebrow">{t.footer.companyEyebrow}</p>
+      <a href={L("/about-us")}>{t.footer.companyLinks.about}</a>
+      <a href={L("/contact")}>{t.footer.companyLinks.contact}</a>
+      <a href={L("/privacy-policy")}>{t.footer.companyLinks.privacy}</a>
+      <a href={L("/terms-and-conditions")}>{t.footer.companyLinks.terms}</a>
     </nav>
   </div>
 
   <div class="container-page footer-base">
     <p>© {year} aifaceshapeanalyzer.com</p>
-    <p class="footer-mono">Six shapes · 478-point face mesh</p>
+    <p class="footer-mono">{t.footer.mono}</p>
   </div>
 
   <div class="container-page footer-disclaimer">
-    <p>
-      Disclaimer: face shape is a subjective label, not an exact measurement.
-      Results are an estimate generated from your photo and can vary with angle,
-      lighting, expression, hair, glasses, and camera lens. Many faces are a
-      blend of two shapes — use this as a guide for styling, not as definitive
-      or professional advice.
-    </p>
+    <p>{t.footer.disclaimer}</p>
   </div>
 </footer>
 

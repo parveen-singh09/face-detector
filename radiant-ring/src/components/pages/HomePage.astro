@@ -1,0 +1,409 @@
+---
+/**
+ * HomePage — the full homepage body, parameterized by locale. Rendered by both
+ * the root route (`/`, lang="en") and the localized routes (`/[lang]/`). All copy
+ * comes from the dictionary; the FAQ accordion and FAQPage JSON-LD are built from
+ * the same `faqs` array so structured data stays in sync with the visible text.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MeshGradient from "../MeshGradient.astro";
+import Analyzer from "../Analyzer.astro";
+import { SHAPE_IDS, type ShapeId } from "../../lib/faceShape";
+import { DEFAULT_LOCALE, type Locale } from "../../i18n/config";
+import { useTranslations } from "../../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+
+const shapes = SHAPE_IDS as ShapeId[];
+const steps = t.steps;
+const faqs = t.faqs;
+---
+
+<BaseLayout
+  lang={lang}
+  title={t.pages.home.title}
+  description={t.pages.home.description}
+  keywords={t.keywords}
+  path="/"
+>
+  <!-- Structured data: FAQPage (rich results) -->
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqs.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    })}
+  />
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <MeshGradient class="hero-mesh" />
+    <div class="container-page hero-inner">
+      <h1>
+        {t.hero.titleBefore}<span class="hero-accent">{t.hero.titleAccent}</span>{t.hero.titleAfter}
+      </h1>
+      <p class="hero-sub">{t.hero.sub}</p>
+      <div class="hero-cta">
+        <a href="#analyzer" class="btn-primary">{t.hero.ctaPrimary}</a>
+        <a href="#how-it-works" class="btn-secondary">{t.hero.ctaSecondary}</a>
+      </div>
+      <ul class="hero-trust">
+        <li><span aria-hidden="true">✓</span> {t.hero.trust.free}</li>
+        <li><span aria-hidden="true">✓</span> {t.hero.trust.mesh}</li>
+        <li><span aria-hidden="true">✓</span> {t.hero.trust.ranked}</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── Analyzer ── -->
+  <Analyzer lang={lang} />
+
+  <!-- ── How it works ── -->
+  <section id="how-it-works" class="section">
+    <div class="container-page">
+      <div class="section-head">
+        <p class="eyebrow">{t.howItWorks.eyebrow}</p>
+        <h2>{t.howItWorks.heading}</h2>
+      </div>
+      <div class="steps">
+        {
+          steps.map((s) => (
+            <article class="card step">
+              <span class="step-n">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Face shapes ── -->
+  <section id="shapes" class="section section-soft">
+    <div class="container-page">
+      <div class="section-head">
+        <p class="eyebrow">{t.shapesSection.eyebrow}</p>
+        <h2>{t.shapesSection.heading}</h2>
+        <p class="section-sub">{t.shapesSection.sub}</p>
+      </div>
+      <div class="shape-grid">
+        {
+          shapes.map((id) => (
+            <article class="card shape-card">
+              <img
+                class="shape-glyph"
+                data-shape={id}
+                src={`/shapes/${id}.jpg`}
+                alt={t.shapesSection.exampleAlt.replace("{shape}", t.shapeLabels[id])}
+                width="80"
+                height="80"
+                loading="lazy"
+                decoding="async"
+              />
+              <h3>{t.shapeLabels[id]}</h3>
+              <p>{t.shapeDescriptions[id]}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEO long-form content ── -->
+  <section id="about" class="section section-soft">
+    <div class="container-page seo-content">
+      <div class="section-head">
+        <p class="eyebrow">{t.seo.eyebrow}</p>
+        <h2>{t.seo.heading}</h2>
+      </div>
+      <div class="seo-body" set:html={t.seo.html} />
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq" class="section">
+    <div class="container-page faq-wrap">
+      <div class="section-head">
+        <p class="eyebrow">{t.faqSection.eyebrow}</p>
+        <h2>{t.faqSection.heading}</h2>
+      </div>
+      <div class="faq-list">
+        {
+          faqs.map((f) => (
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero-mesh {
+    z-index: -1;
+    opacity: 0.55;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  }
+  .hero-inner {
+    position: relative;
+    text-align: center;
+    padding-block: var(--spacing-5xl) var(--spacing-4xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(40px, 7vw, 72px);
+    font-weight: 600;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    color: var(--color-ink);
+  }
+  .hero-accent {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-violet),
+      var(--color-cyan)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero-sub {
+    margin: var(--spacing-lg) auto 0;
+    max-width: 60ch;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--color-body);
+  }
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+  }
+  .hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+    padding: 0;
+    list-style: none;
+    color: var(--color-body);
+    font-size: 14px;
+  }
+  .hero-trust li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+  .hero-trust span {
+    color: #29bc9b;
+    font-weight: 600;
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding-block: clamp(var(--spacing-4xl), 10vw, var(--spacing-5xl));
+  }
+  .section-soft {
+    background-color: var(--color-canvas-soft-2);
+  }
+  .section-head {
+    max-width: 640px;
+    margin-bottom: var(--spacing-2xl);
+  }
+  .section-head h2 {
+    margin: var(--spacing-xs) 0 0;
+    font-size: clamp(26px, 5vw, 32px);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+  .section-sub {
+    margin-top: var(--spacing-sm);
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  /* Steps */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+  }
+  .step {
+    padding: var(--spacing-xl);
+  }
+  .step-n {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-mute);
+  }
+  .step h3 {
+    margin: var(--spacing-sm) 0 var(--spacing-xs);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .step p {
+    margin: 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Shapes grid */
+  .shape-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+  }
+  .shape-card {
+    padding: var(--spacing-xl);
+  }
+  /* Simple, uniform frame for every shape card. */
+  .shape-glyph {
+    display: block;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    object-position: center;
+    background-color: var(--color-canvas-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+  }
+  .shape-card h3 {
+    margin: 0 0 var(--spacing-xs);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .shape-card p {
+    margin: 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* SEO long-form content */
+  .seo-content {
+    max-width: 760px;
+  }
+  .seo-body :global(p) {
+    margin: 0 0 var(--spacing-md);
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 26px;
+    text-wrap: pretty;
+  }
+  .seo-body :global(h3) {
+    margin: var(--spacing-xl) 0 var(--spacing-xs);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+  .seo-body :global(strong) {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .seo-body :global(a) {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+
+  /* FAQ */
+  .faq-wrap {
+    max-width: 760px;
+  }
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  .faq-item {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    background-color: var(--color-canvas);
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  .faq-item summary {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-ink);
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item summary::after {
+    content: "+";
+    font-family: var(--font-mono);
+    color: var(--color-mute);
+    font-size: 18px;
+  }
+  .faq-item[open] summary::after {
+    content: "−";
+  }
+  .faq-item p {
+    margin: var(--spacing-sm) 0 0;
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  /* Responsive */
+  @media (max-width: 860px) {
+    .steps,
+    .shape-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .steps,
+    .shape-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+    .step,
+    .shape-card {
+      padding: var(--spacing-lg);
+    }
+    .hero-trust {
+      gap: var(--spacing-sm) var(--spacing-md);
+    }
+    .faq-item {
+      padding: var(--spacing-sm) var(--spacing-md);
+    }
+  }
+</style>

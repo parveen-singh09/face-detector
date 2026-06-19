@@ -8,26 +8,45 @@
  * modules (faceShape, rateLimit) and DYNAMICALLY imports the heavy MediaPipe
  * wrappers (faceLandmarker, meshOverlay) the first time a mode is activated, so
  * the ~15MB WASM+model never touches the homepage's critical path.
+ *
+ * i18n: all server-rendered strings come from the dictionary. Strings the client
+ * script needs at runtime (status/error messages, dynamic labels, localized
+ * shape names + descriptions) are serialized into a JSON island the script reads
+ * on load — so the logic stays untouched and copy stays in the dictionary.
  */
 import ShapeBar from "./ShapeBar.astro";
-import { SHAPE_LABELS } from "../lib/faceShape";
-import type { ShapeId } from "../lib/faceShape";
+import { SHAPE_IDS, type ShapeId } from "../lib/faceShape";
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { useTranslations } from "../i18n/utils";
 
-const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const a = t.analyzer;
+
+// Localized shape label list for the pre-rendered breakdown bars.
+const SHAPES = SHAPE_IDS.map((id) => [id, t.shapeLabels[id]] as [ShapeId, string]);
+
+// Strings the client script reads from the JSON island below.
+const scriptI18n = {
+  messages: a.msg,
+  shapeLabels: t.shapeLabels,
+  shapeDescriptions: t.shapeDescriptions,
+};
 ---
 
 <section id="analyzer" class="analyzer container-page" aria-labelledby="analyzer-heading">
   <div class="analyzer-head">
-    <p class="eyebrow">Analyzer</p>
-    <h2 id="analyzer-heading">Detect your face shape</h2>
-    <p class="analyzer-sub">
-      Upload a clear, front-facing photo or use your camera.
-    </p>
+    <p class="eyebrow">{a.eyebrow}</p>
+    <h2 id="analyzer-heading">{a.heading}</h2>
+    <p class="analyzer-sub">{a.sub}</p>
   </div>
 
   <div class="card-lg analyzer-card">
     <!-- Mode tabs -->
-    <div class="mode-tabs" role="tablist" aria-label="Input method">
+    <div class="mode-tabs" role="tablist" aria-label={a.tablistAria}>
       <button
         id="tab-upload"
         class="mode-tab is-active"
@@ -37,7 +56,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
         data-mode="upload"
         type="button"
       >
-        Upload photo
+        {a.tabUpload}
       </button>
       <button
         id="tab-camera"
@@ -48,7 +67,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
         data-mode="camera"
         type="button"
       >
-        Use camera
+        {a.tabCamera}
       </button>
     </div>
 
@@ -62,32 +81,32 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
             class="visually-hidden"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            aria-label="Choose a photo to analyze"
+            aria-label={a.fileInputAria}
           />
           <label for="file-input" class="dropzone-label">
             <span class="dropzone-icon" aria-hidden="true">⊕</span>
-            <span class="dropzone-title">Drop a photo or click to browse</span>
-            <span class="dropzone-hint">JPG, PNG or WebP · up to 10MB</span>
+            <span class="dropzone-title">{a.dropzoneTitle}</span>
+            <span class="dropzone-hint">{a.dropzoneHint}</span>
           </label>
         </div>
 
         <!-- Media preview (image or video) with the mesh overlay canvas -->
         <div id="media-wrap" class="media-wrap" hidden>
-          <img id="preview-img" class="media" alt="Your uploaded photo" hidden />
+          <img id="preview-img" class="media" alt={a.previewImgAlt} hidden />
           <video
             id="preview-video"
             class="media"
             playsinline
             muted
             hidden
-            aria-label="Camera preview"></video>
+            aria-label={a.cameraPreviewAria}></video>
           <canvas id="overlay" class="overlay" aria-hidden="true"></canvas>
         </div>
 
         <!-- Loading / model-init state -->
         <div id="stage-loading" class="stage-loading" hidden role="status">
           <span class="spinner" aria-hidden="true"></span>
-          <span id="loading-text">Loading the on-device model…</span>
+          <span id="loading-text">{a.loadingModel}</span>
         </div>
       </div>
 
@@ -96,13 +115,13 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
         <!-- Action row -->
         <div class="actions">
           <button id="btn-analyze" class="btn-primary" type="button" hidden>
-            Analyze my face
+            {a.btnAnalyze}
           </button>
           <button id="btn-capture" class="btn-primary" type="button" hidden>
-            Capture &amp; analyze
+            {a.btnCapture}
           </button>
           <button id="btn-reset" class="btn-secondary" type="button" hidden>
-            Analyze another
+            {a.btnReset}
           </button>
         </div>
 
@@ -110,23 +129,23 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
         <p id="message" class="message" role="alert" hidden></p>
 
         <!-- Upload tips (shown only in upload mode) -->
-        <ul id="upload-tips" class="cam-tips" aria-label="Tips for an accurate read">
-          <li><span aria-hidden="true">📸</span> Use a clear, sharp photo — well-lit, in focus, and facing the camera straight on.</li>
-          <li><span aria-hidden="true">🖼️</span> Keep the background plain and uncluttered so only your face stands out.</li>
-          <li><span aria-hidden="true">💇</span> Groom up — hair off your face, glasses off, and a neutral expression.</li>
+        <ul id="upload-tips" class="cam-tips" aria-label={a.uploadTipsAria}>
+          <li><span aria-hidden="true">📸</span> {a.uploadTips[0]}</li>
+          <li><span aria-hidden="true">🖼️</span> {a.uploadTips[1]}</li>
+          <li><span aria-hidden="true">💇</span> {a.uploadTips[2]}</li>
         </ul>
 
         <!-- Camera capture tips (shown only in camera mode) -->
-        <ul id="cam-tips" class="cam-tips" hidden aria-label="Tips for an accurate read">
-          <li><span aria-hidden="true">👓</span> Take your glasses off — frames hide the cheek and brow edges.</li>
-          <li><span aria-hidden="true">🧑</span> Face the camera straight on, with your hair off your face.</li>
-          <li><span aria-hidden="true">🤚</span> Click to capture 5 readings — we average them for accuracy.</li>
+        <ul id="cam-tips" class="cam-tips" hidden aria-label={a.camTipsAria}>
+          <li><span aria-hidden="true">👓</span> {a.camTips[0]}</li>
+          <li><span aria-hidden="true">🧑</span> {a.camTips[1]}</li>
+          <li><span aria-hidden="true">🤚</span> {a.camTips[2]}</li>
         </ul>
 
         <!-- Results -->
         <div id="results" class="results" hidden aria-live="polite">
           <div class="result-headline">
-            <span class="eyebrow">Your face shape</span>
+            <span class="eyebrow">{a.resultEyebrow}</span>
             <div class="result-top-row">
               <h3 id="result-shape">—</h3>
               <span id="result-confidence" class="result-confidence">—</span>
@@ -136,48 +155,59 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
           </div>
 
           <div class="breakdown">
-            <p class="breakdown-title">Full breakdown</p>
+            <p class="breakdown-title">{a.breakdownTitle}</p>
             <div class="breakdown-list" role="list">
               {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
             </div>
           </div>
 
-          <p class="result-disclaimer">
-            Heads up: face shape is a subjective label, not an exact science.
-            Results are an estimate and can vary with your photo angle, lighting,
-            expression, hair covering the face, glasses, and camera lens. Many
-            faces are a natural blend of two shapes — treat this as a helpful
-            guide, not a definitive verdict.
-          </p>
+          <p class="result-disclaimer">{a.resultDisclaimer}</p>
         </div>
 
         <!-- Idle helper copy (before first result) -->
         <div id="idle-help" class="idle-help">
-          <p class="idle-help-title">What you’ll get</p>
+          <p class="idle-help-title">{a.idleTitle}</p>
           <ul>
-            <li>Your best-match shape with a confidence score</li>
-            <li>A ranked percentage across all six face shapes</li>
-            <li>A note when your face is a blend of two shapes</li>
+            <li>{a.idleItems[0]}</li>
+            <li>{a.idleItems[1]}</li>
+            <li>{a.idleItems[2]}</li>
           </ul>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- i18n island: strings the client script reads at runtime. -->
+  <script type="application/json" id="analyzer-i18n" set:html={JSON.stringify(scriptI18n)}></script>
 </section>
 
 <script>
   import {
     classifyFace,
     classifyFaceMulti,
-    SHAPE_DESCRIPTIONS,
     MEASURE_IDX,
     type ShapeResult,
+    type ShapeId,
   } from "../lib/faceShape";
   import {
     checkRateLimit,
     recordAnalysis,
     formatRetryAfter,
   } from "../lib/rateLimit";
+
+  // ── i18n strings (from the JSON island) ────────────────────────────────────
+  type I18n = {
+    messages: Record<string, string>;
+    shapeLabels: Record<ShapeId, string>;
+    shapeDescriptions: Record<ShapeId, string>;
+  };
+  const I: I18n = JSON.parse(
+    document.getElementById("analyzer-i18n")?.textContent || "{}",
+  );
+  const M = I.messages;
+  // Tiny placeholder interpolator: fill("{n}/{total}", {n:1,total:5}).
+  const fill = (tpl: string, vars: Record<string, string | number>) =>
+    tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
 
   const MAX_BYTES = 10 * 1024 * 1024;
   // How many camera readings the user clicks to capture, then we average them
@@ -231,7 +261,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
   async function loadModules() {
     if (!landmarkerMod || !overlayMod) {
-      showLoading("Loading the on-device model…");
+      showLoading(M.loadingModel);
       [landmarkerMod, overlayMod] = await Promise.all([
         import("../lib/faceLandmarker"),
         import("../lib/meshOverlay"),
@@ -313,9 +343,9 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     const status = checkRateLimit();
     if (!status.allowed) {
       showMessage(
-        `You’ve reached the hourly limit. Please try again ${formatRetryAfter(
-          status.retryAfterMs,
-        )}.`,
+        fill(M.rateLimited, {
+          retryAfter: formatRetryAfter(status.retryAfterMs),
+        }),
       );
       return false;
     }
@@ -326,11 +356,11 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   function handleFile(file: File) {
     clearMessage();
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      showMessage("Please choose a JPG, PNG or WebP image.");
+      showMessage(M.fileType);
       return;
     }
     if (file.size > MAX_BYTES) {
-      showMessage("That image is over 10MB. Please choose a smaller file.");
+      showMessage(M.fileTooLarge);
       return;
     }
     const url = URL.createObjectURL(file);
@@ -344,9 +374,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     };
     previewImg.onerror = () => {
       URL.revokeObjectURL(url);
-      showMessage(
-        "Couldn’t read that image. iPhone HEIC photos aren’t supported — please use JPG, PNG or WebP.",
-      );
+      showMessage(M.readError);
     };
     previewImg.src = url;
   }
@@ -356,13 +384,13 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     btnAnalyze.disabled = true;
     try {
       const { landmarkerMod, overlayMod } = await loadModules();
-      showLoading("Analyzing…");
+      showLoading(M.analyzing);
       const res = await landmarkerMod.detectImage(previewImg);
       hideLoading();
 
       const faces = res.faceLandmarks;
       if (!faces || faces.length === 0) {
-        showMessage("No face detected. Try a clearer, front-facing photo.");
+        showMessage(M.noFace);
         return;
       }
       const w = previewImg.naturalWidth;
@@ -375,7 +403,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     } catch (err) {
       hideLoading();
       console.error(err);
-      showMessage("Something went wrong analyzing that image. Please try again.");
+      showMessage(M.analyzeError);
     } finally {
       btnAnalyze.disabled = false;
     }
@@ -385,7 +413,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   async function startCamera() {
     clearMessage();
     if (!navigator.mediaDevices?.getUserMedia) {
-      showMessage("Your browser doesn’t support camera access.");
+      showMessage(M.noCameraSupport);
       return;
     }
     // Tag this startup. If the user switches away (stopCamera bumps camGen)
@@ -417,7 +445,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       mediaWrap.hidden = false;
       previewVideo.hidden = false;
       btnCapture.hidden = false;
-      btnCapture.textContent = `Capture reading - [1/${CAPTURE_FRAMES}]`;
+      btnCapture.textContent = fill(M.captureReading, { n: 1, total: CAPTURE_FRAMES });
       btnReset.hidden = false;
       videoReady = true;
       captureFrames = [];
@@ -426,9 +454,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
     } catch (err) {
       if (stale()) return;
       console.error(err);
-      showMessage(
-        "Couldn’t access the camera. Check permissions, or use photo upload instead.",
-      );
+      showMessage(M.cameraError);
     }
   }
 
@@ -467,7 +493,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   function captureAndAnalyze() {
     if (!gateByRateLimit()) return;
     if (!lastLandmarks || !landmarkerMod || !overlayMod) {
-      showMessage("No face detected yet. Center your face, then click to capture.");
+      showMessage(M.noFaceYet);
       return;
     }
     clearMessage();
@@ -477,7 +503,10 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
     const remaining = CAPTURE_FRAMES - captureFrames.length;
     if (remaining > 0) {
-      btnCapture.textContent = `Capture reading - [${captureFrames.length + 1}/${CAPTURE_FRAMES}]`;
+      btnCapture.textContent = fill(M.captureReading, {
+        n: captureFrames.length + 1,
+        total: CAPTURE_FRAMES,
+      });
       return;
     }
 
@@ -494,9 +523,9 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       btnCapture.hidden = true;
     } catch (err) {
       console.error(err);
-      showMessage("Something went wrong during capture. Please try again.");
+      showMessage(M.captureError);
       captureFrames = [];
-      btnCapture.textContent = `Capture reading - [1/${CAPTURE_FRAMES}]`;
+      btnCapture.textContent = fill(M.captureReading, { n: 1, total: CAPTURE_FRAMES });
       videoReady = true;
       runVideoLoop();
     }
@@ -542,15 +571,19 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       `chin ${f.chinAngle.toFixed(0)}° · ` +
       `jaw-angle ${f.jawAngularity.toFixed(2)}`;
 
-    resultShape.textContent = result.top.label;
-    resultConfidence.textContent = `${result.confidence}% confidence`;
+    const topId = result.top.id as ShapeId;
+    const runnerUpId = result.runnerUp.id as ShapeId;
+    resultShape.textContent = I.shapeLabels[topId];
+    resultConfidence.textContent = fill(M.confidence, { pct: result.confidence });
 
     if (result.isBlend) {
-      resultDesc.textContent = `Mostly ${result.top.label} with ${result.runnerUp.label} traits. ${
-        SHAPE_DESCRIPTIONS[result.top.id]
-      }`;
+      resultDesc.textContent = fill(M.blendDesc, {
+        top: I.shapeLabels[topId],
+        runnerUp: I.shapeLabels[runnerUpId],
+        desc: I.shapeDescriptions[topId],
+      });
     } else {
-      resultDesc.textContent = SHAPE_DESCRIPTIONS[result.top.id];
+      resultDesc.textContent = I.shapeDescriptions[topId];
     }
 
     // Reorder + fill the pre-rendered bars by probability.
@@ -897,7 +930,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
   }
   .idle-help ul {
     margin: 0 0 var(--spacing-md);
-    padding-left: var(--spacing-md);
+    padding-inline-start: var(--spacing-md);
     color: var(--color-body);
     font-size: 14px;
     line-height: 22px;

@@ -1,0 +1,199 @@
+---
+/**
+ * ContactPage — the Contact body + email form, parameterized by locale. Rendered
+ * by `/contact` (en) and `/[lang]/contact`. The form opens a pre-filled mailto;
+ * validation messages + the subject template come from the dictionary via a JSON
+ * island the inline script reads.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ContentPage from "../ContentPage.astro";
+import { DEFAULT_LOCALE, type Locale } from "../../i18n/config";
+import { localizePath, useTranslations } from "../../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const p = t.pages.contact;
+
+const HELLO = "hello@aifaceshapeanalyzer.com";
+const PRIVACY_EMAIL = "privacy@aifaceshapeanalyzer.com";
+
+// Interpolate the intro paragraph's policy/terms links (locale-aware hrefs).
+const introHtml = p.emailIntro
+  .replace(
+    "{privacyLink}",
+    `<a href="${localizePath("/privacy-policy", lang)}">${p.privacyLinkText}</a>`,
+  )
+  .replace(
+    "{termsLink}",
+    `<a href="${localizePath("/terms-and-conditions", lang)}">${p.termsLinkText}</a>`,
+  );
+const fallbackHtml = p.fallback.replace(
+  "{email}",
+  `<a href="mailto:${HELLO}">${HELLO}</a>`,
+);
+
+// Strings the inline validation script needs at runtime.
+const formI18n = {
+  to: HELLO,
+  errMissing: p.errMissing,
+  errEmail: p.errEmail,
+  mailSubject: p.mailSubject,
+};
+---
+
+<BaseLayout
+  lang={lang}
+  title={p.title}
+  description={p.description}
+  path="/contact"
+  keywords={p.keywords}
+>
+  <ContentPage lang={lang} eyebrow={p.eyebrow} heading={p.heading} lead={p.lead}>
+    <h2>{p.emailHeading}</h2>
+    <ul>
+      <li>
+        <strong>{p.emailGeneralLabel}</strong>
+        <a href={`mailto:${HELLO}`}>{HELLO}</a>
+      </li>
+      <li>
+        <strong>{p.emailPrivacyLabel}</strong>
+        <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>
+      </li>
+    </ul>
+    <p set:html={introHtml} />
+
+    <h2>{p.formHeading}</h2>
+    <p>{p.formIntro}</p>
+
+    <form id="contact-form" class="contact-form" novalidate>
+      <div class="field">
+        <label for="cf-name">{p.labelName}</label>
+        <input id="cf-name" name="name" type="text" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="cf-email">{p.labelEmail}</label>
+        <input id="cf-email" name="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="cf-message">{p.labelMessage}</label>
+        <textarea id="cf-message" name="message" rows="6" required></textarea>
+      </div>
+      <p id="cf-error" class="contact-error" role="alert" hidden></p>
+      <button type="submit" class="btn-primary">{p.submit}</button>
+    </form>
+
+    <p class="contact-fallback" set:html={fallbackHtml} />
+  </ContentPage>
+
+  <script type="application/json" id="contact-i18n" set:html={JSON.stringify(formI18n)}></script>
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const form = document.getElementById("contact-form");
+    if (!form) return;
+    const err = document.getElementById("cf-error");
+    const cfg = JSON.parse(
+      document.getElementById("contact-i18n")?.textContent || "{}",
+    );
+    const TO = cfg.to || "hello@aifaceshapeanalyzer.com";
+    const fill = (tpl, vars) =>
+      String(tpl || "").replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+
+    const showError = (msg) => {
+      if (!err) return;
+      err.textContent = msg;
+      err.hidden = false;
+    };
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (err) err.hidden = true;
+
+      const name = form.elements["name"].value.trim();
+      const email = form.elements["email"].value.trim();
+      const message = form.elements["message"].value.trim();
+
+      if (!name || !email || !message) {
+        showError(cfg.errMissing);
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError(cfg.errEmail);
+        return;
+      }
+
+      const subject = fill(cfg.mailSubject, { name });
+      const body = `${message}\n\n— ${name} (${email})`;
+      const href =
+        `mailto:${TO}?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(body)}`;
+      window.location.href = href;
+    });
+  })();
+</script>
+
+<style>
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-width: 520px;
+    margin: var(--spacing-lg) 0 var(--spacing-xl);
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+  .field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font: inherit;
+    font-size: 15px;
+    color: var(--color-ink);
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  }
+  .contact-error {
+    margin: 0;
+    color: var(--color-error);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .contact-form .btn-primary {
+    align-self: flex-start;
+  }
+  .contact-fallback {
+    font-size: 14px;
+    color: var(--color-mute);
+  }
+
+  @media (max-width: 560px) {
+    .contact-form .btn-primary {
+      align-self: stretch;
+      text-align: center;
+    }
+  }
+</style>

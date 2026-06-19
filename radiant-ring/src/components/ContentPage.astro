@@ -7,7 +7,13 @@
  *
  * Slotted markup is authored in the page, so the prose styles below target it
  * with `:global()` under the scoped `.legal-prose` wrapper.
+ *
+ * i18n: when `lang` is a non-default locale and `mtNotice` is true, a small
+ * "machine-translated" banner is shown above the prose, linking to the English
+ * original (the authoritative version).
  */
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { delocalizePath, useTranslations } from "../i18n/utils";
 
 interface Props {
   /** Small mono eyebrow above the title, e.g. "Legal". */
@@ -18,9 +24,28 @@ interface Props {
   lead?: string;
   /** Optional "Last updated" line (already formatted). */
   updated?: string;
+  /** Active locale (drives the "Last updated" label + MT notice). */
+  lang?: Locale;
+  /** Show the machine-translation notice on non-default locales. */
+  mtNotice?: boolean;
 }
 
-const { eyebrow, heading, lead, updated } = Astro.props;
+const {
+  eyebrow,
+  heading,
+  lead,
+  updated,
+  lang = DEFAULT_LOCALE,
+  mtNotice = false,
+} = Astro.props;
+
+const t = useTranslations(lang);
+const showNotice = mtNotice && lang !== DEFAULT_LOCALE;
+// Link the notice to the English original of THIS page.
+const enHref = delocalizePath(Astro.url.pathname) || "/";
+const noticeHtml = showNotice
+  ? t.mtNotice.replace("{enHref}", enHref)
+  : "";
 ---
 
 <section class="page-hero">
@@ -28,12 +53,13 @@ const { eyebrow, heading, lead, updated } = Astro.props;
     <p class="eyebrow">{eyebrow}</p>
     <h1>{heading}</h1>
     {lead && <p class="page-lead">{lead}</p>}
-    {updated && <p class="page-updated">Last updated: {updated}</p>}
+    {updated && <p class="page-updated">{t.contentPage.lastUpdated} {updated}</p>}
   </div>
 </section>
 
 <section class="section">
   <div class="container-page legal-prose">
+    {showNotice && <p class="mt-notice" set:html={noticeHtml} />}
     <slot />
   </div>
 </section>
@@ -75,6 +101,22 @@ const { eyebrow, heading, lead, updated } = Astro.props;
   /* ── Prose column (styles the slotted page content) ── */
   .legal-prose {
     max-width: 760px;
+  }
+  /* Machine-translation notice — quiet, set above the prose on translated pages. */
+  .mt-notice {
+    margin: 0 0 var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
+    color: var(--color-mute);
+    font-size: 13px;
+    line-height: 19px;
+    text-wrap: pretty;
+  }
+  .mt-notice :global(a) {
+    color: var(--color-link);
+    text-decoration: underline;
   }
   .legal-prose :global(p) {
     margin: 0 0 var(--spacing-md);

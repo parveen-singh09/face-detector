@@ -1,0 +1,13 @@
+---
+/** Localized Contact page — /es/contact, /fr/contact, … */
+import ContactPage from "../../components/pages/ContactPage.astro";
+import { NON_DEFAULT_LOCALES, type Locale } from "../../i18n/config";
+
+export function getStaticPaths() {
+  return NON_DEFAULT_LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Locale };
+---
+
+<ContactPage lang={lang} />

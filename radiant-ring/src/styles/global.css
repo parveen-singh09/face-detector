@@ -137,6 +137,13 @@ html[data-theme="dark"] {
     scroll-behavior: smooth;
   }
 
+  /* Guard against horizontal scroll on small screens (overflowing children
+     never widen the viewport). `clip` keeps position: sticky working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
