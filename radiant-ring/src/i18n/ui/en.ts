@@ -165,7 +165,7 @@ export const en = {
         "No face detected yet. Center your face, then click to capture.",
       captureError: "Something went wrong during capture. Please try again.",
       captureReading: "Capture reading - [{n}/{total}]",
-      confidence: "{pct}% confidence",
+      confidence: "{pct}% match strength",
       blendDesc: "Mostly {top} with {runnerUp} traits. {desc}",
     },
   },
