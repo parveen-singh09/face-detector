@@ -172,7 +172,6 @@ const scriptI18n = {
               <span id="result-confidence" class="result-confidence">—</span>
             </div>
             <p id="result-desc" class="result-desc"></p>
-            <p id="result-metrics" class="result-metrics" aria-hidden="true"></p>
           </div>
 
           <div class="breakdown">
@@ -204,7 +203,6 @@ const scriptI18n = {
   import {
     classifyFace,
     classifyFaceMulti,
-    MEASURE_IDX,
     type ShapeResult,
     type ShapeId,
   } from "../lib/faceShape";
@@ -260,7 +258,6 @@ const scriptI18n = {
   const resultShape = $("result-shape");
   const resultConfidence = $("result-confidence");
   const resultDesc = $("result-desc");
-  const resultMetrics = $("result-metrics");
 
   // Lazily-loaded heavy modules (MediaPipe).
   type LandmarkerMod = typeof import("../lib/faceLandmarker");
@@ -447,7 +444,6 @@ const scriptI18n = {
       const h = previewImg.naturalHeight;
       overlayMod.syncCanvasSize(overlay, previewImg);
       overlayMod.drawMesh(overlay, faces[0], {});
-      overlayMod.drawMeasurePoints(overlay, faces[0], MEASURE_IDX);
       recordAnalysis();
       renderResult(classifyFace(faces[0], w, h));
     } catch (err) {
@@ -600,30 +596,6 @@ const scriptI18n = {
   function renderResult(result: ShapeResult) {
     showResults();
     clearMessage();
-
-    // Calibration aid: log the raw measured ratios + the resulting distribution.
-    // These are what the classifier actually saw — use them to tune
-    // SHAPE_PROFILES in faceShape.ts. Remove once the classifier is dialed in.
-    const f = result.features;
-    console.log("[faceShape] measured features", {
-      lengthToWidth: +f.lengthToWidth.toFixed(3),
-      foreheadToCheek: +f.foreheadToCheek.toFixed(3),
-      jawToCheek: +f.jawToCheek.toFixed(3),
-      chinAngle: +f.chinAngle.toFixed(1),
-      jawAngularity: +f.jawAngularity.toFixed(3),
-    });
-    console.table(
-      result.ranked.map((s) => ({ shape: s.id, probability: s.probability })),
-    );
-
-    // On-screen calibration readout (so the measured ratios are visible without
-    // opening devtools). Remove once SHAPE_PROFILES are dialed in.
-    resultMetrics.textContent =
-      `L/W ${f.lengthToWidth.toFixed(2)} · ` +
-      `fore/cheek ${f.foreheadToCheek.toFixed(2)} · ` +
-      `jaw/cheek ${f.jawToCheek.toFixed(2)} · ` +
-      `chin ${f.chinAngle.toFixed(0)}° · ` +
-      `jaw-angle ${f.jawAngularity.toFixed(2)}`;
 
     const topId = result.top.id as ShapeId;
     const runnerUpId = result.runnerUp.id as ShapeId;
@@ -974,16 +946,6 @@ const scriptI18n = {
     color: var(--color-body);
     font-size: 14px;
     line-height: 20px;
-  }
-  .result-metrics {
-    margin-top: var(--spacing-xs);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--color-faint, var(--color-body));
-    opacity: 0.75;
-  }
-  .result-metrics:empty {
-    display: none;
   }
   .breakdown {
     margin-top: var(--spacing-lg);

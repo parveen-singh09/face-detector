@@ -102,9 +102,6 @@ const IDX = {
   jawLeft: 397, // jaw angle (gonial), left
 } as const;
 
-/** Exposed so the overlay can draw exactly the points the classifier measures. */
-export const MEASURE_IDX = IDX;
-
 /**
  * Target ratio profiles per shape. mu = ideal value, sigma = tolerance.
  * Derived from classic anthropometric face-shape definitions; tune these to

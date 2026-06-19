@@ -114,37 +114,3 @@ export function drawMesh(
 
   ctx.restore();
 }
-
-/**
- * DEBUG: draw exactly the 8 landmarks the classifier measures, so we can verify
- * they land where we think (jaw corners, cheeks, forehead, chin). Each point is
- * a labeled dot. Remove once the classifier is calibrated.
- */
-export function drawMeasurePoints(
-  canvas: HTMLCanvasElement,
-  landmarks: Landmark[],
-  idx: Record<string, number>,
-  opts: { mirrored?: boolean } = {},
-): void {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  ctx.save();
-  if (opts.mirrored) {
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-  }
-  for (const [name, i] of Object.entries(idx)) {
-    const lm = landmarks[i];
-    if (!lm) continue;
-    const x = lm.x * canvas.width;
-    const y = lm.y * canvas.height;
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 213, 0, 0.95)"; // yellow — stands out from the mesh
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "rgba(0,0,0,0.7)";
-    ctx.stroke();
-  }
-  ctx.restore();
-}

@@ -700,3 +700,30 @@ pre-existing and don't block `astro build`.
 - Verified `npm run build` passes (77 pages).
 
 
+## 2026-06-19 — Pre-deploy cleanup (removed debug/calibration code + unused files)
+
+Cleanup pass ahead of deployment. Removed the temporary calibration scaffolding
+(all marked "remove once the classifier is dialed in") and leftover starter files:
+
+- **Debug logging gone** (`src/components/Analyzer.astro`): deleted the
+  `console.log("[faceShape] measured features", …)` + `console.table(...)` calls
+  and the on-screen `#result-metrics` readout (the L/W · fore/cheek · jaw/cheek ·
+  chin° · jaw-angle line). Removed the now-dead `resultMetrics` element handle,
+  its `<p id="result-metrics">` markup, and the `.result-metrics` CSS. Kept the
+  three legitimate `console.error(err)` calls in the catch blocks.
+- **Debug overlay removed** (`src/lib/meshOverlay.ts`): deleted the
+  `drawMeasurePoints()` function (yellow measure-point dots) and its only call
+  site in `Analyzer.astro`. Dropped the `MEASURE_IDX` export from
+  `src/lib/faceShape.ts` and its import in `Analyzer.astro` (existed solely to
+  feed that debug overlay).
+- **Unused starter assets deleted**: `src/assets/astro.svg` +
+  `src/assets/background.svg` (Astro "basics" template leftovers, referenced
+  nowhere in `src/`); removed the empty `src/assets/` dir.
+- **Note on comments**: did NOT strip source comments wholesale — the build
+  already strips them from shipped JS/CSS, and the explanatory ones aid
+  maintenance. Only removed comments attached to the deleted debug code.
+- Verified: `npm run build` passes (77 pages); confirmed `dist/` contains no
+  `measured features` / `[faceShape]` / `drawMeasurePoints` / `MEASURE_IDX`
+  strings, and `src/` has no `console.log`/`console.table`/`result-metrics`
+  leftovers.
+
