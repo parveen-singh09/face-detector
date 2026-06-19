@@ -773,3 +773,58 @@ source-tidiness pass, not a perf change.
   browser chrome (URL bar) doesn't leave a gap.
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-19 — Pre-deploy review pass (camera leaks, SEO canonical, hardening)
+
+Full pre-deploy audit (3 parallel reviewers + manual code verification). Build
+passes (77 pages); i18n verified clean across all 15 locales (no missing keys,
+broken placeholders, or HTML/href drift); all asset references resolve. Fixed
+the confirmed bugs:
+
+- **Webcam left running after a successful capture** (`Analyzer.astro`
+  `captureAndAnalyze`): on the 5th reading the rAF loop + capture button were
+  stopped but the `MediaStream` tracks were never stopped, so the physical
+  camera/LED stayed on until tab switch or page leave. Now computes the result
+  first, then calls `stopCamera()` before rendering (kept the order so the catch
+  path can still resume the live loop if classification throws).
+- **Live stream leaked on Reset in camera mode** (`reset()`): `resetStage()`
+  never stops tracks, and `startCamera()` overwrote `stream` with a fresh one,
+  orphaning the old still-running track. `reset()` now calls `stopCamera()`
+  before `startCamera()`. (The `camGen` race fix itself was sound — the gap was
+  that only `stopCamera()` stops tracks and two flows skipped it.)
+- **Stuck loading spinner on MediaPipe load failure in camera mode**
+  (`startCamera` catch): added `hideLoading()` so a failed module/WASM import
+  shows the error instead of a permanent spinner (the image flow already did
+  this via `finally`).
+- **SEO canonical/sitemap trailing-slash mismatch** (`src/i18n/utils.ts`
+  `localizePath`): sub-page canonicals/hreflang emitted `…/about-us` (no slash)
+  while the sitemap emitted `…/about-us/`, so canonicals pointed at a URL the
+  host would 301-redirect. Added a hash-aware `ensureTrailingSlash` so all
+  localized paths get a trailing slash **without** corrupting anchor links
+  (`/#analyzer`, `/#main`) or the `set:html` privacy/terms links. Verified in
+  `dist/`: canonical, hreflang (15 + x-default), sitemap, and in-body links all
+  agree now; hashes preserved.
+- **Defensive guard in the classifier** (`faceShape.ts` `computeFeatures`):
+  throws on an incomplete landmark set (`length <= maxIdx`) instead of a raw
+  TypeError — latent today (MediaPipe always returns 478) but safe for future
+  callers / `classifyFaceMulti`.
+- **Per-frame `DrawingUtils` allocation** (`meshOverlay.ts`): was `new
+  DrawingUtils(ctx)` ~60×/sec during the camera loop; now cached per-context in
+  a `WeakMap`.
+- **Upload UX/leak fixes** (`Analyzer.astro` `handleFile`): clear `fileInput.value`
+  so re-selecting the **same** photo re-fires `change`; revoke any prior pending
+  object URL before creating a new one (fast double-pick leak); hide stale
+  results + clear the mesh overlay on new upload and on the no-face path; bail
+  with a message if the video has zero dimensions at capture time.
+- **Manifest name consistency** (`public/site.webmanifest`): `name`
+  `aifaceshapeanalyzer.com` → `AI Face Shape Analyzer`, `short_name` `Faces` →
+  `FaceShape`, matching the og/JSON-LD/apple-touch branding.
+- **Tooling note**: the i18n type-check run added `@astrojs/check` + `typescript`
+  to `devDependencies` (used for `astro check`). `astro check` reports 8
+  pre-existing, non-blocking errors (sitemap `changefreq` literal types, two
+  `@fontsource-variable/*` missing type decls, four `Landmark[]` vs
+  `NormalizedLandmark[]` casts in `meshOverlay.ts`) — none affect `astro build`.
+- **Deferred (not bugs)**: rate-limit boundary allows ~1 extra analysis at the
+  exact 100-hit edge (soft client-side limit, not worth the flow complexity);
+  stale `public/shapes/credits.json` (orphaned Pexels attribution) can be removed.
+- Verified `npm run build` passes (77 pages) after all changes.
+

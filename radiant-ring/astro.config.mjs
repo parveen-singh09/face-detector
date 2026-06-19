@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 
-import sitemap from '@astrojs/sitemap';
+import sitemap, { ChangeFreqEnum } from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://aifaceshapeanalyzer.com',
@@ -51,10 +51,10 @@ export default defineConfig({
       serialize(item) {
         if (item.url === 'https://aifaceshapeanalyzer.com/') {
           item.priority = 1.0;
-          item.changefreq = 'weekly';
+          item.changefreq = ChangeFreqEnum.WEEKLY;
         } else {
           item.priority = 0.7;
-          item.changefreq = 'monthly';
+          item.changefreq = ChangeFreqEnum.MONTHLY;
         }
         return item;
       },
