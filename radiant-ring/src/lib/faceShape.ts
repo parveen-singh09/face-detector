@@ -160,6 +160,10 @@ export function computeFeatures(
   width: number,
   height: number,
 ): Features {
+  const maxIdx = Math.max(...Object.values(IDX));
+  if (!landmarks || landmarks.length <= maxIdx) {
+    throw new Error("computeFeatures: incomplete landmark set");
+  }
   const p = (i: number) => px(landmarks[i], width, height);
 
   const lowerTwoThirds = dist(p(IDX.glabella), p(IDX.chin));

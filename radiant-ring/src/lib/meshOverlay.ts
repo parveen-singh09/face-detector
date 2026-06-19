@@ -36,6 +36,17 @@ export function clearOverlay(canvas: HTMLCanvasElement): void {
   if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+const utilsCache = new WeakMap<CanvasRenderingContext2D, DrawingUtils>();
+
+function getDrawingUtils(ctx: CanvasRenderingContext2D): DrawingUtils {
+  let utils = utilsCache.get(ctx);
+  if (!utils) {
+    utils = new DrawingUtils(ctx);
+    utilsCache.set(ctx, utils);
+  }
+  return utils;
+}
+
 export function drawMesh(
   canvas: HTMLCanvasElement,
   landmarks: Landmark[],
@@ -53,7 +64,7 @@ export function drawMesh(
     ctx.scale(-1, 1);
   }
 
-  const utils = new DrawingUtils(ctx);
+  const utils = getDrawingUtils(ctx);
 
   utils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_TESSELATION, {
     color: style.mesh,

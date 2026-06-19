@@ -233,6 +233,7 @@ const scriptI18n = {
   let lastLandmarks: any[] | null = null;
   let videoReady = false;
   let captureFrames: any[][] = [];
+  let pendingObjectUrl: string | null = null;
 
   async function loadModules() {
     if (!landmarkerMod || !overlayMod) {
@@ -327,6 +328,10 @@ const scriptI18n = {
       URL.revokeObjectURL(previewImg.src);
       previewImg.removeAttribute("src");
     }
+    if (pendingObjectUrl) {
+      URL.revokeObjectURL(pendingObjectUrl);
+      pendingObjectUrl = null;
+    }
     fileInput.value = "";
   }
 
@@ -356,14 +361,24 @@ const scriptI18n = {
     clearMessage();
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       showMessage(M.fileType);
+      fileInput.value = "";
       return;
     }
     if (file.size > MAX_BYTES) {
       showMessage(M.fileTooLarge);
+      fileInput.value = "";
       return;
     }
+    hideResults();
+    overlayMod?.clearOverlay(overlay);
+    if (pendingObjectUrl) {
+      URL.revokeObjectURL(pendingObjectUrl);
+      pendingObjectUrl = null;
+    }
     const url = URL.createObjectURL(file);
+    pendingObjectUrl = url;
     previewImg.onload = () => {
+      if (pendingObjectUrl === url) pendingObjectUrl = null;
       URL.revokeObjectURL(url);
       dropzone.hidden = true;
       mediaWrap.hidden = false;
@@ -372,10 +387,12 @@ const scriptI18n = {
       btnReset.hidden = false;
     };
     previewImg.onerror = () => {
+      if (pendingObjectUrl === url) pendingObjectUrl = null;
       URL.revokeObjectURL(url);
       showMessage(M.readError);
     };
     previewImg.src = url;
+    fileInput.value = "";
   }
 
   async function analyzeImage() {
@@ -389,6 +406,8 @@ const scriptI18n = {
 
       const faces = res.faceLandmarks;
       if (!faces || faces.length === 0) {
+        overlayMod.clearOverlay(overlay);
+        hideResults();
         showMessage(M.noFace);
         return;
       }
@@ -447,6 +466,7 @@ const scriptI18n = {
       runVideoLoop();
     } catch (err) {
       if (stale()) return;
+      hideLoading();
       console.error(err);
       showMessage(M.cameraError);
     }
@@ -501,12 +521,20 @@ const scriptI18n = {
 
     const w = previewVideo.videoWidth;
     const h = previewVideo.videoHeight;
+    if (!w || !h) {
+      captureFrames.pop();
+      renderCaptureProgress(captureFrames.length, CAPTURE_FRAMES);
+      showMessage(M.noFaceYet);
+      return;
+    }
     videoReady = false;
     cancelAnimationFrame(rafId);
 
     try {
+      const result = classifyFaceMulti(captureFrames, w, h);
       recordAnalysis();
-      renderResult(classifyFaceMulti(captureFrames, w, h));
+      stopCamera();
+      renderResult(result);
       btnCapture.hidden = true;
       hideCaptureProgress();
     } catch (err) {
@@ -572,14 +600,13 @@ const scriptI18n = {
   }
 
   function reset() {
+    hideResults();
+    clearMessage();
     if (mode === "camera") {
-      hideResults();
-      clearMessage();
+      stopCamera();
       resetStage();
       startCamera();
     } else {
-      hideResults();
-      clearMessage();
       resetStage();
     }
   }

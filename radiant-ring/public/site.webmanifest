@@ -1,6 +1,6 @@
 {
-  "name": "aifaceshapeanalyzer.com",
-  "short_name": "Faces",
+  "name": "AI Face Shape Analyzer",
+  "short_name": "FaceShape",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

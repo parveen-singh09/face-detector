@@ -50,11 +50,26 @@ export function delocalizePath(path: string): string {
   return "/" + segments.join("/");
 }
 
+function ensureTrailingSlash(p: string): string {
+  const hashIdx = p.indexOf("#");
+  const hash = hashIdx >= 0 ? p.slice(hashIdx) : "";
+  let pathPart = hashIdx >= 0 ? p.slice(0, hashIdx) : p;
+  const lastSeg = pathPart.split("/").pop() || "";
+  if (pathPart && !pathPart.endsWith("/") && !lastSeg.includes(".")) {
+    pathPart += "/";
+  }
+  return pathPart + hash;
+}
+
 export function localizePath(path: string, lang: Locale): string {
   const canonical = delocalizePath(path);
-  if (lang === DEFAULT_LOCALE) return canonical;
-  if (canonical === "/") return `/${lang}/`;
-  return `/${lang}${canonical}`;
+  const base =
+    lang === DEFAULT_LOCALE
+      ? canonical
+      : canonical === "/"
+        ? `/${lang}/`
+        : `/${lang}${canonical}`;
+  return ensureTrailingSlash(base);
 }
 
 export { type UIStrings };
