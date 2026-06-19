@@ -72,7 +72,9 @@ const scriptI18n = {
     </div>
 
     <div class="analyzer-grid">
-      <!-- Stage: dropzone / image / video + overlay -->
+      <!-- Left column: stage + disclaimer -->
+      <div class="panel-main">
+        <!-- Stage: dropzone / image / video + overlay -->
       <div id="panel-stage" class="stage" role="tabpanel" aria-labelledby="tab-upload">
         <!-- Upload dropzone -->
         <div id="dropzone" class="dropzone" data-view="upload">
@@ -110,6 +112,13 @@ const scriptI18n = {
         </div>
       </div>
 
+      <!-- Disclaimer sits directly under the stage -->
+      <p class="result-disclaimer">
+        <span class="result-disclaimer-icon" aria-hidden="true">ⓘ</span>
+        <span>{a.resultDisclaimer}</span>
+      </p>
+      </div>
+
       <!-- Controls + results -->
       <div class="panel-side">
         <!-- Action row -->
@@ -123,6 +132,18 @@ const scriptI18n = {
           <button id="btn-reset" class="btn-secondary" type="button" hidden>
             {a.btnReset}
           </button>
+        </div>
+
+        <!-- Capture progress (camera mode): one segment per reading -->
+        <div
+          id="capture-progress"
+          class="capture-progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuenow="0"
+          hidden
+        >
+          <span id="capture-dots" class="capture-dots" aria-hidden="true"></span>
         </div>
 
         <!-- Inline messages (errors / rate limit) -->
@@ -160,8 +181,6 @@ const scriptI18n = {
               {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
             </div>
           </div>
-
-          <p class="result-disclaimer">{a.resultDisclaimer}</p>
         </div>
 
         <!-- Idle helper copy (before first result) -->
@@ -233,6 +252,8 @@ const scriptI18n = {
   const btnAnalyze = $("btn-analyze") as HTMLButtonElement;
   const btnCapture = $("btn-capture") as HTMLButtonElement;
   const btnReset = $("btn-reset") as HTMLButtonElement;
+  const captureProgress = $("capture-progress");
+  const captureDots = $("capture-dots");
   const message = $("message");
   const results = $("results");
   const idleHelp = $("idle-help");
@@ -289,6 +310,34 @@ const scriptI18n = {
     message.textContent = "";
   }
 
+  // Camera capture progress: one segment per reading, filled as they're taken.
+  function renderCaptureProgress(filled: number, total: number) {
+    captureProgress.setAttribute("aria-valuemax", String(total));
+    captureProgress.setAttribute("aria-valuenow", String(filled));
+    captureProgress.setAttribute(
+      "aria-label",
+      fill(M.captureReading, { n: Math.min(filled + 1, total), total }),
+    );
+    if (captureDots.childElementCount !== total) {
+      captureDots.replaceChildren();
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement("span");
+        dot.className = "capture-dot";
+        captureDots.appendChild(dot);
+      }
+    }
+    Array.from(captureDots.children).forEach((dot, i) =>
+      (dot as HTMLElement).classList.toggle("is-filled", i < filled),
+    );
+  }
+  function showCaptureProgress(filled: number, total: number) {
+    renderCaptureProgress(filled, total);
+    captureProgress.hidden = false;
+  }
+  function hideCaptureProgress() {
+    captureProgress.hidden = true;
+  }
+
   function setMode(next: "upload" | "camera") {
     if (next === mode) return;
     stopCamera();
@@ -318,6 +367,7 @@ const scriptI18n = {
     btnAnalyze.hidden = true;
     btnCapture.hidden = true;
     btnReset.hidden = true;
+    hideCaptureProgress();
     camTips.hidden = mode !== "camera";
     uploadTips.hidden = mode !== "upload";
     dropzone.hidden = mode !== "upload";
@@ -447,6 +497,7 @@ const scriptI18n = {
       btnCapture.hidden = false;
       btnCapture.textContent = fill(M.captureReading, { n: 1, total: CAPTURE_FRAMES });
       btnReset.hidden = false;
+      showCaptureProgress(0, CAPTURE_FRAMES);
       videoReady = true;
       captureFrames = [];
       overlayMod.syncCanvasSize(overlay, previewVideo);
@@ -500,6 +551,7 @@ const scriptI18n = {
 
     // Snapshot the current reading.
     captureFrames.push(lastLandmarks);
+    renderCaptureProgress(captureFrames.length, CAPTURE_FRAMES);
 
     const remaining = CAPTURE_FRAMES - captureFrames.length;
     if (remaining > 0) {
@@ -521,11 +573,13 @@ const scriptI18n = {
       renderResult(classifyFaceMulti(captureFrames, w, h));
       // Freeze on the captured result.
       btnCapture.hidden = true;
+      hideCaptureProgress();
     } catch (err) {
       console.error(err);
       showMessage(M.captureError);
       captureFrames = [];
       btnCapture.textContent = fill(M.captureReading, { n: 1, total: CAPTURE_FRAMES });
+      renderCaptureProgress(0, CAPTURE_FRAMES);
       videoReady = true;
       runVideoLoop();
     }
@@ -723,6 +777,7 @@ const scriptI18n = {
   .stage {
     position: relative;
     aspect-ratio: 4 / 3;
+    border: 1px solid var(--color-hairline);
     border-radius: var(--radius-md);
     overflow: hidden;
     background-color: var(--color-canvas-soft);
@@ -822,6 +877,11 @@ const scriptI18n = {
   }
 
   /* Side panel */
+  .panel-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
   .panel-side {
     display: flex;
     flex-direction: column;
@@ -843,6 +903,30 @@ const scriptI18n = {
   .message[data-kind="info"] {
     background-color: var(--color-warning-soft);
     color: var(--color-warning-deep);
+  }
+
+  /* Camera capture progress — one segment per reading */
+  .capture-progress {
+    margin: calc(-1 * var(--spacing-xxs)) 0 var(--spacing-xxs);
+  }
+  .capture-dots {
+    display: flex;
+    gap: var(--spacing-xxs);
+  }
+  .capture-dot {
+    flex: 1;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-canvas-soft-2);
+    transition: background-color 0.2s ease;
+  }
+  .capture-dot.is-filled {
+    background-color: var(--color-ink);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .capture-dot {
+      transition: none;
+    }
   }
 
   /* Camera capture tips */
@@ -913,13 +997,25 @@ const scriptI18n = {
     margin-bottom: var(--spacing-xs);
   }
   .result-disclaimer {
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--color-hairline);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    margin: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-canvas-soft);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
     color: var(--color-mute);
     font-size: 12px;
     line-height: 18px;
     text-wrap: pretty;
+  }
+  .result-disclaimer-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--color-hairline-strong);
   }
 
   /* Idle helper */
