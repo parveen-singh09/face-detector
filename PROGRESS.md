@@ -342,3 +342,42 @@ real faces.
 - Verified `npm run build` passes. Still wants a real-device/devtools visual pass.
 
 
+## 2026-06-19 — Error pages (404 / 500)
+
+- **Added error pages** that match the brand hero: a shared
+  `src/components/ErrorState.astro` (centered layout on the signature
+  `MeshGradient`, large gradient-clipped status code, mono "Error NNN" eyebrow,
+  heading, explanation, and two recovery CTAs — "Back to home" + "Analyze my
+  face"). It sizes to `calc(100vh - 64px)` so it fills the viewport under the
+  64px sticky nav, and collapses CTAs to full-width on ≤560px.
+- **Thin page wrappers**: `src/pages/404.astro` (Astro auto-serves this as the
+  not-found page) and `src/pages/500.astro` (server-error convention). Each just
+  sets its own SEO title/description/path via `BaseLayout` and passes copy into
+  `ErrorState` — so all chrome (nav, footer, theme, fonts) and styling stay
+  consistent with the rest of the site, dark mode included (all tokens reused).
+- Note: the app currently builds `static` (no SSR adapter), so `500.astro`
+  renders as a static `/500.html` — it'll be served by the host on a 5xx if
+  configured, but Astro only auto-wires `500.astro` at runtime under SSR. The
+  404 works out of the box on static hosts.
+- Verified `npm run build` passes — both `/404.html` and `/500.html` generated.
+
+## 2026-06-19 — Fix camera bleeding into the Upload-photo tab
+
+- **Symptom**: with the **Upload photo** tab visibly active, the stage showed the
+  live camera (capture button + "0 of 5 readings" dots) instead of the dropzone.
+- **Root cause** (`src/components/Analyzer.astro`): `startCamera()` is async with
+  several `await`s (load MediaPipe modules → warm VIDEO landmarker →
+  `getUserMedia` → `video.play()`). Clicking **Use camera** then quickly back to
+  **Upload photo** ran `setMode("upload")` (which calls `stopCamera()` +
+  `resetStage()`) *while* the camera startup was still suspended on `getUserMedia`.
+  When the stream finally resolved, the rest of `startCamera()` ran regardless and
+  wired the camera into the stage on top of the upload view. `stopCamera()` also
+  couldn't help because `stream` was still `null` at that point.
+- **Fix**: added a `camGen` generation counter. `startCamera()` captures
+  `myGen = ++camGen` at the top and re-checks `stale()` (`myGen !== camGen ||
+  mode !== "camera"`) after every await; if stale it bails — stopping the freshly
+  granted stream's tracks if `getUserMedia` already resolved — without touching the
+  UI or showing a spurious camera error. `stopCamera()` bumps `camGen` to
+  invalidate any in-flight startup.
+- Verified `npm run build` passes.
+

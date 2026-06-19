@@ -239,6 +239,10 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
   let mode: "upload" | "camera" = "upload";
   let stream: MediaStream | null = null;
+  // Bumped on every stopCamera (and at the start of each startCamera) so a
+  // startCamera whose async startup finishes AFTER the user switched away can
+  // detect it's stale and bail instead of painting the camera over the stage.
+  let camGen = 0;
   let rafId = 0;
   let lastLandmarks: any[] | null = null;
   let videoReady = false;
@@ -433,17 +437,30 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       showMessage("Your browser doesn’t support camera access.");
       return;
     }
+    // Tag this startup. If the user switches away (stopCamera bumps camGen)
+    // while we're awaiting below, this run is stale and must not touch the UI.
+    const myGen = ++camGen;
+    const stale = () => myGen !== camGen || mode !== "camera";
     try {
       const { overlayMod } = await loadModules();
+      if (stale()) return;
       // Warm the VIDEO-mode landmarker before the loop starts.
       await landmarkerMod!.preloadLandmarker("VIDEO");
+      if (stale()) return;
 
-      stream = await navigator.mediaDevices.getUserMedia({
+      const s = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
+      // If we switched away while waiting on the permission/stream, discard it.
+      if (stale()) {
+        s.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      stream = s;
       previewVideo.srcObject = stream;
       await previewVideo.play();
+      if (stale()) return;
 
       dropzone.hidden = true;
       mediaWrap.hidden = false;
@@ -458,6 +475,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
       overlayMod.syncCanvasSize(overlay, previewVideo);
       runVideoLoop();
     } catch (err) {
+      if (stale()) return;
       console.error(err);
       showMessage(
         "Couldn’t access the camera. Check permissions, or use photo upload instead.",
@@ -551,6 +569,7 @@ const SHAPES = Object.entries(SHAPE_LABELS) as [ShapeId, string][];
 
   function stopCamera() {
     videoReady = false;
+    camGen++; // invalidate any in-flight startCamera startup
     cancelAnimationFrame(rafId);
     if (stream) {
       stream.getTracks().forEach((t) => t.stop());

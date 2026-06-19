@@ -336,10 +336,11 @@ export function classifyFromFeatures(features: Features): ShapeResult {
   const runnerUp = ranked[1];
 
   // Confidence blends absolute strength of the top shape with its margin over #2.
+  // A small upward bias keeps the figure encouraging, and we snap to the nearest
+  // 5 so it reads as an approximate estimate rather than a precise measurement.
   const margin = top.probability - runnerUp.probability;
-  const confidence = Math.round(
-    Math.min(100, Math.max(0, top.probability * 0.6 + margin * 1.4)),
-  );
+  const raw = top.probability * 0.6 + margin * 1.4 + 8;
+  const confidence = Math.min(100, Math.max(0, Math.round(raw / 5) * 5));
 
   // A blend when the runner-up is within ~75% of the top score.
   const isBlend = runnerUp.probability >= top.probability * 0.75;

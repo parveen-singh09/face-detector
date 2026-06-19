@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ErrorState from "../components/ErrorState.astro";
+---
+
+<BaseLayout
+  title="Page not found (404) — AI Face Shape Analyzer"
+  description="The page you're looking for doesn't exist. Head back home to find your face shape in seconds."
+  path="/404"
+>
+  <ErrorState
+    code="404"
+    title="We couldn't find that page."
+    message="The link may be broken or the page may have moved. Your face shape analysis is still right where you left it."
+  />
+</BaseLayout>
