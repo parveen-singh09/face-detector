@@ -884,3 +884,26 @@ the confirmed bugs:
   (URL Inspection → Request Indexing in Search Console can nudge it).
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-20 — Cloudflare Email Routing (inbound mail for hello@ / privacy@)
+
+- **Made the site's two published addresses actually receive mail.** The contact
+  page (`src/components/pages/ContactPage.astro`) exposes exactly
+  `hello@aifaceshapeanalyzer.com` and `privacy@aifaceshapeanalyzer.com` (also in
+  all 15 i18n dicts). Both are now live inboxes via **Cloudflare Email Routing**,
+  not just `mailto:` links.
+- **No code change** — this is a Cloudflare dashboard + DNS task. Email Routing
+  enabled on the `aifaceshapeanalyzer.com` zone (auto-added the 3 MX records →
+  `*.mx.cloudflare.net` + the SPF TXT `include:_spf.mx.cloudflare.net`; those
+  records show as **Locked**/Cloudflare-managed).
+- **Destination**: `contactfeedback9@gmail.com` (verified). **Routing rules** (both
+  **Active**): `hello@` → that Gmail, `privacy@` → that Gmail. **Catch-all** left
+  **Disabled** (action would be Drop) — so only the two named addresses forward;
+  any other address at the domain bounces.
+- **Caveat (unchanged behaviour)**: this is **inbound forwarding only**. The contact
+  form still opens the visitor's own mail client via `mailto:hello@…` (no backend),
+  which is unaffected. Replying *as* `hello@…` from Gmail would need a separate
+  "Send mail as" / SMTP-relay setup — NOT done.
+- **To verify**: send a test mail to `hello@aifaceshapeanalyzer.com` from another
+  account; it should land in the Gmail inbox (check spam first time). The Email
+  Routing **Activity Log** tab shows each routed message.
+
