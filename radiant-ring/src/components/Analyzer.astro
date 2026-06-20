@@ -88,11 +88,6 @@ const scriptI18n = {
           <span id="loading-text">{a.loadingModel}</span>
         </div>
       </div>
-
-      <p class="result-disclaimer">
-        <span class="result-disclaimer-icon" aria-hidden="true">ⓘ</span>
-        <span>{a.resultDisclaimer}</span>
-      </p>
       </div>
 
       <div class="panel-side">
@@ -338,10 +333,14 @@ const scriptI18n = {
   function hideResults() {
     results.hidden = true;
     idleHelp.hidden = false;
+    camTips.hidden = mode !== "camera";
+    uploadTips.hidden = mode !== "upload";
   }
   function showResults() {
     results.hidden = false;
     idleHelp.hidden = true;
+    camTips.hidden = true;
+    uploadTips.hidden = true;
   }
 
   function gateByRateLimit(): boolean {
@@ -910,27 +909,6 @@ const scriptI18n = {
     color: var(--color-ink);
     margin-bottom: var(--spacing-xs);
   }
-  .result-disclaimer {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-    margin: 0;
-    padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-sm);
-    color: var(--color-mute);
-    font-size: 12px;
-    line-height: 18px;
-    text-wrap: pretty;
-  }
-  .result-disclaimer-icon {
-    flex-shrink: 0;
-    margin-top: 1px;
-    font-size: 13px;
-    line-height: 18px;
-    color: var(--color-hairline-strong);
-  }
 
   .idle-help-title {
     font-size: 13px;
@@ -980,9 +958,6 @@ const scriptI18n = {
     .actions .btn-primary,
     .actions .btn-secondary {
       width: 100%;
-    }
-    .result-disclaimer {
-      display: none;
     }
   }
 </style>

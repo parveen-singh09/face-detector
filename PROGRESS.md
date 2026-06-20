@@ -907,3 +907,23 @@ the confirmed bugs:
   account; it should land in the Gmail inbox (check spam first time). The Email
   Routing **Activity Log** tab shows each routed message.
 
+## 2026-06-20 — Removed mid-section disclaimer + hide tips once a result shows
+
+- **Removed the "Heads up: face shape is a subjective label…" disclaimer**
+  (`src/components/Analyzer.astro`): deleted the `.result-disclaimer` block that
+  sat in the analyzer's `panel-main` (under the stage) along with its CSS rule,
+  the `.result-disclaimer-icon` rule, and the now-dead `≤560px` `display:none`
+  override. The string is still defined as `a.resultDisclaimer` in the dicts but
+  is no longer rendered. (The site-wide footer disclaimer in `Footer.astro` is
+  untouched, so the accuracy caveat still appears at the bottom of every page.)
+- **Instruction tips now hide once a face-shape result appears**: the
+  `#upload-tips` / `#cam-tips` lists were always visible for their mode. Moved
+  their visibility into `showResults()` / `hideResults()` — `showResults()` now
+  hides both tip lists (alongside the existing `idle-help` hide), and
+  `hideResults()` restores the mode-appropriate one (`camTips.hidden = mode !==
+  "camera"`, `uploadTips.hidden = mode !== "upload"`). So tips show while the user
+  is setting up, then give way to the result; resetting/re-uploading brings them
+  back via the existing `hideResults()` calls. `resetStage()` still sets the
+  initial mode-based visibility before any result exists.
+- Verified `npm run build` passes (77 pages).
+
