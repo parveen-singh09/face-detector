@@ -850,3 +850,18 @@ the confirmed bugs:
   `googletagmanager` render in `dist/index.html` and the localized pages
   (e.g. `dist/ar/index.html`).
 
+## 2026-06-20 — Mobile language switcher shows flag only
+
+- **Compact nav lang trigger on mobile** (`src/components/LangSwitcher.astro`):
+  added the current locale's circular flag to the trigger button (`LOCALE_FLAG`
+  → `.lang-flag-current`, hidden by default so desktop is unchanged). At
+  ≤760px the **nav-instance** switcher (`.lang-switcher.nav-lang`) now hides the
+  globe icon, language text, and chevron and shows only the 20px flag in a
+  compact 36px circular button.
+- **Nav** (`src/components/Nav.astro`): the desktop `.nav-lang` was previously
+  `display:none` ≤760px (the language picker lived only in the hamburger drawer);
+  removed it from that hide rule so the flag-only trigger is visible in the
+  mobile header. The hamburger drawer's full labelled switcher (`.is-block`) is
+  untouched.
+- Verified `npm run build` passes (77 pages).
+

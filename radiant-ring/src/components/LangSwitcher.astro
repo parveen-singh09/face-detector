@@ -20,6 +20,7 @@ const options = LOCALES.map((loc) => ({
   selected: loc === current,
 }));
 const currentLabel = LOCALE_LABELS[current];
+const currentFlag = LOCALE_FLAG[current];
 const label = useTranslations(current).nav.langLabel;
 
 const uid = "ls-" + Math.random().toString(36).slice(2, 9);
@@ -49,6 +50,15 @@ const listId = `${uid}-list`;
       <circle cx="12" cy="12" r="9"></circle>
       <path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"></path>
     </svg>
+    <img
+      class="lang-flag-current"
+      src={`/flags/${currentFlag}.svg`}
+      width="20"
+      height="20"
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+    />
     <span class="lang-current">{currentLabel}</span>
     <svg
       class="lang-chevron"
@@ -274,6 +284,15 @@ const listId = `${uid}-list`;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .lang-flag-current {
+    display: none;
+    width: 20px;
+    height: 20px;
+    flex: none;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--color-hairline);
+  }
   .lang-chevron {
     width: 14px;
     height: 14px;
@@ -407,5 +426,22 @@ const listId = `${uid}-list`;
     inset-inline: 0;
     width: auto;
     max-width: none;
+  }
+
+  @media (max-width: 760px) {
+    .lang-switcher.nav-lang .lang-trigger {
+      gap: 0;
+      width: 36px;
+      padding-inline: 0;
+      justify-content: center;
+    }
+    .lang-switcher.nav-lang .lang-icon,
+    .lang-switcher.nav-lang .lang-current,
+    .lang-switcher.nav-lang .lang-chevron {
+      display: none;
+    }
+    .lang-switcher.nav-lang .lang-flag-current {
+      display: block;
+    }
   }
 </style>
