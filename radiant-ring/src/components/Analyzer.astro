@@ -13,6 +13,15 @@ const a = t.analyzer;
 
 const SHAPES = SHAPE_IDS.map((id) => [id, t.shapeLabels[id]] as [ShapeId, string]);
 
+const PREVIEW_PCT: Record<ShapeId, number> = {
+  oval: 24,
+  round: 19,
+  square: 16,
+  rectangle: 14,
+  heart: 15,
+  diamond: 12,
+};
+
 const scriptI18n = {
   messages: a.msg,
   shapeLabels: t.shapeLabels,
@@ -92,13 +101,13 @@ const scriptI18n = {
 
       <div class="panel-side">
         <div class="actions">
-          <button id="btn-analyze" class="btn-primary" type="button" hidden>
+          <button id="btn-analyze" class="btn-primary" type="button" disabled>
             {a.btnAnalyze}
           </button>
           <button id="btn-capture" class="btn-primary" type="button" hidden>
             {a.btnCapture}
           </button>
-          <button id="btn-reset" class="btn-secondary" type="button" hidden>
+          <button id="btn-reset" class="btn-secondary" type="button" disabled>
             {a.btnReset}
           </button>
         </div>
@@ -116,43 +125,47 @@ const scriptI18n = {
 
         <p id="message" class="message" role="alert" hidden></p>
 
-        <ul id="upload-tips" class="cam-tips" aria-label={a.uploadTipsAria}>
-          <li><span aria-hidden="true">📸</span> {a.uploadTips[0]}</li>
-          <li><span aria-hidden="true">🖼️</span> {a.uploadTips[1]}</li>
-          <li><span aria-hidden="true">💇</span> {a.uploadTips[2]}</li>
-        </ul>
+        <div class="side-card-frame">
+          <div class="side-card">
+            <ul id="upload-tips" class="cam-tips" aria-label={a.uploadTipsAria}>
+              <li><span aria-hidden="true">📸</span> {a.uploadTips[0]}</li>
+              <li><span aria-hidden="true">🖼️</span> {a.uploadTips[1]}</li>
+              <li><span aria-hidden="true">💇</span> {a.uploadTips[2]}</li>
+            </ul>
 
-        <ul id="cam-tips" class="cam-tips" hidden aria-label={a.camTipsAria}>
-          <li><span aria-hidden="true">👓</span> {a.camTips[0]}</li>
-          <li><span aria-hidden="true">🧑</span> {a.camTips[1]}</li>
-          <li><span aria-hidden="true">🤚</span> {a.camTips[2]}</li>
-        </ul>
+            <ul id="cam-tips" class="cam-tips" hidden aria-label={a.camTipsAria}>
+              <li><span aria-hidden="true">👓</span> {a.camTips[0]}</li>
+              <li><span aria-hidden="true">🧑</span> {a.camTips[1]}</li>
+              <li><span aria-hidden="true">🤚</span> {a.camTips[2]}</li>
+            </ul>
 
-        <div id="results" class="results" hidden aria-live="polite">
-          <div class="result-headline">
-            <span class="eyebrow">{a.resultEyebrow}</span>
-            <div class="result-top-row">
-              <h3 id="result-shape">—</h3>
-              <span id="result-confidence" class="result-confidence">—</span>
+            <div id="results" class="results" hidden aria-live="polite">
+              <div class="result-headline">
+                <span class="eyebrow">{a.resultEyebrow}</span>
+                <div class="result-top-row">
+                  <h3 id="result-shape">—</h3>
+                  <span id="result-confidence" class="result-confidence">—</span>
+                </div>
+                <p id="result-desc" class="result-desc"></p>
+              </div>
+
+              <div class="breakdown">
+                <p class="breakdown-title">{a.breakdownTitle}</p>
+                <div class="breakdown-list" role="list">
+                  {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
+                </div>
+              </div>
             </div>
-            <p id="result-desc" class="result-desc"></p>
-          </div>
 
-          <div class="breakdown">
-            <p class="breakdown-title">{a.breakdownTitle}</p>
-            <div class="breakdown-list" role="list">
-              {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} />)}
+            <div id="idle-help" class="idle-help">
+              <div class="breakdown">
+                <p class="breakdown-title">{a.breakdownTitle}</p>
+                <div class="breakdown-list-preview" role="list">
+                  {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} pct={PREVIEW_PCT[id]} />)}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div id="idle-help" class="idle-help">
-          <p class="idle-help-title">{a.idleTitle}</p>
-          <ul>
-            <li>{a.idleItems[0]}</li>
-            <li>{a.idleItems[1]}</li>
-            <li>{a.idleItems[2]}</li>
-          </ul>
         </div>
       </div>
     </div>
@@ -312,9 +325,11 @@ const scriptI18n = {
     previewImg.hidden = true;
     previewVideo.hidden = true;
     overlay.getContext("2d")?.clearRect(0, 0, overlay.width, overlay.height);
-    btnAnalyze.hidden = true;
+    btnAnalyze.hidden = mode !== "upload";
+    btnAnalyze.disabled = true;
     btnCapture.hidden = true;
-    btnReset.hidden = true;
+    btnReset.hidden = false;
+    btnReset.disabled = mode === "upload";
     hideCaptureProgress();
     camTips.hidden = mode !== "camera";
     uploadTips.hidden = mode !== "upload";
@@ -383,7 +398,9 @@ const scriptI18n = {
       mediaWrap.hidden = false;
       previewImg.hidden = false;
       btnAnalyze.hidden = false;
+      btnAnalyze.disabled = false;
       btnReset.hidden = false;
+      btnReset.disabled = false;
     };
     previewImg.onerror = () => {
       if (pendingObjectUrl === url) pendingObjectUrl = null;
@@ -700,11 +717,12 @@ const scriptI18n = {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     gap: var(--spacing-xl);
-    align-items: start;
+    align-items: stretch;
   }
 
   .stage {
     position: relative;
+    flex: 1;
     aspect-ratio: 4 / 3;
     border: 1px solid var(--color-hairline);
     border-radius: var(--radius-md);
@@ -812,11 +830,33 @@ const scriptI18n = {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    min-height: 0;
+  }
+  .side-card-frame {
+    display: flex;
+    flex-direction: column;
+  }
+  .side-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    background-color: var(--color-canvas-soft);
+  }
+  .idle-help,
+  .side-card .results {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   .actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-sm);
+    min-height: 48px;
   }
   .message {
     margin: 0;
@@ -857,13 +897,10 @@ const scriptI18n = {
   .cam-tips {
     list-style: none;
     margin: 0;
-    padding: var(--spacing-md);
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    background-color: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-sm);
     font-size: 13px;
     line-height: 18px;
     color: var(--color-body);
@@ -880,7 +917,8 @@ const scriptI18n = {
     gap: var(--spacing-md);
     margin-top: var(--spacing-xxs);
   }
-  #result-shape {
+  #result-shape,
+  .idle-help .result-top-row h3 {
     margin: 0;
     font-size: clamp(26px, 5vw, 32px);
     font-weight: 600;
@@ -910,17 +948,9 @@ const scriptI18n = {
     margin-bottom: var(--spacing-xs);
   }
 
-  .idle-help-title {
-    font-size: 13px;
-    font-weight: 500;
-    margin-bottom: var(--spacing-xs);
-  }
-  .idle-help ul {
-    margin: 0 0 var(--spacing-md);
-    padding-inline-start: var(--spacing-md);
-    color: var(--color-body);
-    font-size: 14px;
-    line-height: 22px;
+  .breakdown-list-preview {
+    display: flex;
+    flex-direction: column;
   }
 
   .visually-hidden {

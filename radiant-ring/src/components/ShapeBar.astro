@@ -4,16 +4,17 @@ import type { ShapeId } from "../lib/faceShape";
 interface Props {
   id: ShapeId;
   label: string;
+  pct?: number;
 }
-const { id, label } = Astro.props;
+const { id, label, pct = 0 } = Astro.props;
 ---
 
 <div class="shape-bar" data-shape={id} role="listitem">
   <span class="shape-bar-label">{label}</span>
   <span class="shape-bar-track" aria-hidden="true">
-    <span class="shape-bar-fill" data-fill></span>
+    <span class="shape-bar-fill" data-fill style={`--pct:${pct / 100}`}></span>
   </span>
-  <span class="shape-bar-pct" data-pct>0%</span>
+  <span class="shape-bar-pct" data-pct>{pct}%</span>
 </div>
 
 <style>

@@ -927,3 +927,129 @@ the confirmed bugs:
   initial mode-based visibility before any result exists.
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-20 — Replaced "What you'll get" idle box with a default breakdown preview
+
+- **Swapped the idle-help list for a result-shaped preview** (`src/components/Analyzer.astro`):
+  the `#idle-help` box used to show a "What you'll get" title + 3 bullets. It now
+  renders a static stand-in for a result — a `result-headline` with the eyebrow +
+  an `<h3>Face Shape</h3>` heading, followed by a "Full breakdown" `ShapeBar` for
+  all six shapes, each filled to **100%**. This is the placeholder shown before any
+  analysis; the real `#results` block still replaces it on a real result via
+  `showResults()`/`hideResults()`.
+- **`ShapeBar.astro` gained an optional `pct` prop** (default 0) so it can render a
+  statically-filled bar at build time (inline `--pct` + `{pct}%` label) instead of
+  only being driven by the runtime JS. The live results path is unchanged — it
+  still sets `--pct`/`data-pct` per row in `renderResult()`.
+- "Face Shape" is a literal heading (not localized) per request; the heading reuses
+  the `#result-shape` type styling via a shared selector. Removed the orphaned
+  `.idle-help-title` / `.idle-help ul` CSS; added `.breakdown-list-preview`
+  (flex column) so the preview bars stack like the real list.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Default breakdown preview wrapped in a card, matched to stage height
+
+- **Wrapped the idle-help preview in a bordered card and matched its height to the
+  left stage** (`src/components/Analyzer.astro`): `.idle-help` now has the stage's
+  card chrome (`--color-hairline` border, `--radius-md`, `--color-canvas-soft`
+  background, `lg` padding). The `.analyzer-grid` switched from
+  `align-items: start` → `stretch`, and `.idle-help` is `flex: 1` inside the
+  flex-column `.panel-side`, so the preview grows to fill the right column and
+  bottoms out level with the left `.stage` (whose height is its 4/3 aspect ratio).
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Right column unified into a single card
+
+- **Merged the right column's tips + results + idle-preview into one card**
+  (`src/components/Analyzer.astro`): the `#upload-tips`/`#cam-tips` lists,
+  `#results`, and `#idle-help` are now wrapped in a single `.side-card` div. The
+  card chrome (border, `--radius-md`, `--color-canvas-soft` bg, `lg` padding) moved
+  off `.idle-help` onto `.side-card`; the `.cam-tips` lists lost their own
+  border/background/padding so they read as flat content inside the one card
+  instead of a box-in-a-box.
+- **Card matches the left stage height**: `.side-card` is `flex: 1` inside the
+  flex-column `.panel-side` (grid still `align-items: stretch`), so it fills the
+  right column under the action buttons and bottoms out level with the left
+  `.stage`. `.idle-help` and the `.results` block are themselves `flex: 1` columns
+  so their content fills the card. Actions/progress/message stay above the card.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Left stage stretches to match the right card (bottom alignment)
+
+- **Fixed the bottom misalignment** between the left `.stage` and the right
+  `.side-card` (`src/components/Analyzer.astro`): the grid already stretched both
+  columns to the row height, but `.stage` stayed locked to its `aspect-ratio: 4/3`
+  height (shorter than the taller right card), so only the tops lined up. Added
+  `flex: 1` to `.stage` so it grows to fill the flex-column `.panel-main` (which the
+  grid stretches to match the right column), making both columns the same height.
+  The `aspect-ratio` stays as the minimum/natural-size hint; flex growth wins when
+  the row is taller. Dropzone/media/overlay are `inset:0` absolute, so they fill
+  the taller stage automatically.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Locked the analyzer panel height (no more resize between states)
+
+- **Problem**: the analyzer card jumped height between states (idle "What you'll
+  get" → upload tips → result description+breakdown). With `align-items: stretch`,
+  the row height tracked whichever column's *content* was taller, and the right
+  card's content differs per state — so the whole panel resized, plus the action
+  buttons appearing/disappearing shifted everything down. Bad UX.
+- **Fix — the left image `.stage` is now the single height authority**
+  (`src/components/Analyzer.astro`). The stage is a fixed `aspect-ratio: 4/3` box,
+  completely content-independent, so the grid row height is now stable:
+  - Wrapped the right card in a `.side-card-frame`. At ≥861px (two-column layout)
+    the frame is `flex: 1; position: relative` and `.side-card` is
+    `position: absolute; inset: 0` — so the card's content **no longer contributes
+    to the row height**. It fills the locked height and scrolls internally
+    (`overflow-y: auto`, thin themed scrollbar) if a result is taller than the box.
+  - **Reserved the action-button row** at `min-height: 48px` (one button height) so
+    the card top never shifts when Analyze/Reset/Capture toggle visibility.
+  - The message/capture-progress strips, when shown, shrink the flexible card
+    rather than growing the row — outer panel size stays constant.
+  - Scoped to `min-width: 861px`; on mobile (single column) the card keeps its
+    natural content height (no fixed-height clipping on small screens).
+- **Tradeoff**: a long result can now exceed the stage height and scroll inside the
+  card instead of growing it. That's the intended stability tradeoff — content
+  swaps, the box never resizes.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Action buttons shown-but-disabled by default
+
+- **Analyze + "Analyze another" (reset) now render by default, disabled**
+  (`src/components/Analyzer.astro`), instead of being `hidden` until a photo
+  exists. The reserved `min-height: 48px` actions row already meant revealing them
+  caused no layout shift; now they simply sit disabled in the idle state and
+  enable once there's something to act on.
+- **Logic** (`resetStage`): in upload mode `btnAnalyze` is shown+disabled and
+  `btnReset` shown+disabled; on a successful `previewImg.onload` both flip to
+  enabled. Camera mode is unchanged (Analyze stays hidden — not relevant; the live
+  Capture button + an enabled Reset show instead). Markup defaults: `btn-analyze`
+  and `btn-reset` start with `disabled` (was `hidden`); `btn-capture` still `hidden`.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Right card static (no scroll), left stage grows to match
+
+- **Reversed the earlier height strategy.** Instead of locking the row to the left
+  stage and scrolling the right card, the right `.side-card` now sizes to its
+  natural content (no internal scroll) and the **left `.stage` grows to match**
+  (`src/components/Analyzer.astro`). Removed the `min-width: 861px` block that made
+  `.side-card` `position: absolute; inset: 0; overflow-y: auto` with the themed
+  scrollbar. The card is back in normal flow; the grid's `align-items: stretch` +
+  `.stage { flex: 1 }` already stretch the left column to the row height, so the
+  image box matches the card height in every state.
+- **Removed the "YOUR FACE SHAPE / Face Shape" headline from the idle preview**:
+  the default `#idle-help` box now shows only the "Full breakdown" with the six
+  100% bars — no result-headline. (The real `#results` block still shows its own
+  shape/confidence headline on an actual analysis.)
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-20 — Idle preview bars use varied (not all-100%) percentages
+
+- **Idle default breakdown now shows plausible varied percentages** instead of
+  every bar at 100% (`src/components/Analyzer.astro`). Added a `PREVIEW_PCT`
+  map (oval 24, round 19, square 16, rectangle 14, heart 15, diamond 12) wired
+  into the `#idle-help` `ShapeBar`s via `pct={PREVIEW_PCT[id]}`. Values are
+  **fixed at build time** (not re-randomized per page load) so the preview stays
+  stable and doesn't flicker. The real `#results` bars are unchanged (still set
+  per-row from the live classifier in `renderResult()`).
+- Verified `npm run build` passes (77 pages).
+
