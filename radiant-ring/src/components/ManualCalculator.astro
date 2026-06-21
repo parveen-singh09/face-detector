@@ -283,7 +283,8 @@ const calcI18n = {
 <style>
   .manual-calc {
     scroll-margin-top: 80px;
-    padding-block: var(--spacing-5xl);
+    padding-block-start: 0;
+    padding-block-end: clamp(var(--spacing-2xl), 10vw, var(--spacing-5xl));
   }
   .manual-head {
     max-width: 640px;
@@ -458,9 +459,6 @@ const calcI18n = {
     }
   }
   @media (max-width: 560px) {
-    .fields {
-      grid-template-columns: 1fr;
-    }
     .breakdown-list {
       grid-template-columns: 1fr;
       grid-template-rows: none;

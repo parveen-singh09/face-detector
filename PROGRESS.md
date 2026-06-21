@@ -1171,3 +1171,46 @@ the confirmed bugs:
   ar "محلل يدوي", id "Penganalisis manual", tr "Manuel analiz aracı".
 - Verified `npm run build` passes (77 pages); confirmed each dict's `free:` value.
 
+## 2026-06-21 — Fixed the large mobile gap between Analyzer and Manual Calculator
+
+- **Symptom**: a big empty vertical gap on mobile between the photo analyzer and
+  the manual-calculator section (user screenshot).
+- **Root cause**: both `.analyzer` (`src/components/Analyzer.astro`) and
+  `.manual-calc` (`src/components/ManualCalculator.astro`) used a fixed
+  `padding-block: var(--spacing-5xl)` (96px) that didn't scale down on small
+  screens. Sitting directly adjacent, the analyzer's 96px bottom padding + the
+  calculator's 96px top padding stacked into ~192px of dead space on phones (the
+  rest of the page's `.section` blocks already use the fluid
+  `clamp(4xl, 10vw, 5xl)`, but these two opted out).
+- **Fix**: `.analyzer` now uses the same fluid `padding-block:
+  clamp(var(--spacing-4xl), 10vw, var(--spacing-5xl))` as the other sections.
+  `.manual-calc` drops its top padding to `0` (the analyzer above already
+  supplies the gap) and keeps the fluid `clamp(...)` only on the bottom — so the
+  seam between the two is now a single fluid gap instead of two stacked fixed
+  ones.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-21 — Tightened mobile section gaps site-wide
+
+- **Follow-up** to the analyzer/calculator gap fix: the user still saw large gaps
+  between other sections on mobile (e.g. About/SEO → FAQ). Root cause was the
+  `clamp()` **floor**: every `.section` (plus `.analyzer` and `.manual-calc`) used
+  `clamp(var(--spacing-4xl), 10vw, var(--spacing-5xl))`, so on phones the padding
+  clamped to the 64px floor — and two adjacent sections stacked 64px + 64px =
+  128px of gap.
+- **Fix**: lowered the floor from `4xl` (64px) → `2xl` (40px) in all three places
+  (`HomePage.astro` `.section`, `Analyzer.astro` `.analyzer`,
+  `ManualCalculator.astro` `.manual-calc` bottom). Desktop is unchanged — wide
+  viewports hit the `10vw`/`5xl` ceiling (96px) well before the floor matters; the
+  floor only kicks in on narrow screens, where gaps are now noticeably tighter.
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-21 — Manual calculator fields stay 2-column on mobile
+
+- The four measurement inputs (forehead/cheekbone/face length/jaw width) collapsed
+  to a single full-width column at ≤560px via a `.fields { grid-template-columns:
+  1fr }` override. Per request, removed that override so the fields keep their
+  default `1fr 1fr` grid (narrower, 2-across) on mobile too. The breakdown bars and
+  action buttons still stack on small screens — only the input grid changed.
+- Verified `npm run build` passes (77 pages).
+
