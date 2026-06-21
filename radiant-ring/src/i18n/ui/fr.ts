@@ -55,7 +55,7 @@ export const fr: UIStrings = {
     ctaPrimary: "Analyser mon visage",
     ctaSecondary: "Comment ça marche",
     trust: {
-      free: "Gratuit pour toujours",
+      free: "Analyseur manuel",
       mesh: "Maillage facial en direct",
       ranked: "Six formes classées",
     },
@@ -170,6 +170,39 @@ export const fr: UIStrings = {
       confidence: "{pct}% de confiance",
       blendDesc: "Principalement {top} avec des traits {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Calculateur manuel",
+    heading: "Vous connaissez vos mesures ? Calculez-la directement",
+    sub: "Aucune photo nécessaire. Mesurez les quatre distances ci-dessous à partir d’une photo de face ou d’un miroir, saisissez-les dans une seule et même unité (cm, mm ou pouces), et nous déterminerons la forme de votre visage à partir des proportions.",
+    imageAlt:
+      "Guide de mesure du visage indiquant les mesures du front, des pommettes, de la longueur du visage et de la mâchoire sur un portrait de face.",
+    fields: {
+      foreheadWidth: {
+        label: "Largeur du front",
+        hint: "Distance entre les points gauche et droit du front.",
+      },
+      cheekboneWidth: {
+        label: "Largeur des pommettes",
+        hint: "Distance entre les points gauche et droit des pommettes.",
+      },
+      faceLength: {
+        label: "Longueur du visage",
+        hint: "Du centre de la racine des cheveux au bas du menton.",
+      },
+      jawWidth: {
+        label: "Largeur de la mâchoire",
+        hint: "D’un angle de la mâchoire à l’angle opposé.",
+      },
+    },
+    btnCalculate: "Calculer la forme du visage",
+    btnReset: "Réinitialiser",
+    previewShape: "Forme du visage",
+    previewDesc:
+      "Saisissez vos quatre mesures ci-dessus et nous calculerons la forme de votre visage à partir des proportions.",
+    invalidInput:
+      "Veuillez saisir un nombre positif pour les quatre mesures.",
   },
 
   seo: {

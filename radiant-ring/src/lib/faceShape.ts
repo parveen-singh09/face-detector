@@ -248,6 +248,55 @@ export function classifyFromFeatures(features: Features): ShapeResult {
     return { id, score: Math.exp(logScore) };
   });
 
+  return rankAndFinalize(rawScores, features);
+}
+
+export interface ManualInput {
+  foreheadWidth: number;
+  cheekboneWidth: number;
+  faceLength: number;
+  jawWidth: number;
+}
+
+const RATIO_KEYS = [
+  "lengthToWidth",
+  "foreheadToCheek",
+  "jawToCheek",
+] as const;
+
+export function classifyManual(input: ManualInput): ShapeResult {
+  const cheek = input.cheekboneWidth || 1;
+  const features: Features = {
+    lengthToWidth: input.faceLength / cheek,
+    foreheadToCheek: input.foreheadWidth / cheek,
+    jawToCheek: input.jawWidth / cheek,
+    chinAngle: NaN,
+    jawAngularity: NaN,
+  };
+
+  const totalWeight = RATIO_KEYS.reduce(
+    (acc, k) => acc + FEATURE_WEIGHTS[k],
+    0,
+  );
+  const rawScores = (Object.keys(SHAPE_PROFILES) as ShapeId[]).map((id) => {
+    const prof = SHAPE_PROFILES[id];
+    const logScore =
+      RATIO_KEYS.reduce(
+        (acc, k) =>
+          acc +
+          FEATURE_WEIGHTS[k] * Math.log(membership(features[k], prof[k]) + 1e-9),
+        0,
+      ) / totalWeight;
+    return { id, score: Math.exp(logScore) };
+  });
+
+  return rankAndFinalize(rawScores, features);
+}
+
+function rankAndFinalize(
+  rawScores: { id: ShapeId; score: number }[],
+  features: Features,
+): ShapeResult {
   const sum = rawScores.reduce((acc, s) => acc + s.score, 0) || 1;
   const ranked: ShapeScore[] = rawScores
     .map((s) => ({

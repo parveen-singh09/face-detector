@@ -55,7 +55,7 @@ export const nl: UIStrings = {
     ctaPrimary: "Analyseer mijn gezicht",
     ctaSecondary: "Hoe het werkt",
     trust: {
-      free: "Voor altijd gratis",
+      free: "Handmatige analyse",
       mesh: "Live gezichtsmesh",
       ranked: "Zes vormen gerangschikt",
     },
@@ -170,6 +170,39 @@ export const nl: UIStrings = {
       confidence: "{pct}% betrouwbaarheid",
       blendDesc: "Voornamelijk {top} met kenmerken van {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Handmatige calculator",
+    heading: "Ken je je metingen? Bereken het direct",
+    sub: "Geen foto nodig. Meet de vier afstanden hieronder op een foto recht van voren of in een spiegel, voer ze in één enkele eenheid in (cm, mm of inches), en we berekenen je gezichtsvorm aan de hand van de verhoudingen.",
+    imageAlt:
+      "Meetgids voor het gezicht met de metingen van voorhoofd, jukbeen, gezichtslengte en kaak op een portret recht van voren.",
+    fields: {
+      foreheadWidth: {
+        label: "Breedte van het voorhoofd",
+        hint: "Afstand tussen de linker- en rechterpunten van het voorhoofd.",
+      },
+      cheekboneWidth: {
+        label: "Breedte van de jukbeenderen",
+        hint: "Afstand tussen de linker- en rechterpunten van de jukbeenderen.",
+      },
+      faceLength: {
+        label: "Gezichtslengte",
+        hint: "Van het midden van de haarlijn tot de onderkant van de kin.",
+      },
+      jawWidth: {
+        label: "Breedte van de kaak",
+        hint: "Van de ene kaakhoek tot de tegenoverliggende kaakhoek.",
+      },
+    },
+    btnCalculate: "Bereken gezichtsvorm",
+    btnReset: "Opnieuw instellen",
+    previewShape: "Gezichtsvorm",
+    previewDesc:
+      "Voer hierboven je vier metingen in en we berekenen je gezichtsvorm aan de hand van de verhoudingen.",
+    invalidInput:
+      "Voer voor alle vier de metingen een positief getal in.",
   },
 
   seo: {

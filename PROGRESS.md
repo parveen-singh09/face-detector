@@ -1053,3 +1053,121 @@ the confirmed bugs:
   per-row from the live classifier in `renderResult()`).
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-21 — Manual measurement calculator section (no photo needed)
+
+- **New `#manual-calculator` section** below the photo analyzer
+  (`src/components/ManualCalculator.astro`, mounted in `HomePage.astro` right
+  after `<Analyzer/>`). Lets people who already know their measurements type in
+  four distances and get a calculated face shape — no upload/camera.
+- **Inputs (4)**: forehead width, cheekbone width, face length, jaw width. Entered
+  in any single consistent unit (cm/mm/in) since only the *ratios* matter. Each
+  field is numbered + color-coded to match the measurement guide image.
+- **Measurement guide image**: uses the user-provided diagrams in `public/` —
+  `desktop.png` (landscape) on wide screens, `mobile.png` (portrait) ≤700px via a
+  `<picture>`/`<source>` swap. Shown beside the form (stacks above it ≤860px).
+- **New classifier path** `classifyManual()` (`src/lib/faceShape.ts`): derives the
+  three *ratio* features the existing `SHAPE_PROFILES` already use
+  (`faceLength/cheek`, `forehead/cheek`, `jaw/cheek`) and scores against the same
+  six profiles via a shared new `rankAndFinalize()` helper (refactored out of
+  `classifyFromFeatures()` so both paths share the softmax/round/confidence/blend
+  logic). The two *angle* features the photo path uses (chinAngle, jawAngularity)
+  can't be derived from linear measurements, so they're left out of the manual
+  scoring (set to `NaN`, excluded via the `RATIO_KEYS` weight subset). Net: manual
+  result is a good estimate but slightly less discriminating on the round/square
+  split than the photo path — inherent to manual input.
+- **Result UI reuses `ShapeBar`** + the same headline/breakdown markup as the photo
+  analyzer (shape label, "{pct}% match strength", blend description, ranked 6-shape
+  breakdown). Client script validates all four are positive numbers, else shows an
+  inline error and hides results.
+- **i18n**: English-first per decision — the section's own copy (labels, hints,
+  headings, button text, validation message) is hardcoded English in the component
+  so the 15-locale strict dict stays valid (no new keys). It *does* reuse existing
+  translated keys where they already exist: `shapeLabels`, `shapeDescriptions`,
+  `analyzer.resultEyebrow`, `analyzer.breakdownTitle`, `analyzer.msg.confidence`,
+  `analyzer.msg.blendDesc`. Follow-up: lift the hardcoded strings into the dicts +
+  translate to the other 14 locales.
+- Verified `npm run build` passes (77 pages); confirmed `manual-calculator`,
+  `desktop.png`, `mobile.png`, and "Calculate face shape" render in `dist/index.html`.
+
+## 2026-06-21 — Manual calculator result shown by default (no layout jump)
+
+- **Fixed the same layout-jump UX issue** the photo analyzer had: the manual
+  calculator's `#manual-results` was `hidden` until Calculate, so the section grew
+  downward when a result appeared (`src/components/ManualCalculator.astro`). Now the
+  result area is **always rendered** with a neutral default state and gets filled
+  in place — no reveal, no shift.
+- **Default (preview) state**: heading shows literal "Face Shape", the confidence
+  pill is hidden, the description reads "Enter your four measurements above…", and
+  the six breakdown bars show fixed varied preview percentages (`PREVIEW_PCT`:
+  oval 24 / round 19 / square 16 / heart 15 / rectangle 14 / diamond 12 — same set
+  as the photo analyzer's idle preview).
+- **On Calculate**: `renderResult()` fills the existing nodes (real shape label,
+  reveals the confidence pill, real description, ranked bars + `is-top` gradient).
+  **On Reset**: new `renderPreview()` restores the default state (re-hides the
+  confidence pill, clears `is-top`/`order`, repaints preview bars). Removed the
+  `scrollIntoView` jump and the `resultsBox.hidden` toggles; a validation error now
+  just shows the inline message without touching the results area.
+- Preview strings/percentages passed through the existing `manual-calc-i18n` JSON
+  island (added `previewPct`/`previewShape`/`previewDesc` + matching `I18n` type).
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-21 — Manual calculator: stacked layout, button gap, 2-column breakdown
+
+- **Stacked the section** (`src/components/ManualCalculator.astro`): `.manual-grid`
+  is now single-column, so the measurement guide image spans the full card width on
+  top and the form sits below it (was a 1fr/1fr side-by-side grid).
+- **Button gap**: `.manual-actions` got `margin-top: var(--spacing-lg)` so
+  Calculate/Reset are separated from the input fields above.
+- **Two-column breakdown**: with the full-width layout the six single-column bars
+  looked too sparse. `.breakdown-list` is now a `grid-template-columns: 1fr 1fr` /
+  `grid-template-rows: repeat(3, auto)` / `grid-auto-flow: column` grid with a
+  `2xl` column gap — so the JS-set `order` flows the top-3 ranked shapes down the
+  left column and ranks 4-6 down the right. Collapses back to one column ≤560px
+  (`grid-auto-flow: row`). The photo analyzer's breakdown is unchanged (still
+  single column in its narrower side panel).
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-21 — Manual calculator default bars read 0%
+
+- **Set the manual calculator's default preview bars to 0%** for all six shapes
+  (`PREVIEW_PCT` in `src/components/ManualCalculator.astro`, was varied 24/19/16/
+  15/14/12). So before any input the breakdown shows empty bars at 0% rather than
+  fake sample percentages; real values fill in on Calculate, and Reset restores
+  the 0% state. (Only affects the manual calculator — the photo analyzer's idle
+  preview still uses its varied percentages.)
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-21 — Manual calculator fully translated (15 locales)
+
+- **Lifted the manual calculator's hardcoded English into i18n** and translated it
+  into all 14 other locales (completes the English-first deferral from the section's
+  initial build). New `manualCalc` block in `src/i18n/ui/en.ts` (between `analyzer`
+  and `seo`) holds: `eyebrow`, `heading`, `sub`, `imageAlt`, `fields.{foreheadWidth,
+  cheekboneWidth,faceLength,jawWidth}.{label,hint}`, `btnCalculate`, `btnReset`,
+  `previewShape`, `previewDesc`, `invalidInput`.
+- **Component rewired** (`src/components/ManualCalculator.astro`): `FIELDS` labels/
+  hints, the head copy, button text, preview headline/description, the image `alt`,
+  and the client-script validation message all now read from `t.manualCalc` (the
+  script gets `previewShape`/`previewDesc`/`invalidInput` via the existing
+  `manual-calc-i18n` JSON island + matching `I18n` type). No more hardcoded English.
+- **14 locale dicts** (es/fr/de/pt/it/nl/ru/ja/ko/zh/hi/ar/id/tr) each got the
+  translated `manualCalc` block inserted at the same position (before `seo:`),
+  generated by 14 parallel sub-agents — keys verbatim English, values translated,
+  units localized (e.g. "(cm, mm oder Zoll)", "（厘米、毫米或英寸）", "(सेमी, मिमी या इंच)").
+- **Verified**: `npm run build` passes (77 pages); structural check confirms all 15
+  dicts have exactly one `manualCalc` block with identical key-marker counts; spot-
+  checked `dist/{ja,ar,hi}/index.html` render real translated strings (測定/計算,
+  القياس/الوجه, चेहरा/माप), not English fallback. (`astro check` OOM'd — a tooling heap
+  limit, not a type error; structural parity verified instead.)
+
+## 2026-06-21 — Hero "Manual analyzer" trust badge translated (15 locales)
+
+- **Translated `hero.trust.free`** (the first hero trust pill, earlier changed from
+  "Free forever" → "Manual analyzer" in English only) into all 14 other locales so
+  the badge is no longer English-on-translated-pages. Values: es "Analizador
+  manual", fr "Analyseur manuel", de "Manuelle Analyse", pt "Analisador manual",
+  it "Analizzatore manuale", nl "Handmatige analyse", ru "Ручной анализатор",
+  ja "手動アナライザー", ko "수동 분석기", zh "手动分析器", hi "मैनुअल विश्लेषक",
+  ar "محلل يدوي", id "Penganalisis manual", tr "Manuel analiz aracı".
+- Verified `npm run build` passes (77 pages); confirmed each dict's `free:` value.
+

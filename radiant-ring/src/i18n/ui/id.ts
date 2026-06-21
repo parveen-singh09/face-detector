@@ -55,7 +55,7 @@ export const id: UIStrings = {
     ctaPrimary: "Analisis wajah saya",
     ctaSecondary: "Cara kerjanya",
     trust: {
-      free: "Gratis selamanya",
+      free: "Penganalisis manual",
       mesh: "Jaring wajah langsung",
       ranked: "Enam bentuk diperingkat",
     },
@@ -170,6 +170,39 @@ export const id: UIStrings = {
       confidence: "{pct}% kepercayaan",
       blendDesc: "Sebagian besar {top} dengan ciri-ciri {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Kalkulator manual",
+    heading: "Tahu ukuran Anda? Hitung langsung",
+    sub: "Tidak perlu foto. Ukur keempat jarak di bawah ini dari foto yang menghadap lurus ke depan atau dari cermin, masukkan dalam satu satuan apa saja (cm, mm, atau inci), dan kami akan menentukan bentuk wajah Anda dari proporsinya.",
+    imageAlt:
+      "Panduan pengukuran wajah yang menunjukkan ukuran dahi, tulang pipi, panjang wajah, dan rahang pada potret yang menghadap ke depan.",
+    fields: {
+      foreheadWidth: {
+        label: "Lebar dahi",
+        hint: "Jarak antara titik dahi kiri dan kanan.",
+      },
+      cheekboneWidth: {
+        label: "Lebar tulang pipi",
+        hint: "Jarak antara titik tulang pipi kiri dan kanan.",
+      },
+      faceLength: {
+        label: "Panjang wajah",
+        hint: "Dari tengah garis rambut hingga ujung bawah dagu.",
+      },
+      jawWidth: {
+        label: "Lebar rahang",
+        hint: "Dari satu sudut rahang ke sudut rahang yang berlawanan.",
+      },
+    },
+    btnCalculate: "Hitung bentuk wajah",
+    btnReset: "Atur ulang",
+    previewShape: "Bentuk Wajah",
+    previewDesc:
+      "Masukkan keempat ukuran Anda di atas dan kami akan menghitung bentuk wajah Anda dari proporsinya.",
+    invalidInput:
+      "Silakan masukkan angka positif untuk keempat ukuran.",
   },
 
   seo: {

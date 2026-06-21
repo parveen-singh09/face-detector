@@ -55,7 +55,7 @@ export const tr: UIStrings = {
     ctaPrimary: "Yüzümü analiz et",
     ctaSecondary: "Nasıl çalışır",
     trust: {
-      free: "Sonsuza dek ücretsiz",
+      free: "Manuel analiz aracı",
       mesh: "Canlı yüz örgüsü",
       ranked: "Altı şekil sıralanır",
     },
@@ -170,6 +170,39 @@ export const tr: UIStrings = {
       confidence: "%{pct} güven",
       blendDesc: "Çoğunlukla {top}, {runnerUp} özellikleriyle. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Manuel hesaplayıcı",
+    heading: "Ölçülerinizi biliyor musunuz? Doğrudan hesaplayın",
+    sub: "Fotoğraf gerekmez. Aşağıdaki dört mesafeyi öne dönük bir fotoğraftan veya aynadan ölçün, hepsini tek bir birimle (cm, mm veya inç) girin; oranlardan yüz şeklinizi hesaplayalım.",
+    imageAlt:
+      "Öne dönük bir portrede alın, elmacık kemiği, yüz uzunluğu ve çene ölçülerini gösteren yüz ölçüm kılavuzu.",
+    fields: {
+      foreheadWidth: {
+        label: "Alın genişliği",
+        hint: "Sol ve sağ alın noktaları arasındaki mesafe.",
+      },
+      cheekboneWidth: {
+        label: "Elmacık kemiği genişliği",
+        hint: "Sol ve sağ elmacık kemiği noktaları arasındaki mesafe.",
+      },
+      faceLength: {
+        label: "Yüz uzunluğu",
+        hint: "Saç çizgisinin ortasından çenenin alt ucuna kadar.",
+      },
+      jawWidth: {
+        label: "Çene genişliği",
+        hint: "Bir çene açısından karşı çene açısına kadar.",
+      },
+    },
+    btnCalculate: "Yüz şeklini hesapla",
+    btnReset: "Sıfırla",
+    previewShape: "Yüz Şekli",
+    previewDesc:
+      "Dört ölçünüzü yukarıya girin; oranlardan yüz şeklinizi hesaplayalım.",
+    invalidInput:
+      "Lütfen dört ölçünün tümü için pozitif bir sayı girin.",
   },
 
   seo: {

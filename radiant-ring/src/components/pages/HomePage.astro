@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import MeshGradient from "../MeshGradient.astro";
 import Analyzer from "../Analyzer.astro";
+import ManualCalculator from "../ManualCalculator.astro";
 import { SHAPE_IDS, type ShapeId } from "../../lib/faceShape";
 import { DEFAULT_LOCALE, type Locale } from "../../i18n/config";
 import { useTranslations } from "../../i18n/utils";
@@ -58,6 +59,8 @@ const faqs = t.faqs;
   </section>
 
   <Analyzer lang={lang} />
+
+  <ManualCalculator lang={lang} />
 
   <section id="how-it-works" class="section">
     <div class="container-page">

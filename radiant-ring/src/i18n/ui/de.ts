@@ -55,7 +55,7 @@ export const de: UIStrings = {
     ctaPrimary: "Mein Gesicht analysieren",
     ctaSecondary: "So funktioniert es",
     trust: {
-      free: "Für immer kostenlos",
+      free: "Manuelle Analyse",
       mesh: "Live-Gesichtsnetz",
       ranked: "Sechs Formen bewertet",
     },
@@ -170,6 +170,39 @@ export const de: UIStrings = {
       confidence: "{pct}% Zuverlässigkeit",
       blendDesc: "Überwiegend {top} mit {runnerUp}-Zügen. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Manueller Rechner",
+    heading: "Du kennst deine Maße? Berechne es direkt",
+    sub: "Kein Foto nötig. Miss die vier Abstände unten anhand eines frontalen Fotos oder im Spiegel, gib sie in einer beliebigen Einheit ein (cm, mm oder Zoll), und wir ermitteln deine Gesichtsform aus den Proportionen.",
+    imageAlt:
+      "Anleitung zur Gesichtsvermessung mit Stirn-, Wangenknochen-, Gesichtslängen- und Kiefermaßen an einem frontalen Porträt.",
+    fields: {
+      foreheadWidth: {
+        label: "Stirnbreite",
+        hint: "Abstand zwischen dem linken und rechten Stirnpunkt.",
+      },
+      cheekboneWidth: {
+        label: "Wangenknochenbreite",
+        hint: "Abstand zwischen dem linken und rechten Wangenknochenpunkt.",
+      },
+      faceLength: {
+        label: "Gesichtslänge",
+        hint: "Von der Mitte des Haaransatzes bis zur Unterkante des Kinns.",
+      },
+      jawWidth: {
+        label: "Kieferbreite",
+        hint: "Von einem Kieferwinkel zum gegenüberliegenden Kieferwinkel.",
+      },
+    },
+    btnCalculate: "Gesichtsform berechnen",
+    btnReset: "Zurücksetzen",
+    previewShape: "Gesichtsform",
+    previewDesc:
+      "Gib deine vier Maße oben ein, und wir berechnen deine Gesichtsform aus den Proportionen.",
+    invalidInput:
+      "Bitte gib für alle vier Maße eine positive Zahl ein.",
   },
 
   seo: {

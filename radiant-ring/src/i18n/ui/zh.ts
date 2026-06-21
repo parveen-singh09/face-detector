@@ -55,7 +55,7 @@ export const zh: UIStrings = {
     ctaPrimary: "分析我的脸型",
     ctaSecondary: "工作原理",
     trust: {
-      free: "永久免费",
+      free: "手动分析器",
       mesh: "实时面部网格",
       ranked: "六种脸型排名",
     },
@@ -170,6 +170,39 @@ export const zh: UIStrings = {
       confidence: "{pct}% 置信度",
       blendDesc: "主要为{top}，带有{runnerUp}的特征。{desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "手动计算器",
+    heading: "知道自己的测量值？直接计算",
+    sub: "无需照片。从一张正面照片或镜子中测量下方四项距离，使用任意一种单位（厘米、毫米或英寸）填入，我们会根据比例算出你的脸型。",
+    imageAlt:
+      "面部测量指南，在正面肖像上标示额头、颧骨、脸长和下颌的测量位置。",
+    fields: {
+      foreheadWidth: {
+        label: "额头宽度",
+        hint: "左右额头点之间的距离。",
+      },
+      cheekboneWidth: {
+        label: "颧骨宽度",
+        hint: "左右颧骨点之间的距离。",
+      },
+      faceLength: {
+        label: "脸长",
+        hint: "从发际线中央到下巴底部。",
+      },
+      jawWidth: {
+        label: "下颌宽度",
+        hint: "从一侧下颌角到对侧下颌角。",
+      },
+    },
+    btnCalculate: "计算脸型",
+    btnReset: "重置",
+    previewShape: "脸型",
+    previewDesc:
+      "在上方输入你的四项测量值，我们会根据比例计算出你的脸型。",
+    invalidInput:
+      "请为全部四项测量值输入正数。",
   },
 
   seo: {

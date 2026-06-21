@@ -1,0 +1,478 @@
+---
+import ShapeBar from "./ShapeBar.astro";
+import { SHAPE_IDS, type ShapeId } from "../lib/faceShape";
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+const mc = t.manualCalc;
+
+const SHAPES = SHAPE_IDS.map((id) => [id, t.shapeLabels[id]] as [ShapeId, string]);
+
+const FIELDS = [
+  {
+    id: "foreheadWidth",
+    n: 1,
+    label: mc.fields.foreheadWidth.label,
+    hint: mc.fields.foreheadWidth.hint,
+    accent: "var(--color-violet)",
+  },
+  {
+    id: "cheekboneWidth",
+    n: 2,
+    label: mc.fields.cheekboneWidth.label,
+    hint: mc.fields.cheekboneWidth.hint,
+    accent: "var(--color-cyan)",
+  },
+  {
+    id: "faceLength",
+    n: 3,
+    label: mc.fields.faceLength.label,
+    hint: mc.fields.faceLength.hint,
+    accent: "#34c759",
+  },
+  {
+    id: "jawWidth",
+    n: 4,
+    label: mc.fields.jawWidth.label,
+    hint: mc.fields.jawWidth.hint,
+    accent: "#ff9500",
+  },
+] as const;
+
+const PREVIEW_PCT: Record<ShapeId, number> = {
+  oval: 0,
+  round: 0,
+  square: 0,
+  rectangle: 0,
+  heart: 0,
+  diamond: 0,
+};
+
+const calcI18n = {
+  shapeLabels: t.shapeLabels,
+  shapeDescriptions: t.shapeDescriptions,
+  confidence: t.analyzer.msg.confidence,
+  blendDesc: t.analyzer.msg.blendDesc,
+  previewPct: PREVIEW_PCT,
+  previewShape: mc.previewShape,
+  previewDesc: mc.previewDesc,
+  invalidInput: mc.invalidInput,
+};
+---
+
+<section
+  id="manual-calculator"
+  class="manual-calc container-page"
+  aria-labelledby="manual-calc-heading"
+>
+  <div class="manual-head">
+    <p class="eyebrow">{mc.eyebrow}</p>
+    <h2 id="manual-calc-heading">{mc.heading}</h2>
+    <p class="manual-sub">{mc.sub}</p>
+  </div>
+
+  <div class="card-lg manual-card">
+    <div class="manual-grid">
+      <figure class="guide">
+        <picture>
+          <source media="(max-width: 700px)" srcset="/mobile.png" />
+          <img
+            src="/desktop.png"
+            alt={mc.imageAlt}
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </figure>
+
+      <div class="manual-form-col">
+        <form id="manual-form" novalidate>
+          <div class="fields">
+            {
+              FIELDS.map((f) => (
+                <label class="field" for={`mf-${f.id}`}>
+                  <span class="field-head">
+                    <span class="field-n" style={`--n-accent:${f.accent}`}>
+                      {f.n}
+                    </span>
+                    <span class="field-label">{f.label}</span>
+                  </span>
+                  <input
+                    id={`mf-${f.id}`}
+                    name={f.id}
+                    type="number"
+                    inputmode="decimal"
+                    min="1"
+                    step="any"
+                    placeholder="0"
+                    autocomplete="off"
+                    required
+                  />
+                  <span class="field-hint">{f.hint}</span>
+                </label>
+              ))
+            }
+          </div>
+
+          <div class="manual-actions">
+            <button type="submit" class="btn-primary">{mc.btnCalculate}</button>
+            <button type="reset" id="manual-reset" class="btn-secondary">
+              {mc.btnReset}
+            </button>
+          </div>
+          <p id="manual-message" class="manual-message" role="alert" hidden></p>
+        </form>
+
+        <div id="manual-results" class="manual-results" aria-live="polite">
+          <div class="result-headline">
+            <span class="eyebrow">{t.analyzer.resultEyebrow}</span>
+            <div class="result-top-row">
+              <h3 id="manual-result-shape">{mc.previewShape}</h3>
+              <span id="manual-result-confidence" class="result-confidence" hidden></span>
+            </div>
+            <p id="manual-result-desc" class="result-desc">{mc.previewDesc}</p>
+          </div>
+
+          <div class="breakdown">
+            <p class="breakdown-title">{t.analyzer.breakdownTitle}</p>
+            <div class="breakdown-list" role="list">
+              {SHAPES.map(([id, label]) => <ShapeBar id={id} label={label} pct={PREVIEW_PCT[id]} />)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script
+    type="application/json"
+    id="manual-calc-i18n"
+    set:html={JSON.stringify(calcI18n)}></script>
+</section>
+
+<script>
+  import { classifyManual, type ShapeId, type ShapeResult } from "../lib/faceShape";
+
+  type I18n = {
+    shapeLabels: Record<ShapeId, string>;
+    shapeDescriptions: Record<ShapeId, string>;
+    confidence: string;
+    blendDesc: string;
+    previewPct: Record<ShapeId, number>;
+    previewShape: string;
+    previewDesc: string;
+    invalidInput: string;
+  };
+  const I: I18n = JSON.parse(
+    document.getElementById("manual-calc-i18n")?.textContent || "{}",
+  );
+  const fill = (tpl: string, vars: Record<string, string | number>) =>
+    tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+
+  const $ = <T extends HTMLElement>(id: string) =>
+    document.getElementById(id) as T;
+
+  const form = $("manual-form") as HTMLFormElement;
+  const message = $("manual-message");
+  const resultsBox = $("manual-results");
+  const resultShape = $("manual-result-shape");
+  const resultConfidence = $("manual-result-confidence");
+  const resultDesc = $("manual-result-desc");
+  const resetBtn = $("manual-reset") as HTMLButtonElement;
+
+  function readField(name: string): number {
+    const el = form.elements.namedItem(name) as HTMLInputElement | null;
+    return el ? parseFloat(el.value) : NaN;
+  }
+
+  function showMessage(text: string) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+  function clearMessage() {
+    message.hidden = true;
+    message.textContent = "";
+  }
+
+  function renderResult(result: ShapeResult) {
+    clearMessage();
+
+    const topId = result.top.id as ShapeId;
+    const runnerUpId = result.runnerUp.id as ShapeId;
+    resultShape.textContent = I.shapeLabels[topId];
+    resultConfidence.textContent = fill(I.confidence, { pct: result.confidence });
+    resultConfidence.hidden = false;
+
+    if (result.isBlend) {
+      resultDesc.textContent = fill(I.blendDesc, {
+        top: I.shapeLabels[topId],
+        runnerUp: I.shapeLabels[runnerUpId],
+        desc: I.shapeDescriptions[topId],
+      });
+    } else {
+      resultDesc.textContent = I.shapeDescriptions[topId];
+    }
+
+    const list = resultsBox.querySelector(".breakdown-list") as HTMLElement;
+    result.ranked.forEach((score, i) => {
+      const row = list.querySelector(
+        `[data-shape="${score.id}"]`,
+      ) as HTMLElement | null;
+      if (!row) return;
+      row.style.order = String(i);
+      row.classList.toggle("is-top", i === 0);
+      (row.querySelector("[data-fill]") as HTMLElement).style.setProperty(
+        "--pct",
+        String(score.probability / 100),
+      );
+      (row.querySelector("[data-pct]") as HTMLElement).textContent =
+        `${score.probability}%`;
+    });
+  }
+
+  function renderPreview() {
+    resultShape.textContent = I.previewShape;
+    resultConfidence.textContent = "";
+    resultConfidence.hidden = true;
+    resultDesc.textContent = I.previewDesc;
+
+    const list = resultsBox.querySelector(".breakdown-list") as HTMLElement;
+    (Object.keys(I.previewPct) as ShapeId[]).forEach((id) => {
+      const row = list.querySelector(`[data-shape="${id}"]`) as HTMLElement | null;
+      if (!row) return;
+      row.style.order = "";
+      row.classList.remove("is-top");
+      const pct = I.previewPct[id];
+      (row.querySelector("[data-fill]") as HTMLElement).style.setProperty(
+        "--pct",
+        String(pct / 100),
+      );
+      (row.querySelector("[data-pct]") as HTMLElement).textContent = `${pct}%`;
+    });
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const values = {
+      foreheadWidth: readField("foreheadWidth"),
+      cheekboneWidth: readField("cheekboneWidth"),
+      faceLength: readField("faceLength"),
+      jawWidth: readField("jawWidth"),
+    };
+    const bad = Object.values(values).some(
+      (v) => !Number.isFinite(v) || v <= 0,
+    );
+    if (bad) {
+      showMessage(I.invalidInput);
+      return;
+    }
+    renderResult(classifyManual(values));
+  });
+
+  resetBtn.addEventListener("click", () => {
+    clearMessage();
+    renderPreview();
+  });
+</script>
+
+<style>
+  .manual-calc {
+    scroll-margin-top: 80px;
+    padding-block: var(--spacing-5xl);
+  }
+  .manual-head {
+    max-width: 640px;
+    margin-bottom: var(--spacing-xl);
+  }
+  .manual-head h2 {
+    margin: var(--spacing-xs) 0;
+    font-size: clamp(26px, 5vw, 32px);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+  .manual-sub {
+    color: var(--color-body);
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .manual-card {
+    padding: clamp(var(--spacing-md), 4vw, var(--spacing-xl));
+  }
+
+  .manual-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+    align-items: start;
+  }
+
+  .guide {
+    margin: 0;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background-color: var(--color-canvas-soft);
+  }
+  .guide img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .manual-form-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+  .field-head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+  .field-n {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background-color: var(--n-accent, var(--color-ink));
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .field-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-ink);
+  }
+  .field input {
+    appearance: none;
+    width: 100%;
+    height: 44px;
+    padding-inline: var(--spacing-md);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-size: 16px;
+    font-family: var(--font-mono);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .field input:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-link-bg-soft);
+  }
+  .field-hint {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--color-mute);
+  }
+
+  .manual-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+  }
+  .manual-message {
+    margin: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background-color: var(--color-error-soft);
+    color: var(--color-error-deep);
+  }
+
+  .manual-results {
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-hairline);
+  }
+  .result-top-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xxs);
+  }
+  #manual-result-shape {
+    margin: 0;
+    font-size: clamp(26px, 5vw, 32px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+  .result-confidence {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-body);
+  }
+  .result-desc {
+    margin-top: var(--spacing-xs);
+    color: var(--color-body);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .breakdown {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-hairline);
+  }
+  .breakdown-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-ink);
+    margin-bottom: var(--spacing-xs);
+  }
+  .breakdown-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
+    column-gap: var(--spacing-2xl);
+  }
+
+  @media (max-width: 860px) {
+    .manual-grid {
+      grid-template-columns: 1fr;
+    }
+    .guide {
+      max-width: 420px;
+    }
+  }
+  @media (max-width: 560px) {
+    .fields {
+      grid-template-columns: 1fr;
+    }
+    .breakdown-list {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      grid-auto-flow: row;
+    }
+    .manual-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .manual-actions .btn-primary,
+    .manual-actions .btn-secondary {
+      width: 100%;
+    }
+  }
+</style>

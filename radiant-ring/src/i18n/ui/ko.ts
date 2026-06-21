@@ -55,7 +55,7 @@ export const ko: UIStrings = {
     ctaPrimary: "내 얼굴 분석하기",
     ctaSecondary: "이용 방법",
     trust: {
-      free: "영원히 무료",
+      free: "수동 분석기",
       mesh: "실시간 페이스 메시",
       ranked: "여섯 가지 얼굴형 순위",
     },
@@ -170,6 +170,39 @@ export const ko: UIStrings = {
       confidence: "{pct}% 신뢰도",
       blendDesc: "대부분 {top}이며 {runnerUp}의 특징이 있습니다. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "수동 계산기",
+    heading: "측정값을 알고 계신가요? 직접 계산해 보세요",
+    sub: "사진이 필요 없습니다. 정면 사진이나 거울을 보고 아래 네 가지 거리를 측정한 뒤 하나의 단위(cm, mm 또는 인치)로 입력하시면, 비율을 바탕으로 당신의 얼굴형을 계산해 드립니다.",
+    imageAlt:
+      "정면 얼굴 사진에 이마, 광대뼈, 얼굴 길이, 턱 측정 위치를 표시한 얼굴 측정 안내도.",
+    fields: {
+      foreheadWidth: {
+        label: "이마 너비",
+        hint: "좌우 이마 지점 사이의 거리.",
+      },
+      cheekboneWidth: {
+        label: "광대뼈 너비",
+        hint: "좌우 광대뼈 지점 사이의 거리.",
+      },
+      faceLength: {
+        label: "얼굴 길이",
+        hint: "헤어라인 중앙에서 턱 끝까지.",
+      },
+      jawWidth: {
+        label: "턱 너비",
+        hint: "한쪽 턱 각도에서 반대쪽 턱 각도까지.",
+      },
+    },
+    btnCalculate: "얼굴형 계산하기",
+    btnReset: "초기화",
+    previewShape: "얼굴형",
+    previewDesc:
+      "위에 네 가지 측정값을 입력하시면 비율을 바탕으로 당신의 얼굴형을 계산해 드립니다.",
+    invalidInput:
+      "네 가지 측정값 모두 양수를 입력해 주세요.",
   },
 
   seo: {

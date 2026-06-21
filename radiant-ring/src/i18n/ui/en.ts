@@ -53,7 +53,7 @@ export const en = {
     ctaPrimary: "Analyze my face",
     ctaSecondary: "How it works",
     trust: {
-      free: "Free forever",
+      free: "Manual analyzer",
       mesh: "Live face mesh",
       ranked: "Six shapes ranked",
     },
@@ -168,6 +168,39 @@ export const en = {
       confidence: "{pct}% match strength",
       blendDesc: "Mostly {top} with {runnerUp} traits. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Manual calculator",
+    heading: "Know your measurements? Calculate it directly",
+    sub: "No photo needed. Measure the four distances below from a straight-on photo or a mirror, enter them in any single unit (cm, mm, or inches), and we’ll work out your face shape from the proportions.",
+    imageAlt:
+      "Face measurement guide showing forehead, cheekbone, face length and jaw measurements on a front-facing portrait.",
+    fields: {
+      foreheadWidth: {
+        label: "Forehead width",
+        hint: "Distance between the left and right forehead points.",
+      },
+      cheekboneWidth: {
+        label: "Cheekbone width",
+        hint: "Distance between the left and right cheekbone points.",
+      },
+      faceLength: {
+        label: "Face length",
+        hint: "From the center of the hairline to the bottom of the chin.",
+      },
+      jawWidth: {
+        label: "Jaw width",
+        hint: "From one jaw angle to the opposite jaw angle.",
+      },
+    },
+    btnCalculate: "Calculate face shape",
+    btnReset: "Reset",
+    previewShape: "Face Shape",
+    previewDesc:
+      "Enter your four measurements above and we’ll calculate your face shape from the proportions.",
+    invalidInput:
+      "Please enter a positive number for all four measurements.",
   },
 
   seo: {

@@ -55,7 +55,7 @@ export const pt: UIStrings = {
     ctaPrimary: "Analisar meu rosto",
     ctaSecondary: "Como funciona",
     trust: {
-      free: "Grátis para sempre",
+      free: "Analisador manual",
       mesh: "Malha facial ao vivo",
       ranked: "Seis formatos classificados",
     },
@@ -170,6 +170,39 @@ export const pt: UIStrings = {
       confidence: "{pct}% de confiança",
       blendDesc: "Predominantemente {top} com traços de {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Calculadora manual",
+    heading: "Sabe suas medidas? Calcule diretamente",
+    sub: "Sem precisar de foto. Meça as quatro distâncias abaixo a partir de uma foto de frente ou de um espelho, informe-as em uma única unidade (cm, mm ou polegadas), e descobriremos o formato do seu rosto a partir das proporções.",
+    imageAlt:
+      "Guia de medição facial mostrando as medidas de testa, maçãs do rosto, comprimento do rosto e mandíbula em um retrato de frente.",
+    fields: {
+      foreheadWidth: {
+        label: "Largura da testa",
+        hint: "Distância entre os pontos esquerdo e direito da testa.",
+      },
+      cheekboneWidth: {
+        label: "Largura das maçãs do rosto",
+        hint: "Distância entre os pontos esquerdo e direito das maçãs do rosto.",
+      },
+      faceLength: {
+        label: "Comprimento do rosto",
+        hint: "Do centro da linha do cabelo até a parte inferior do queixo.",
+      },
+      jawWidth: {
+        label: "Largura da mandíbula",
+        hint: "De um ângulo da mandíbula ao ângulo oposto.",
+      },
+    },
+    btnCalculate: "Calcular formato do rosto",
+    btnReset: "Redefinir",
+    previewShape: "Formato do Rosto",
+    previewDesc:
+      "Informe suas quatro medidas acima e calcularemos o formato do seu rosto a partir das proporções.",
+    invalidInput:
+      "Por favor, informe um número positivo para todas as quatro medidas.",
   },
 
   seo: {

@@ -55,7 +55,7 @@ export const ja: UIStrings = {
     ctaPrimary: "顔を分析する",
     ctaSecondary: "使い方",
     trust: {
-      free: "ずっと無料",
+      free: "手動アナライザー",
       mesh: "ライブフェイスメッシュ",
       ranked: "6つの顔型をランク付け",
     },
@@ -170,6 +170,39 @@ export const ja: UIStrings = {
       confidence: "信頼度{pct}%",
       blendDesc: "主に{top}で、{runnerUp}の特徴があります。{desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "手動計算ツール",
+    heading: "測定値がわかりますか？直接計算しましょう",
+    sub: "写真は不要です。正面から撮った写真や鏡を使って下の4つの距離を測り、いずれか1つの単位（cm、mm、インチ）で入力してください。その比率からあなたの顔の形を割り出します。",
+    imageAlt:
+      "正面を向いた顔写真に、額・頬骨・顔の長さ・あごの測定箇所を示した顔の測定ガイド。",
+    fields: {
+      foreheadWidth: {
+        label: "額の幅",
+        hint: "左右の額のポイント間の距離。",
+      },
+      cheekboneWidth: {
+        label: "頬骨の幅",
+        hint: "左右の頬骨のポイント間の距離。",
+      },
+      faceLength: {
+        label: "顔の長さ",
+        hint: "生え際の中央からあご先の下端まで。",
+      },
+      jawWidth: {
+        label: "あごの幅",
+        hint: "片側のあごの角から反対側のあごの角まで。",
+      },
+    },
+    btnCalculate: "顔の形を計算する",
+    btnReset: "リセット",
+    previewShape: "顔の形",
+    previewDesc:
+      "上に4つの測定値を入力すると、その比率からあなたの顔の形を計算します。",
+    invalidInput:
+      "4つの測定値すべてに正の数を入力してください。",
   },
 
   seo: {

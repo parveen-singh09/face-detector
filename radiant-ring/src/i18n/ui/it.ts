@@ -55,7 +55,7 @@ export const it: UIStrings = {
     ctaPrimary: "Analizza il mio viso",
     ctaSecondary: "Come funziona",
     trust: {
-      free: "Gratis per sempre",
+      free: "Analizzatore manuale",
       mesh: "Mesh facciale in tempo reale",
       ranked: "Sei forme classificate",
     },
@@ -170,6 +170,39 @@ export const it: UIStrings = {
       confidence: "{pct}% di affidabilità",
       blendDesc: "Prevalentemente {top} con tratti {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Calcolatore manuale",
+    heading: "Conosci le tue misure? Calcolala direttamente",
+    sub: "Nessuna foto necessaria. Misura le quattro distanze qui sotto da una foto frontale o da uno specchio, inseriscile in una qualsiasi unità (cm, mm o pollici) e calcoleremo la forma del tuo viso a partire dalle proporzioni.",
+    imageAlt:
+      "Guida alla misurazione del viso che mostra le misure di fronte, zigomi, lunghezza del viso e mascella su un ritratto frontale.",
+    fields: {
+      foreheadWidth: {
+        label: "Larghezza della fronte",
+        hint: "Distanza tra il punto sinistro e quello destro della fronte.",
+      },
+      cheekboneWidth: {
+        label: "Larghezza degli zigomi",
+        hint: "Distanza tra il punto sinistro e quello destro degli zigomi.",
+      },
+      faceLength: {
+        label: "Lunghezza del viso",
+        hint: "Dal centro dell'attaccatura dei capelli alla base del mento.",
+      },
+      jawWidth: {
+        label: "Larghezza della mascella",
+        hint: "Da un angolo della mascella all'angolo opposto.",
+      },
+    },
+    btnCalculate: "Calcola la forma del viso",
+    btnReset: "Reimposta",
+    previewShape: "Forma del viso",
+    previewDesc:
+      "Inserisci le tue quattro misure qui sopra e calcoleremo la forma del tuo viso a partire dalle proporzioni.",
+    invalidInput:
+      "Inserisci un numero positivo per tutte e quattro le misure.",
   },
 
   seo: {

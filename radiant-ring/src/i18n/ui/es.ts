@@ -55,7 +55,7 @@ export const es: UIStrings = {
     ctaPrimary: "Analizar mi rostro",
     ctaSecondary: "Cómo funciona",
     trust: {
-      free: "Gratis para siempre",
+      free: "Analizador manual",
       mesh: "Malla facial en vivo",
       ranked: "Seis formas clasificadas",
     },
@@ -170,6 +170,39 @@ export const es: UIStrings = {
       confidence: "{pct}% de confianza",
       blendDesc: "Principalmente {top} con rasgos de {runnerUp}. {desc}",
     },
+  },
+
+  manualCalc: {
+    eyebrow: "Calculadora manual",
+    heading: "¿Conoces tus medidas? Calcúlalo directamente",
+    sub: "No necesitas foto. Mide las cuatro distancias de abajo a partir de una foto de frente o de un espejo, introdúcelas en una sola unidad (cm, mm o pulgadas) y calcularemos la forma de tu rostro a partir de las proporciones.",
+    imageAlt:
+      "Guía de medición del rostro que muestra las medidas de la frente, los pómulos, la longitud del rostro y la mandíbula en un retrato de frente.",
+    fields: {
+      foreheadWidth: {
+        label: "Ancho de la frente",
+        hint: "Distancia entre los puntos izquierdo y derecho de la frente.",
+      },
+      cheekboneWidth: {
+        label: "Ancho de los pómulos",
+        hint: "Distancia entre los puntos izquierdo y derecho de los pómulos.",
+      },
+      faceLength: {
+        label: "Longitud del rostro",
+        hint: "Desde el centro del nacimiento del cabello hasta la parte inferior del mentón.",
+      },
+      jawWidth: {
+        label: "Ancho de la mandíbula",
+        hint: "Desde un ángulo de la mandíbula hasta el ángulo opuesto.",
+      },
+    },
+    btnCalculate: "Calcular forma del rostro",
+    btnReset: "Restablecer",
+    previewShape: "Forma del rostro",
+    previewDesc:
+      "Introduce tus cuatro medidas arriba y calcularemos la forma de tu rostro a partir de las proporciones.",
+    invalidInput:
+      "Introduce un número positivo para las cuatro medidas.",
   },
 
   seo: {
