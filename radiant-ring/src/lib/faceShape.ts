@@ -119,6 +119,28 @@ const SHAPE_PROFILES: Record<ShapeId, Profile> = {
   },
 };
 
+export interface ShapeRatios {
+  lengthToWidth: number;
+  foreheadToCheek: number;
+  jawToCheek: number;
+}
+
+/**
+ * The characteristic (mean) value of each human-measurable ratio per shape,
+ * derived from SHAPE_PROFILES. Cheekbone width is the reference (= 1.0), so
+ * forehead/jaw values read as "× cheekbones". Used to help users self-identify.
+ */
+export const SHAPE_RATIOS = Object.fromEntries(
+  (Object.keys(SHAPE_PROFILES) as ShapeId[]).map((id) => [
+    id,
+    {
+      lengthToWidth: SHAPE_PROFILES[id].lengthToWidth[0],
+      foreheadToCheek: SHAPE_PROFILES[id].foreheadToCheek[0],
+      jawToCheek: SHAPE_PROFILES[id].jawToCheek[0],
+    },
+  ]),
+) as Record<ShapeId, ShapeRatios>;
+
 const FEATURE_WEIGHTS = {
   lengthToWidth: 1.1,
   foreheadToCheek: 1.0,

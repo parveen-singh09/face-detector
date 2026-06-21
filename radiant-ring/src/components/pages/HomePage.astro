@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import MeshGradient from "../MeshGradient.astro";
 import Analyzer from "../Analyzer.astro";
 import ManualCalculator from "../ManualCalculator.astro";
-import { SHAPE_IDS, type ShapeId } from "../../lib/faceShape";
+import { SHAPE_IDS, SHAPE_RATIOS, type ShapeId } from "../../lib/faceShape";
 import { DEFAULT_LOCALE, type Locale } from "../../i18n/config";
 import { useTranslations } from "../../i18n/utils";
 
@@ -14,6 +14,23 @@ const { lang = DEFAULT_LOCALE } = Astro.props;
 const t = useTranslations(lang);
 
 const shapes = SHAPE_IDS as ShapeId[];
+
+// Each shape's characteristic proportions as compact ratios against face length
+// (l): f/l = forehead, c/l = cheekbones, j/l = jaw. Derived from the profile
+// means so there's a single source of truth. Lets users match their own numbers.
+const fLabel = t.manualCalc.fields.foreheadWidth.label;
+const cLabel = t.manualCalc.fields.cheekboneWidth.label;
+const jLabel = t.manualCalc.fields.jawWidth.label;
+const lLabel = t.manualCalc.fields.faceLength.label;
+const ratioRows = (id: ShapeId) => {
+  const r = SHAPE_RATIOS[id];
+  const l = r.lengthToWidth; // face length ÷ cheekbone width
+  return [
+    { sym: "F/L", value: r.foreheadToCheek / l, title: `${fLabel} ÷ ${lLabel}` },
+    { sym: "C/L", value: 1 / l, title: `${cLabel} ÷ ${lLabel}` },
+    { sym: "J/L", value: r.jawToCheek / l, title: `${jLabel} ÷ ${lLabel}` },
+  ];
+};
 const steps = t.steps;
 const faqs = t.faqs;
 ---
@@ -93,16 +110,28 @@ const faqs = t.faqs;
         {
           shapes.map((id) => (
             <article class="card shape-card">
-              <img
-                class="shape-glyph"
-                data-shape={id}
-                src={`/shapes/${id}.jpg`}
-                alt={t.shapesSection.exampleAlt.replace("{shape}", t.shapeLabels[id])}
-                width="80"
-                height="80"
-                loading="lazy"
-                decoding="async"
-              />
+              <div class="shape-top">
+                <img
+                  class="shape-glyph"
+                  data-shape={id}
+                  src={`/shapes/${id}.jpg`}
+                  alt={t.shapesSection.exampleAlt.replace("{shape}", t.shapeLabels[id])}
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <dl class="shape-ratios">
+                  {
+                    ratioRows(id).map((row) => (
+                      <div class="ratio-row" title={row.title}>
+                        <dt>{row.sym}</dt>
+                        <dd>{row.value.toFixed(2)}</dd>
+                      </div>
+                    ))
+                  }
+                </dl>
+              </div>
               <h3>{t.shapeLabels[id]}</h3>
               <p>{t.shapeDescriptions[id]}</p>
             </article>
@@ -277,6 +306,13 @@ const faqs = t.faqs;
   .shape-card {
     padding: var(--spacing-xl);
   }
+  .shape-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+  }
   .shape-glyph {
     display: block;
     width: 80px;
@@ -285,7 +321,7 @@ const faqs = t.faqs;
     object-position: center;
     background-color: var(--color-canvas-soft);
     border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-md);
+    flex-shrink: 0;
   }
   .shape-card h3 {
     margin: 0 0 var(--spacing-xs);
@@ -298,6 +334,30 @@ const faqs = t.faqs;
     color: var(--color-body);
     font-size: 14px;
     line-height: 22px;
+  }
+  .shape-ratios {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+  .ratio-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+  }
+  .ratio-row dt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-mute);
+  }
+  .ratio-row dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink);
   }
 
   .seo-content {
