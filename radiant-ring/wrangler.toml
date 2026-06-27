@@ -1,7 +1,10 @@
 name = "radiant-ring"
 compatibility_date = "2026-06-08"
 pages_build_output_dir = "dist"
+<<<<<<< HEAD
 
 [vars]
 AI_BASE_URL = "https://api.groq.com/openai/v1"
 AI_MODEL = "llama-3.3-70b-versatile"
+=======
+>>>>>>> e9fba5e1912980febbe72c5d5889ffa837ae5982
