@@ -200,9 +200,14 @@ const askI18n = {
         trigger.focus();
       }
     }
-    trigger.addEventListener("click", () =>
-      setOpen(root.dataset.open !== "true"),
-    );
+    let didDrag = false;
+    trigger.addEventListener("click", () => {
+      if (didDrag) {
+        didDrag = false;
+        return;
+      }
+      setOpen(root.dataset.open !== "true");
+    });
     closeBtn.addEventListener("click", () => setOpen(false));
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && root.dataset.open === "true") setOpen(false);
@@ -210,6 +215,78 @@ const askI18n = {
     document.addEventListener("click", (e) => {
       if (root.dataset.open !== "true") return;
       if (!root.contains(e.target as Node)) setOpen(false);
+    });
+
+    const POS_KEY = "afsa:askpos";
+    const DRAG_THRESHOLD = 5;
+    const clamp = (v: number, min: number, max: number) =>
+      Math.max(min, Math.min(max, v));
+
+    function applyPos(left: number, top: number) {
+      const r = trigger.getBoundingClientRect();
+      const maxL = Math.max(4, window.innerWidth - r.width - 4);
+      const maxT = Math.max(4, window.innerHeight - r.height - 4);
+      root!.style.insetInlineEnd = "auto";
+      root!.style.insetBlockEnd = "auto";
+      root!.style.left = clamp(left, 4, maxL) + "px";
+      root!.style.top = clamp(top, 4, maxT) + "px";
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(POS_KEY) || "null");
+      if (saved && typeof saved.left === "number" && typeof saved.top === "number") {
+        applyPos(saved.left, saved.top);
+      }
+    } catch {}
+
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let offX = 0;
+    let offY = 0;
+
+    trigger.addEventListener("pointerdown", (e) => {
+      if (root.dataset.open === "true") return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const r = root.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      offX = e.clientX - r.left;
+      offY = e.clientY - r.top;
+      dragging = false;
+      trigger.setPointerCapture(e.pointerId);
+    });
+
+    trigger.addEventListener("pointermove", (e) => {
+      if (!trigger.hasPointerCapture(e.pointerId)) return;
+      if (
+        !dragging &&
+        Math.hypot(e.clientX - startX, e.clientY - startY) < DRAG_THRESHOLD
+      )
+        return;
+      dragging = true;
+      root.dataset.dragging = "true";
+      applyPos(e.clientX - offX, e.clientY - offY);
+    });
+
+    function endDrag(e: PointerEvent) {
+      if (!trigger.hasPointerCapture(e.pointerId)) return;
+      trigger.releasePointerCapture(e.pointerId);
+      if (!dragging) return;
+      didDrag = true;
+      delete root!.dataset.dragging;
+      const r = root!.getBoundingClientRect();
+      try {
+        localStorage.setItem(POS_KEY, JSON.stringify({ left: r.left, top: r.top }));
+      } catch {}
+    }
+    trigger.addEventListener("pointerup", endDrag);
+    trigger.addEventListener("pointercancel", endDrag);
+
+    window.addEventListener("resize", () => {
+      if (root.style.left) {
+        applyPos(parseFloat(root.style.left), parseFloat(root.style.top));
+      }
     });
 
     function showPicker() {
@@ -488,8 +565,8 @@ const askI18n = {
     border: 0;
     font-size: 15px;
     font-weight: 500;
-    cursor: pointer;
-    touch-action: manipulation;
+    cursor: grab;
+    touch-action: none;
     box-shadow:
       0 2px 6px var(--shadow-soft, #0000001f),
       0 8px 24px -6px var(--shadow-soft, #00000026);
@@ -500,6 +577,11 @@ const askI18n = {
   }
   .askai-trigger:active {
     transform: translateY(1px);
+  }
+  .askai-root[data-dragging="true"] .askai-trigger {
+    cursor: grabbing;
+    transform: none;
+    transition: none;
   }
   .askai-trigger-icon {
     flex-shrink: 0;
