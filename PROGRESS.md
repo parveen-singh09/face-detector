@@ -1214,3 +1214,209 @@ the confirmed bugs:
   action buttons still stack on small screens — only the input grid changed.
 - Verified `npm run build` passes (77 pages).
 
+## 2026-06-27 — "Ask AI" style-recommendation widget (glasses / hairstyle / beard)
+
+Added a floating **Ask AI** feature so visitors can get AI styling suggestions for
+their face shape and ask free-form follow-ups. This required introducing the repo's
+**first server-side component** — the app was 100% static until now.
+
+**Architecture (the notable change):** the Astro app stays `output: static` (no SSR
+adapter), but we added a **Cloudflare Pages Function** at
+`radiant-ring/functions/api/ask.ts`. Cloudflare auto-deploys a `functions/` dir
+alongside the static `dist/`, so this adds one server route (`POST /api/ask`)
+**without touching the Astro build** — `astro build` ignores `functions/`. The
+function holds the secret API key server-side and forwards to an AI gateway; the
+key never reaches the client or the repo.
+
+**Provider is gateway-agnostic.** The function reads `AI_BASE_URL`, `AI_API_KEY`,
+`AI_MODEL` from env and its `callModel()` adapter speaks the **OpenAI-compatible
+`POST {AI_BASE_URL}/chat/completions`** shape by default. To point at a different
+gateway, edit only `callModel()` (clearly marked seam). Server-side guards: method
+restricted to POST, 16 KB body cap, chat history capped to last 8 turns / 1500
+chars each, 700-token output cap, 25 s upstream timeout, and clean status mapping
+(400 bad input, 413 too large, 429 busy, 502 gateway error, 503 not configured) —
+never echoes the key or raw upstream errors.
+
+**Key files:**
+- `functions/api/ask.ts` — the Cloudflare Pages Function (backend proxy + adapter).
+- `src/components/AskAi.astro` — vanilla-TS island (matches `Analyzer`/`ManualCalculator`
+  pattern, no UI framework). Fixed bottom-right circular trigger + `card-lg` panel
+  with a **men/women toggle**, **6-shape picker** (reuses `SHAPE_IDS`/translated
+  `t.shapeLabels`), and a **chat thread** for follow-ups. Women see glasses +
+  hairstyle; men also get beard. Mounted once in `BaseLayout.astro` so it's on all
+  77 pages. Esc/click-outside/close-button dismiss; `aria-expanded`/dialog roles;
+  RTL-safe via logical properties (`inset-inline-end` etc.); `prefers-reduced-motion`
+  inherited. On ≤560px the trigger collapses to a 56px icon-only FAB and the panel
+  goes full-width. **Model replies render via `textContent` / `white-space: pre-wrap`
+  — never `innerHTML`** — so untrusted output can't inject markup.
+- `src/lib/askAi.ts` — typed `fetch("/api/ask")` wrapper + a soft client-side rate
+  limit (mirrors `lib/rateLimit.ts`; new key `afsa:ask`, 30/hour). Normalizes errors
+  into `AskError`.
+- `.dev.vars.example` (new) documents the three env vars for `wrangler pages dev`;
+  `.dev.vars` added to `.gitignore`.
+
+**i18n:** English-first, per the manual-calculator precedent — the widget's own copy
+is hardcoded English; only the 6 shape names reuse the translated dict (verified the
+`ar` build shows Arabic labels بيضاوي/مستدير/… not English fallback). Follow-up:
+lift the new strings into `src/i18n/ui/*.ts` and translate to the other 14 locales.
+
+**Verified:** `npm run build` passes — still **77 pages**; the `functions/` dir
+doesn't affect the Astro build. Confirmed the trigger renders in `dist/index.html`
+and `dist/ar/index.html` (with translated labels), and **no secret literal
+(`AI_API_KEY`/`sk-ant`/`Bearer `) appears anywhere in `dist/`** (the key handling
+lives only in `functions/`, bundled separately by Cloudflare).
+
+**NOT yet done / flagged at hand-off:**
+- **End-to-end run** needs real env values + `npx wrangler pages dev dist` (the
+  function does NOT run under `astro dev`). Set `AI_BASE_URL`/`AI_API_KEY`/`AI_MODEL`
+  in `.dev.vars` locally, and as Cloudflare Pages **secrets** in production
+  (Dashboard → Pages → Settings → Variables & Secrets, or `wrangler pages secret put`).
+  If the supplied gateway isn't OpenAI-chat-compatible, adjust `callModel()`.
+- **Abuse risk:** `/api/ask` is a public, unauthenticated endpoint proxying a paid
+  API. The client-side soft limit is a deterrent only (bypassable). Durable
+  protection (Cloudflare Turnstile, or KV/Durable-Object server-side counting) is a
+  recommended follow-up before heavy promotion.
+- Translating the new UI strings to the 14 non-English locales.
+- Optional: prefill the picker from a just-completed analyzer result (kept decoupled
+  for v1).
+
+## 2026-06-27 — Ask AI wired to Google Gemini + verified end-to-end
+
+Configured the gateway and ran the feature live via `wrangler pages dev`. Working —
+real recommendations come back. Several non-obvious gotchas surfaced during testing:
+
+- **Provider = Google Gemini's OpenAI-compatible endpoint** — no code change to the
+  adapter needed. `.dev.vars` (gitignored): `AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`,
+  `AI_MODEL=gemini-2.5-flash`, `AI_API_KEY=<the AIza… key>`. Gemini keys start with
+  `AIza` and are ~39 chars; the compat endpoint takes `Authorization: Bearer <key>`.
+- **`gemini-2.5-flash` is a *thinking* model.** Its hidden reasoning tokens count
+  against `max_tokens`. The original `MAX_TOKENS = 700` got fully consumed by
+  thinking, leaving **empty visible content** → the function's empty-reply guard
+  returned 502. **Fix: raised `MAX_TOKENS` to 2000** in `functions/api/ask.ts`. A
+  full styling answer uses ~670 thinking + ~290 answer ≈ 1140 total.
+- **`gemini-2.0-flash` is NOT usable on this free tier** — quota `limit: 0` (429
+  RESOURCE_EXHAUSTED). Stick with `gemini-2.5-flash`.
+- **Gemini free tier returns intermittent 503 "high demand."** Mapped 503 (and 429)
+  → a retryable "busy, try again shortly" message in `callModel()` (was only 429
+  before). A retry usually succeeds on the next attempt.
+- **`wrangler.toml` added** — pins `compatibility_date = "2026-06-08"`
+  (`pages_build_output_dir = "dist"`). Without it, `wrangler pages dev` defaults to
+  today's date and the local workerd runtime (max supported 2026-06-08) refuses to
+  boot. Does not affect `astro build`.
+- **Local-dev note:** the function only runs under `npx wrangler pages dev` (NOT
+  `astro dev` / `astro preview`, where `/api/ask` 404s). On Windows, repeated
+  Wrangler restarts can orphan `workerd.exe` children that hold port 8788 and cause
+  `HTTP 000` hangs — kill stray `workerd.exe` if connections wedge.
+
+Verified: `POST /api/ask` returns HTTP 200 with a real Gemini styling reply
+(confirmed for oval/women and diamond/men). Production still needs the three vars
+set as Cloudflare Pages **secrets**, and the abuse-protection follow-up still stands.
+
+## 2026-06-27 — Removed the Ask AI feature entirely
+
+- **Reverted the whole "Ask AI" widget** (the floating bottom-right "What suits
+  you? — Women/Men" panel). Per request, removed it completely rather than hiding it.
+- **Deleted files**: `src/components/AskAi.astro`, `src/lib/askAi.ts`,
+  `functions/api/ask.ts` (and the now-empty `functions/` dir), `wrangler.toml`,
+  `.dev.vars.example`, and the local `.dev.vars`/`.wrangler/` working files. This
+  also removes the repo's only server-side component — the app is back to 100%
+  static (Cloudflare Pages Function gone).
+- **Reverted the two committed-file edits** that had wired it in:
+  `src/layouts/BaseLayout.astro` (dropped the `import AskAi` line and the
+  `<AskAi lang={lang} />` mount) and `radiant-ring/.gitignore` (removed the
+  `.dev.vars` line added for the feature). Everything else about the feature was
+  untracked, so its removal leaves no other git footprint.
+- **i18n untouched**: the feature reused existing `shapeLabels` only and added no
+  dictionary keys, so nothing to clean up in `src/i18n/`.
+- Verified `npm run build` passes (77 pages); grep confirms no `AskAi`/`askAi`/
+  `/api/ask` references remain in `src/`.
+
+## 2026-06-27 — Ask AI: show the starter prompt as a user bubble (chat-like thread)
+
+- **The widget was re-added** after the prior removal (working tree has
+  `src/components/AskAi.astro`, `src/lib/askAi.ts`, `functions/api/ask.ts`,
+  `wrangler.toml`, `.dev.vars.example` again — currently untracked).
+- **Fix**: picking a face shape called `send(prompt, false)`, so the chosen
+  starter prompt was sent to the AI but never rendered as a bubble — the thread
+  opened straight to the AI's answer and the user couldn't see their own opening
+  message. Changed to `send(prompt, true)` in `enterChat()`
+  (`src/components/AskAi.astro`), so the first message shows on the right like a
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-27 — Ask AI: anchor the question on screen + roomier reply spacing
+
+- **Scroll fix (the "my message is on the left / not visible" report)**: the user
+  message *was* rendering correctly (right-aligned), but `addBubble` and
+  `addTyping` both ran `thread.scrollTop = thread.scrollHeight`, so a long reply
+  auto-scrolled the thread to its bottom and pushed the short question out of view
+  at the top. Removed both bottom-scrolls; `send()` now captures the user bubble
+  (`userBubble = addBubble(...)`) and, after the reply lands,
+  `userBubble.scrollIntoView({ block: "start" })` anchors the question at the top
+  with the reply flowing below (ChatGPT-style). Falls back to scroll-to-bottom for
+  turns with no visible user bubble. (`src/components/AskAi.astro`)
+- **Reply spacing**: bumped `.askai-h` top margin (`sm`→`md`), `.askai-para` /
+  `.askai-list` bottom margins to `sm`, and per-bullet `li` margin (`xxs`→`xs`) +
+  `line-height: 1.45`, so headings/paragraphs/bullets no longer run together.
+- Note for testing: `wrangler pages dev dist` serves the on-disk bundle — must
+  rebuild + restart + hard-refresh to see edits (the dev server doesn't rebuild
+  Astro itself). Verified `npm run build` passes (77 pages) and the bundle carries
+  the `scrollIntoView({block:"start"})` change.
+
+## 2026-06-27 — Ask AI: ROOT CAUSE — JS-created bubbles missed Astro CSS scoping
+
+- **The real bug behind "all messages on the left / no styling"**: Astro scopes
+  a component's `<style>` by stamping a `[data-astro-cid-…]` attribute onto both
+  the selectors AND the elements in the `.astro` markup. The chat bubbles,
+  headings, lists, and typing indicator are all created at runtime via
+  `document.createElement` in the `<script>`, so they never receive that
+  attribute — and every scoped rule (`.askai-msg-user{align-self:flex-end…}`,
+  backgrounds, `.askai-h`/`.askai-para`/`.askai-list` spacing, typing dots)
+  silently never matched. Result: all messages rendered full-width, left-aligned,
+  unstyled. This had been broken since the widget was written; the prior
+  show-bubble / scroll / spacing fixes were correct but invisible because the
+  styling layer never applied.
+- **Fix** (`src/components/AskAi.astro`): rewrote every rule targeting a
+  JS-created element as `.askai-thread :global(.askai-…)` — scoped under the
+  real `.askai-thread` markup node (which keeps its cid) but with the dynamic
+  descendants marked `:global()` so they match without the attribute. Confirmed
+  in `dist/_astro/BaseLayout.*.css` the rules now emit WITHOUT `data-astro-cid`
+  (e.g. `.askai-msg-user{align-self:flex-end;…}`).
+- Verified `npm run build` passes (77 pages).
+
+## 2026-06-28 — Pre-deploy cleanup: secret scrub, .wrangler untrack, comment strip, history squash
+
+Cleanup pass before deploying the re-added Ask AI feature.
+
+- **🔴 Live API key removed from git.** `radiant-ring/.dev.vars.example` had a
+  REAL Groq key (`gsk_…`) committed as its `AI_API_KEY` value (an example file must
+  never hold a real secret). Replaced with the placeholder `your-api-key-here`. The
+  key was also buried in two unpushed commits — see history squash below. **The key
+  must be treated as compromised and revoked at console.groq.com/keys** (it lived in
+  a tracked file + on disk); generate a fresh one for the gitignored `.dev.vars`.
+- **`.wrangler/` cache untracked.** The earlier feature commit had swept in the
+  whole Cloudflare/workerd local cache (sqlite state, temp bundles, a `.js.map`) —
+  7 files that should never be in git. `git rm -r --cached`'d them and added
+  `.wrangler/` to ignore. Created a **root `.gitignore`** (none existed) covering
+  `.wrangler/`, `.dev.vars`, `.DS_Store`, and added `.wrangler/` to
+  `radiant-ring/.gitignore`.
+- **All comments stripped** from the four new feature files (consistent with the
+  2026-06-19 whole-tree strip, which predated these files): `functions/api/ask.ts`,
+  `src/lib/askAi.ts`, `wrangler.toml`, `src/components/AskAi.astro`. Preserved regex
+  literals (e.g. `/\*\*(.+?)\*\*/g`) and the setup-doc comments inside
+  `.dev.vars.example`/`.gitignore` (those files' purpose is documentation, not
+  shipped code). Verified 0 comment markers remain in all four.
+- **Unused-code check**: no genuinely dead code. Noted but left as-is: `gender` in
+  `AskAi.astro` is hardcoded `"women"` (no men/women toggle in the re-added UI), so
+  the backend's `men`/beard prompt branch in `ask.ts` is currently unreachable —
+  product decision, not removed. A few `askAi.ts` exports (`MAX_ASKS_PER_WINDOW`,
+  `AskRequest`/`AskResult`/`AskRateStatus`) are only used internally but are
+  harmless.
+- **History squashed.** The feature had accreted 6 unpushed auto-generated commits
+  (two containing the real key). Since the working tree was already correct,
+  `git reset --soft origin/main` + one fresh commit collapsed them into a single
+  clean commit with the key absent from all history. origin/main was at `b45a20e`;
+  old commits recoverable via reflog until pushed.
+- Verified `npm run build` passes (77 pages); no `gsk_`/`AQ.`/`AIza` secret appears
+  anywhere in `dist/`; the chat-bubble alignment fix survives
+  (`.askai-msg-user{align-self:flex-end}` global in the built CSS).
+

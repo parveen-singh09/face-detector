@@ -181,10 +181,26 @@ const faqs = t.faqs;
     min-height: calc(100vh - 64px);
     min-height: calc(100svh - 64px);
   }
-  .hero-mesh {
+  .hero :global(.hero-mesh) {
     z-index: -1;
     opacity: 0.55;
+    /* align the mesh with the content column used by every other section
+       (.container-page: max-width 1400px with spacing-lg side padding).
+       left:50% + translateX keeps it centered; transform here also overrides
+       MeshGradient's scale animation bleed. */
+    inset-block: 0;
+    left: 50%;
+    right: auto;
+    width: min(1400px - 2 * var(--spacing-lg), 100% - 2 * var(--spacing-lg));
+    margin-inline: 0;
+    transform: translateX(-50%);
+    animation: none;
     mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+  }
+  @media (max-width: 600px) {
+    .hero :global(.hero-mesh) {
+      width: calc(100% - 2 * var(--spacing-md));
+    }
   }
   .hero-inner {
     position: relative;

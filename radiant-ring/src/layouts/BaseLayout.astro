@@ -5,6 +5,7 @@ import "@fontsource-variable/jetbrains-mono";
 
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
+import AskAi from "../components/AskAi.astro";
 import {
   DEFAULT_LOCALE,
   LOCALES,
@@ -145,6 +146,7 @@ const xDefault = new URL(localizePath(path, DEFAULT_LOCALE), SITE).href;
       <slot />
     </main>
     <Footer lang={lang} />
+    <AskAi lang={lang} />
 
     <style>
       .skip-link {

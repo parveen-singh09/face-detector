@@ -1,0 +1,19 @@
+# Ask AI feature — local secrets for `wrangler pages dev`
+#
+# Copy this file to `.dev.vars` (which is gitignored) and fill in real values.
+# In production, set these as Cloudflare Pages secrets instead — never commit them:
+#   Dashboard → Pages → <project> → Settings → Variables & Secrets
+#   or:  npx wrangler pages secret put AI_API_KEY
+#
+# The /api/ask function (functions/api/ask.ts) speaks the OpenAI-compatible
+# `POST {AI_BASE_URL}/chat/completions` shape by default. If your gateway differs,
+# edit the callModel() adapter in that file.
+
+# Secret key for your AI provider / gateway. NEVER commit the real value.
+AI_API_KEY=your-api-key-here
+
+# Base URL of the gateway (no trailing slash). The function appends /chat/completions.
+AI_BASE_URL=https://api.groq.com/openai/v1
+
+# Model id the gateway expects (e.g. a cheap model for a free public tool).
+AI_MODEL=llama-3.3-70b-versatile

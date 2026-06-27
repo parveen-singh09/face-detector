@@ -1,0 +1,8 @@
+# wrangler / cloudflare local state
+.wrangler/
+
+# environment variables
+.dev.vars
+
+# macOS-specific files
+.DS_Store

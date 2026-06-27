@@ -1,0 +1,832 @@
+---
+import { SHAPE_IDS } from "../lib/faceShape";
+import { DEFAULT_LOCALE, type Locale } from "../i18n/config";
+import { useTranslations } from "../i18n/utils";
+
+interface Props {
+  lang?: Locale;
+}
+const { lang = DEFAULT_LOCALE } = Astro.props;
+const t = useTranslations(lang);
+
+const PROMPTS = SHAPE_IDS.map((id) => ({
+  shape: id,
+  text: `Best recommendations for my ${t.shapeLabels[id]} face`,
+}));
+
+const askI18n = {
+  lang,
+  shapeLabels: t.shapeLabels,
+};
+---
+
+<div id="askai-root" class="askai-root" data-open="false">
+  <button
+    id="askai-trigger"
+    class="askai-trigger"
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls="askai-panel"
+    aria-label="Ask AI for style tips"
+  >
+    <svg
+      class="askai-trigger-icon"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"
+        fill="currentColor"
+      ></path>
+      <circle cx="18.5" cy="17.5" r="1.6" fill="currentColor"></circle>
+    </svg>
+  </button>
+
+  <div
+    id="askai-panel"
+    class="askai-panel card-lg"
+    role="dialog"
+    aria-label="Ask AI"
+    aria-modal="false"
+    hidden
+  >
+    <header class="askai-header">
+      <button
+        id="askai-back"
+        class="askai-back"
+        type="button"
+        aria-label="Change face shape"
+        hidden
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M15 5l-7 7 7 7"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </button>
+      <div class="askai-heading">
+        <p id="askai-eyebrow" class="eyebrow">Ask AI</p>
+        <h2 id="askai-subject" class="askai-title" hidden></h2>
+      </div>
+      <button
+        id="askai-close"
+        class="askai-close"
+        type="button"
+        aria-label="Close"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="askai-pickers" id="askai-pickers">
+      <div class="askai-prompts" role="group" aria-label="Starter prompts">
+        {
+          PROMPTS.map((p) => (
+            <button type="button" class="askai-prompt-btn" data-shape={p.shape} data-prompt={p.text}>
+              <span class="askai-prompt-text">{p.text}</span>
+              <svg class="askai-prompt-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div id="askai-thread" class="askai-thread" aria-live="polite" hidden></div>
+
+    <p id="askai-error" class="askai-error" role="alert" hidden></p>
+
+    <form id="askai-form" class="askai-form" hidden>
+      <label for="askai-input" class="askai-sr-only">Ask a follow-up question</label>
+      <textarea
+        id="askai-input"
+        class="askai-input"
+        rows="1"
+        placeholder="Ask a follow-up…"
+        autocomplete="off"></textarea>
+      <button
+        id="askai-send"
+        class="askai-send"
+        type="submit"
+        aria-label="Send"
+        disabled
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 12l16-8-6 16-3-7-7-1z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"></path>
+        </svg>
+      </button>
+    </form>
+
+    <p class="askai-disclaimer">
+      AI suggestions — a styling guide, not professional advice.
+    </p>
+  </div>
+
+  <script
+    type="application/json"
+    id="askai-i18n"
+    set:html={JSON.stringify(askI18n)}></script>
+</div>
+
+<script>
+  import {
+    askAi,
+    checkAskRateLimit,
+    recordAsk,
+    formatRetryAfter,
+    AskError,
+    type AskMessage,
+    type Gender,
+  } from "../lib/askAi";
+  import type { ShapeId } from "../lib/faceShape";
+
+  type I18n = { lang: string; shapeLabels: Record<ShapeId, string> };
+  const I: I18n = JSON.parse(
+    document.getElementById("askai-i18n")?.textContent || "{}",
+  );
+
+  const root = document.getElementById("askai-root");
+  if (root) {
+    const $ = <T extends HTMLElement>(id: string) =>
+      document.getElementById(id) as T;
+
+    const trigger = $("askai-trigger") as HTMLButtonElement;
+    const panel = $("askai-panel");
+    const closeBtn = $("askai-close") as HTMLButtonElement;
+    const backBtn = $("askai-back") as HTMLButtonElement;
+    const eyebrow = $("askai-eyebrow");
+    const subject = $("askai-subject");
+    const pickers = $("askai-pickers");
+    const thread = $("askai-thread");
+    const errorEl = $("askai-error");
+    const form = $("askai-form") as HTMLFormElement;
+    const input = $("askai-input") as HTMLTextAreaElement;
+    const sendBtn = $("askai-send") as HTMLButtonElement;
+
+    const shapeBtns = Array.from(
+      root.querySelectorAll<HTMLButtonElement>("[data-shape]"),
+    );
+
+    let shape: ShapeId | null = null;
+    let gender: Gender = "women";
+    let history: AskMessage[] = [];
+    let busy = false;
+
+    function setOpen(open: boolean) {
+      root!.dataset.open = String(open);
+      panel.hidden = !open;
+      trigger.setAttribute("aria-expanded", String(open));
+      if (open) {
+        (shape ? input : panel.querySelector<HTMLElement>("[data-shape]"))?.focus();
+      } else {
+        trigger.focus();
+      }
+    }
+    trigger.addEventListener("click", () =>
+      setOpen(root.dataset.open !== "true"),
+    );
+    closeBtn.addEventListener("click", () => setOpen(false));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && root.dataset.open === "true") setOpen(false);
+    });
+    document.addEventListener("click", (e) => {
+      if (root.dataset.open !== "true") return;
+      if (!root.contains(e.target as Node)) setOpen(false);
+    });
+
+    function showPicker() {
+      shape = null;
+      history = [];
+      thread.innerHTML = "";
+      thread.hidden = true;
+      form.hidden = true;
+      pickers.hidden = false;
+      backBtn.hidden = true;
+      eyebrow.hidden = false;
+      subject.hidden = true;
+      subject.textContent = "";
+      shapeBtns.forEach((b) => b.removeAttribute("aria-pressed"));
+      hideError();
+      panel.querySelector<HTMLElement>("[data-shape]")?.focus();
+    }
+    function enterChat(picked: ShapeId, prompt: string) {
+      shape = picked;
+      history = [];
+      thread.innerHTML = "";
+      pickers.hidden = true;
+      thread.hidden = false;
+      form.hidden = false;
+      backBtn.hidden = false;
+      eyebrow.hidden = true;
+      subject.hidden = false;
+      subject.textContent = I.shapeLabels[picked];
+      hideError();
+      send(prompt, true);
+    }
+    shapeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (busy) return;
+        const prompt =
+          btn.dataset.prompt ||
+          `Recommend glasses, hairstyle for my ${I.shapeLabels[btn.dataset.shape as ShapeId]} face.`;
+        enterChat(btn.dataset.shape as ShapeId, prompt);
+      });
+    });
+    backBtn.addEventListener("click", () => {
+      if (busy) return;
+      showPicker();
+    });
+
+    function showError(msg: string) {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    }
+    function hideError() {
+      errorEl.hidden = true;
+      errorEl.textContent = "";
+    }
+
+    function addBubble(role: "user" | "assistant", text: string): HTMLElement {
+      const bubble = document.createElement("div");
+      bubble.className = `askai-msg askai-msg-${role}`;
+      if (role === "assistant") {
+        bubble.appendChild(renderReply(text));
+      } else {
+        bubble.textContent = text;
+      }
+      thread.appendChild(bubble);
+      return bubble;
+    }
+
+    function normalizeLines(raw: string): string[] {
+      let t = raw.replace(/\r\n/g, "\n").trim();
+      const newlines = (t.match(/\n/g) || []).length;
+      const inlineBullets = (t.match(/(?:^|\s)[-•*]\s/g) || []).length;
+      if (newlines <= 1 && inlineBullets >= 2) {
+        t = t.replace(/\s+(?=[-•*]\s)/g, "\n");
+      }
+      return t
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+    }
+
+    function appendInline(parent: HTMLElement, text: string) {
+      const re = /\*\*(.+?)\*\*/g;
+      let last = 0;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) {
+          parent.appendChild(document.createTextNode(text.slice(last, m.index)));
+        }
+        const strong = document.createElement("strong");
+        strong.textContent = m[1];
+        parent.appendChild(strong);
+        last = re.lastIndex;
+      }
+      if (last < text.length) {
+        parent.appendChild(document.createTextNode(text.slice(last)));
+      }
+    }
+
+    function renderReply(text: string): DocumentFragment {
+      const frag = document.createDocumentFragment();
+      let list: HTMLUListElement | null = null;
+
+      const pushHeading = (raw: string) => {
+        list = null;
+        const h = document.createElement("p");
+        h.className = "askai-h";
+        appendInline(h, raw.replace(/[:：]\s*$/, "").trim());
+        frag.appendChild(h);
+      };
+
+      for (const line of normalizeLines(text)) {
+        const heading = /^#{1,6}\s+(.+)$/.exec(line);
+        const numbered = /^\d+[.)]\s+(.+)$/.exec(line);
+        const bullet = /^[-*•]\s+(.+)$/.exec(line);
+        const boldOnly = /^\*\*(.+?)\*\*[:：]?$/.exec(line);
+        const labelOnly =
+          /^[A-Za-z][\w /&'()-]{0,34}[:：]$/.test(line) &&
+          !/[.!?]/.test(line);
+
+        if (bullet) {
+          if (!list) {
+            list = document.createElement("ul");
+            list.className = "askai-list";
+            frag.appendChild(list);
+          }
+          const li = document.createElement("li");
+          appendInline(li, bullet[1]);
+          list.appendChild(li);
+          continue;
+        }
+
+        if (heading) {
+          pushHeading(heading[1]);
+        } else if (boldOnly) {
+          pushHeading(boldOnly[1]);
+        } else if (numbered && numbered[1].length <= 48 && !/[.!?]$/.test(numbered[1])) {
+          pushHeading(line);
+        } else if (labelOnly) {
+          pushHeading(line);
+        } else {
+          list = null;
+          const p = document.createElement("p");
+          p.className = "askai-para";
+          appendInline(p, line);
+          frag.appendChild(p);
+        }
+      }
+
+      if (!frag.childNodes.length) {
+        const p = document.createElement("p");
+        p.className = "askai-para";
+        p.textContent = text;
+        frag.appendChild(p);
+      }
+      return frag;
+    }
+    function addTyping(label: string): HTMLElement {
+      const el = document.createElement("div");
+      el.className = "askai-msg askai-msg-assistant askai-typing";
+      el.setAttribute("aria-label", label);
+      el.innerHTML =
+        `<span class="askai-typing-label"></span>` +
+        `<span class="askai-typing-dots"><i></i><i></i><i></i></span>`;
+      el.querySelector(".askai-typing-label")!.textContent = label;
+      thread.appendChild(el);
+      return el;
+    }
+
+    async function send(userText: string, show = true) {
+      if (busy || !shape || !gender) return;
+
+      const limit = checkAskRateLimit();
+      if (!limit.allowed) {
+        showError(
+          `You've reached the limit for now. Try again ${formatRetryAfter(limit.retryAfterMs)}.`,
+        );
+        return;
+      }
+
+      busy = true;
+      hideError();
+      backBtn.disabled = true;
+      syncSend();
+
+      history.push({ role: "user", content: userText });
+      const userBubble = show ? addBubble("user", userText) : null;
+      const typing = addTyping("Thinking");
+
+      try {
+        recordAsk();
+        const { reply } = await askAi({
+          shape,
+          gender,
+          messages: history,
+          lang: I.lang,
+        });
+        history.push({ role: "assistant", content: reply });
+        typing.remove();
+        addBubble("assistant", reply);
+        if (userBubble) userBubble.scrollIntoView({ block: "start" });
+        else thread.scrollTop = thread.scrollHeight;
+      } catch (err) {
+        typing.remove();
+        history.pop();
+        const msg =
+          err instanceof AskError
+            ? err.message
+            : "Something went wrong. Please try again.";
+        showError(msg);
+      } finally {
+        busy = false;
+        backBtn.disabled = false;
+        syncSend();
+      }
+    }
+
+    function syncSend() {
+      sendBtn.disabled = busy || input.value.trim().length === 0;
+    }
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+      syncSend();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      input.style.height = "auto";
+      syncSend();
+      send(text);
+    });
+  }
+</script>
+
+<style>
+  .askai-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .askai-root {
+    position: fixed;
+    inset-block-end: var(--spacing-lg);
+    inset-inline-end: var(--spacing-lg);
+    z-index: 60;
+  }
+
+  .askai-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: var(--radius-full);
+    background-image: linear-gradient(
+      100deg,
+      var(--color-violet),
+      var(--color-cyan)
+    );
+    color: #ffffff;
+    border: 0;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow:
+      0 2px 6px var(--shadow-soft, #0000001f),
+      0 8px 24px -6px var(--shadow-soft, #00000026);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .askai-trigger:hover {
+    opacity: 0.9;
+  }
+  .askai-trigger:active {
+    transform: translateY(1px);
+  }
+  .askai-trigger-icon {
+    flex-shrink: 0;
+  }
+
+  .askai-panel {
+    position: absolute;
+    inset-block-end: calc(52px + var(--spacing-sm));
+    inset-inline-end: 0;
+    width: min(380px, calc(100vw - 2 * var(--spacing-md)));
+    max-height: min(
+      640px,
+      calc(
+        100vh - 64px - 52px - var(--spacing-lg) - var(--spacing-sm) -
+          var(--spacing-md)
+      )
+    );
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-hairline);
+  }
+  .askai-root[data-open="true"] .askai-panel {
+    animation: askai-in 0.16s ease;
+  }
+  .askai-root[data-open="true"] .askai-trigger {
+    display: none;
+  }
+  .askai-root[data-open="true"] .askai-panel {
+    position: fixed;
+    inset-block-start: calc(64px + var(--spacing-md));
+    inset-block-end: var(--spacing-lg);
+    inset-inline-end: var(--spacing-lg);
+    width: min(440px, calc(100vw - 2 * var(--spacing-md)));
+    max-height: none;
+  }
+  @keyframes askai-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .askai-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+  .askai-heading {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+  }
+  .askai-back {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-hairline);
+    background-color: var(--color-canvas);
+    color: var(--color-body);
+    cursor: pointer;
+  }
+  .askai-back:hover {
+    background-color: var(--color-canvas-soft-2);
+  }
+  .askai-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .askai-close {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-hairline);
+    background-color: var(--color-canvas);
+    color: var(--color-body);
+    cursor: pointer;
+  }
+  .askai-close:hover {
+    background-color: var(--color-canvas-soft-2);
+  }
+
+  .askai-pickers {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+  }
+
+  .askai-prompts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  .askai-prompt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    width: 100%;
+    text-align: start;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-hairline-strong);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
+  }
+  .askai-prompt-btn:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-canvas-soft-2);
+  }
+  .askai-prompt-arrow {
+    flex-shrink: 0;
+    color: var(--color-mute);
+    transition: transform 0.12s ease, color 0.12s ease;
+  }
+  .askai-prompt-btn:hover .askai-prompt-arrow {
+    color: var(--color-primary);
+    transform: translateX(2px);
+  }
+
+  .askai-thread {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-hairline);
+    overflow-y: auto;
+    flex: 1;
+  }
+  .askai-thread :global(.askai-msg) {
+    max-width: 90%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    line-height: 19px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .askai-thread :global(.askai-msg-user) {
+    align-self: flex-end;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    border-end-end-radius: var(--radius-xs);
+  }
+  .askai-thread :global(.askai-msg-assistant) {
+    align-self: flex-start;
+    background-color: var(--color-canvas-soft-2);
+    color: var(--color-ink);
+    border-end-start-radius: var(--radius-xs);
+    white-space: normal;
+  }
+  .askai-thread :global(.askai-msg-assistant > :first-child) {
+    margin-top: 0;
+  }
+  .askai-thread :global(.askai-msg-assistant > :last-child) {
+    margin-bottom: 0;
+  }
+  .askai-thread :global(.askai-h) {
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+  .askai-thread :global(.askai-para) {
+    margin: 0 0 var(--spacing-sm);
+  }
+  .askai-thread :global(.askai-list) {
+    margin: 0 0 var(--spacing-sm);
+    padding-inline-start: 1.25em;
+    list-style: disc;
+  }
+  .askai-thread :global(.askai-list li) {
+    margin: var(--spacing-xs) 0;
+    padding-inline-start: 2px;
+    line-height: 1.45;
+  }
+  .askai-thread :global(.askai-list li::marker) {
+    color: var(--color-mute);
+  }
+  .askai-thread :global(.askai-msg-assistant strong) {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .askai-thread :global(.askai-typing) {
+    display: inline-flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+    color: var(--color-mute);
+  }
+  .askai-thread :global(.askai-typing-label) {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .askai-thread :global(.askai-typing-dots) {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .askai-thread :global(.askai-typing-dots i) {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-mute);
+    animation: askai-bounce 1s infinite ease-in-out;
+  }
+  .askai-thread :global(.askai-typing-dots i:nth-child(2)) {
+    animation-delay: 0.15s;
+  }
+  .askai-thread :global(.askai-typing-dots i:nth-child(3)) {
+    animation-delay: 0.3s;
+  }
+  @keyframes askai-bounce {
+    0%,
+    80%,
+    100% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    40% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+
+  .askai-error {
+    margin: var(--spacing-sm) 0 0;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    background-color: var(--color-error-soft);
+    color: var(--color-error-deep);
+  }
+
+  .askai-form {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+  }
+  .askai-input {
+    flex: 1;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .askai-input:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-link-bg-soft);
+  }
+  .askai-send {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .askai-send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .askai-disclaimer {
+    margin: var(--spacing-sm) 0 0;
+    font-size: 11px;
+    line-height: 15px;
+    color: var(--color-mute);
+  }
+
+  @media (max-width: 560px) {
+    .askai-root {
+      inset-block-end: var(--spacing-md);
+      inset-inline-end: var(--spacing-md);
+    }
+    .askai-trigger {
+      width: 56px;
+      height: 56px;
+    }
+    .askai-panel {
+      position: fixed;
+      inset-block-end: calc(56px + var(--spacing-sm));
+      inset-inline: var(--spacing-md);
+      width: auto;
+      max-height: calc(100vh - 56px - 3 * var(--spacing-md));
+    }
+  }
+</style>
