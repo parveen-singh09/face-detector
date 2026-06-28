@@ -15,16 +15,13 @@ const t = useTranslations(lang);
 
 const shapes = SHAPE_IDS as ShapeId[];
 
-// Each shape's characteristic proportions as compact ratios against face length
-// (l): f/l = forehead, c/l = cheekbones, j/l = jaw. Derived from the profile
-// means so there's a single source of truth. Lets users match their own numbers.
 const fLabel = t.manualCalc.fields.foreheadWidth.label;
 const cLabel = t.manualCalc.fields.cheekboneWidth.label;
 const jLabel = t.manualCalc.fields.jawWidth.label;
 const lLabel = t.manualCalc.fields.faceLength.label;
 const ratioRows = (id: ShapeId) => {
   const r = SHAPE_RATIOS[id];
-  const l = r.lengthToWidth; // face length ÷ cheekbone width
+  const l = r.lengthToWidth; 
   return [
     { sym: "F/L", value: r.foreheadToCheek / l, title: `${fLabel} ÷ ${lLabel}` },
     { sym: "C/L", value: 1 / l, title: `${cLabel} ÷ ${lLabel}` },
@@ -187,15 +184,16 @@ const faqs = t.faqs;
     /* align the mesh with the content column used by every other section
        (.container-page: max-width 1400px with spacing-lg side padding).
        left:50% + translateX keeps it centered; transform here also overrides
-       MeshGradient's scale animation bleed. */
-    inset-block: 0;
+       MeshGradient's scale animation bleed. The negative block-start pulls the
+       mesh up behind the 64px sticky nav so it spans the full device height. */
+    inset-block: -64px 0;
     left: 50%;
     right: auto;
     width: min(1400px - 2 * var(--spacing-lg), 100% - 2 * var(--spacing-lg));
     margin-inline: 0;
     transform: translateX(-50%);
     animation: none;
-    mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 96%, transparent 100%);
   }
   @media (max-width: 600px) {
     .hero :global(.hero-mesh) {
